@@ -1,0 +1,692 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="条款04 确定对象被使用前已先被初始化 本条讨论如何安全高效地实现初始化, 当然也有一些条件奇葩的初始化值得我们去讨论  普通变量初始化12345int x &#x3D; 0;cont char text[] &#x3D; &quot;hello&quot;;double d;cin &gt;&gt; d;    &#x2F;&#x2F; 这种也叫初始化  类内变量初始化类内变量的初始化一般就是三种, 类内设置初始值, 缺省值 , 初始">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Effective C++ 条款4 初始化">
+<meta property="og:url" content="http://example.com/2024/11/29/[Effective%20C++]%E6%9D%A1%E6%AC%BE4/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="条款04 确定对象被使用前已先被初始化 本条讨论如何安全高效地实现初始化, 当然也有一些条件奇葩的初始化值得我们去讨论  普通变量初始化12345int x &#x3D; 0;cont char text[] &#x3D; &quot;hello&quot;;double d;cin &gt;&gt; d;    &#x2F;&#x2F; 这种也叫初始化  类内变量初始化类内变量的初始化一般就是三种, 类内设置初始值, 缺省值 , 初始">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2024-11-29T14:05:44.000Z">
+<meta property="article:modified_time" content="2024-11-30T03:09:03.314Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>Effective C++ 条款4 初始化 - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Effective C++ 条款4 初始化"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2024-11-29 22:05" pubdate>
+          2024年11月29日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.1k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          18 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Effective C++ 条款4 初始化</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h2 id="条款04-确定对象被使用前已先被初始化"><a href="#条款04-确定对象被使用前已先被初始化" class="headerlink" title="条款04 确定对象被使用前已先被初始化"></a>条款04 确定对象被使用前已先被初始化</h2><blockquote>
+<p>本条讨论如何安全高效地实现初始化, 当然也有一些条件奇葩的初始化值得我们去讨论</p>
+</blockquote>
+<h3 id="普通变量初始化"><a href="#普通变量初始化" class="headerlink" title="普通变量初始化"></a>普通变量初始化</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-type">int</span> x = <span class="hljs-number">0</span>;<br>cont <span class="hljs-type">char</span> text[] = <span class="hljs-string">&quot;hello&quot;</span>;<br><br><span class="hljs-type">double</span> d;<br>cin &gt;&gt; d;    <span class="hljs-comment">// 这种也叫初始化</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="类内变量初始化"><a href="#类内变量初始化" class="headerlink" title="类内变量初始化"></a>类内变量初始化</h3><p>类内变量的初始化一般就是三种, <code>类内设置初始值</code>, <code>缺省值</code> , <code>初始值列表</code>. </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Stu</span>&#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-built_in">Stu</span>(<span class="hljs-type">const</span> string&amp; name = <span class="hljs-string">&quot;小红&quot;</span>, <span class="hljs-type">const</span> <span class="hljs-type">int</span>&amp; age = <span class="hljs-string">&quot;17&quot;</span>, <span class="hljs-type">const</span> string&amp; sex = <span class="hljs-string">&quot;女&quot;</span>) <span class="hljs-comment">// 设置缺省值 (次之)</span><br>    	:_name(name.<span class="hljs-built_in">c_str</span>())<br>        ,_age(age)<br>        ,_sex(sex.<span class="hljs-built_in">c_str</span>())		<span class="hljs-comment">// 初始化列表 (优先)</span><br>    &#123;&#125;<br>    <br><span class="hljs-keyword">private</span> : <br>	<span class="hljs-type">char</span> _name[<span class="hljs-number">10</span>] = <span class="hljs-string">&quot;小明&quot;</span>;<br>    <span class="hljs-type">int</span> _age = <span class="hljs-number">18</span>;<br>    <span class="hljs-type">char</span> _sex[<span class="hljs-number">5</span>] = <span class="hljs-string">&quot;男&quot;</span>;  <span class="hljs-comment">// 类内设置初始值 (最次)</span><br>&#125;<br><br>Stu s1;  					<span class="hljs-comment">// 小红 17 女</span><br><span class="hljs-function">Stu <span class="hljs-title">s2</span><span class="hljs-params">(<span class="hljs-string">&quot;张三&quot;</span>, <span class="hljs-number">35</span>, <span class="hljs-string">&quot;男&quot;</span>)</span></span>;    <span class="hljs-comment">// 张三 35 男 </span><br></code></pre></td></tr></table></figure>
+
+<p>这里虽然看起来三种方式都可以, 但是只推荐全部使用初始值列表, 当有特别想要设置的默认值时设置缺省值.</p>
+<h3 id="初始值列表"><a href="#初始值列表" class="headerlink" title="初始值列表"></a>初始值列表</h3><h4 id="优势描述"><a href="#优势描述" class="headerlink" title="优势描述 :"></a>优势描述 :</h4><p>为了描述初始值列表的优势, 请先阅读以下另一版本的构造函数:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-built_in">Stu</span>(<span class="hljs-type">const</span> string&amp; name, <span class="hljs-type">const</span> <span class="hljs-type">int</span>&amp; age, <span class="hljs-type">const</span> string&amp; sex)	<br>&#123;<br>	_name = name.<span class="hljs-built_in">c_str</span>();<br>    _age = age;<br>    _sex = sex.<span class="hljs-built_in">c_str</span>();<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>可以看出这样子写构造函数其实和我们写初始值列表的最终结果是一样的, 而且相对直观.</p>
+<p><strong>但是</strong>, 该版本在底层每个变量其实是先进行了一次default的构造, 再进行了一次copy操作, 其本质是<code>初始化 + 赋值</code>.</p>
+<p>而<code>初始值列表</code>在底层只进行了一次copy构造, 比前者高效得多, 本质就是<code>初始化</code>.</p>
+<h4 id="注意事项"><a href="#注意事项" class="headerlink" title="注意事项 :"></a>注意事项 :</h4><ul>
+<li>最好在初始值列表中初始化所有的成员变量, 这样起码不会忘记没有初始化的变量.</li>
+<li>C++中成员变量的初始化顺序是按照类中声明的次序, 而非初始值列表中的顺序! (如果有继承关系, 基类一定早于派生类初始化)</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Example</span> &#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-built_in">Example</span>(<span class="hljs-type">int</span> a, <span class="hljs-type">int</span> b)<br>        : _b(b), _a(a) <span class="hljs-comment">// 尽管在初始化列表中是_b在前, 但是依旧是先初始化_a</span><br>    &#123;&#125;<br><span class="hljs-keyword">private</span>:<br>    <span class="hljs-type">int</span> _a; <span class="hljs-comment">// _a 在 _b 之前声明</span><br>    <span class="hljs-type">int</span> _b; <span class="hljs-comment">// _b 在 _a 之后声明</span><br>&#125;;<br><span class="hljs-comment">// ----------------------------------------------------------//</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Red</span> &#123;&#125;;<br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Blue</span> &#123;&#125;;<br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Purple</span>&#123; <span class="hljs-comment">// 紫色需要类型为红色和蓝色的变量</span><br><span class="hljs-keyword">public</span>:<br>	<span class="hljs-built_in">Purple</span>(<span class="hljs-type">const</span> Red&amp; red, <span class="hljs-type">const</span> Blue&amp; blue)<br>        :<span class="hljs-built_in">r</span>(red) ,<span class="hljs-built_in">b</span>(blue)<br>    &#123;&#125;<br><span class="hljs-keyword">private</span>:<br>    Red r;<br>    Blue b;<br>&#125;;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Color</span> <span class="hljs-comment">// Color类存储三种颜色, 并且可以用红蓝配出紫</span><br>&#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-built_in">Color</span>(<span class="hljs-type">const</span> Red&amp; red, <span class="hljs-type">const</span> Blue&amp; blue)<br>        :<span class="hljs-built_in">r</span>(red)<br>        :<span class="hljs-built_in">b</span>(blue)<br>        :<span class="hljs-built_in">purper</span>(r, b)<br>    &#123;&#125;<br><span class="hljs-keyword">private</span>:<br>    Red r;           <span class="hljs-comment">//purple p;</span><br>    Blue b;			 <span class="hljs-comment">//Red r;		</span><br>    Purple p;		 <span class="hljs-comment">//Blue b;	 假如是注释中的情况, 将无法编译通过, 因为p需要r,b都初始化完才能初始化</span><br>&#125;;<br></code></pre></td></tr></table></figure>
+
+
+
+<h3 id="不同编译单元内定义non-local-static对象-的初始化次序"><a href="#不同编译单元内定义non-local-static对象-的初始化次序" class="headerlink" title="[ 不同编译单元内定义non-local static对象 ] 的初始化次序"></a>[ 不同编译单元内定义non-local static对象 ] 的初始化次序</h3><p>初看第一眼根本就不知道是什么东西(再看也不知道), 所以先介绍一下定义:</p>
+<ul>
+<li><p>编译单元 : 可以简单理解为一个单独的<code>.cpp</code>文件或<code>.h</code>文件等, 就是有一定的隔离性.</p>
+</li>
+<li><p><code>local static</code>(局部静态变量) : 生命周期为整个程序, <strong>在局部第一次调用时初始化</strong>, 之后都是用这个.</p>
+</li>
+<li><p><code>non-local static</code>(全局静态变量) : 生命周期也为整个程序, <strong>程序启动时初始化</strong>, 之后都是用这个.(例如全局变量)</p>
+</li>
+</ul>
+<p><code>local static</code>和<code>non-local static</code>的区别简单来看就在于初始化的时机.</p>
+<hr>
+<p>再举一个例子, 如果我在<code>a.h</code>中定义了<code>class A</code>, 在<code>b.h</code>中定义了<code>class B</code>, 又在<code>c.cpp</code>中要求使用类型为A和类型为B的<code>non-local static</code>变量, 那么这两个变量的初始化次序是怎样的?</p>
+<p>答案是<strong>无法判断</strong>, 你看上面的定义, <code>non-local static</code>对象都是在程序启动时初始化, C++根本没有手段判断应该先初始化哪个,所以这就是没有定义的行为!</p>
+<hr>
+<p>说了这么多, 那这样会带来什么隐患呢? </p>
+<p>如果两个编译单元中的类有依赖关系的话, 初始化次序的不确定性就会导致问题!</p>
+<p>假如说B类static变量中使用到了A类static变量的话, 如果在<code>c.cpp</code>中先初始化了B类static变量, 可是A类static变量还没初始化, 那么就只有报错一条路了. </p>
+<hr>
+<p>可能看到这里有人不太理解这种情况有什么应用场景, 那么我在这里引入一个定义 :</p>
+<ul>
+<li>内置型对象 : 这个对象本身并没有太大意义, 目的是为了引出类中的各种功能性函数, 一般是non-local static的.</li>
+</ul>
+<p><strong>进一步解释</strong> : 有些类中会有许多应用实际场景的方法函数, 如果需要使用这些函数, 就需要客户构造一个类对象,再用这个对象使用函数, 那么我们就干脆在类的头文件中声明一个类对象, 要求使用这个头文件的客户必须记得生成一个对应对象, 而这个对象一般是non-local static的. </p>
+<p>假如有一个钟表类, 内部需要用到一个计时器的类, 于是使用了计时器类的内置对象, 当用户创建一个non-local static类型的钟表类对象时, 你无法确定计时器类的内置对象和钟表类对象哪个先初始化.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// TimeKeeper.h   这是一个计时器类</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">TimeKeeper</span><br>&#123;<br><span class="hljs-keyword">public</span>:<br>    ....<br>    <span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">GetTime</span><span class="hljs-params">()</span></span>;<br>    ....<br>&#125;;<br><span class="hljs-keyword">extern</span> TimeKeeper tk;<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// Clock.h		这是一个钟表类</span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;TimeKeeper&quot;</span></span><br>......<br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Clock</span><br>&#123;<br><span class="hljs-keyword">public</span>: <br>    <span class="hljs-built_in">Clock</span>()<br>        :<span class="hljs-built_in">time</span>(tk.<span class="hljs-built_in">GetTime</span>()) <span class="hljs-comment">// 这里用tk获取当前时间来初始化time</span><br>    &#123;&#125;<br>    <br><span class="hljs-keyword">private</span>:<br>    <span class="hljs-type">int</span> time;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// user.cpp</span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;Clock.h&quot;</span></span><br>...<br>Clock clock; <span class="hljs-comment">// 如果用户设置一个全局变量的Clock类对象clock, 此时无法确定clock和tk的初始化次序!</span><br>...<br></code></pre></td></tr></table></figure>
+
+<h4 id="解决方法-以local-static对象替换non-local-static对象"><a href="#解决方法-以local-static对象替换non-local-static对象" class="headerlink" title="解决方法 : 以local static对象替换non-local static对象"></a>解决方法 : 以local static对象替换non-local static对象</h4><p>这个解决方法用到了设计模式中最经典的<code>单例模式</code>的设计思想 : 延迟初始化.</p>
+<p>思路简单来说就是, 既然给出一个non-local static对象有风险的话, 我就不给这个non-local static对象了, 我直接使用一个函数, 当客户有使用内置型对象相应需求的时候, 当真正客户调用这个函数时, 才会使用函数内部的代码自己生成一个local static对象供自己使用, 这样初始化次序就有了保障.</p>
+<p>更通俗易懂地描述一下, 就是虽然不好直接使用内置型对象, 但是可以把函数返回值当成内置型对象来使用,  因为在函数内生成的对象时是local static对象, 没有初始化次序的问题.</p>
+<p>看一看接下来的代码吧 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// TimeKeeper.h   这是一个计时器类</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">TimeKeeper</span><br>&#123;<br><span class="hljs-keyword">public</span>:<br>    ....<br>    <span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">GetTime</span><span class="hljs-params">()</span></span>;<br>    <br>    <span class="hljs-function">TimeKeeper&amp; <span class="hljs-title">tk</span><span class="hljs-params">()</span> <span class="hljs-comment">// 这里用tk函数替代内置型对象tk</span></span><br><span class="hljs-function">    </span>&#123;<br>        <span class="hljs-type">static</span> TimeKeeper timekeeper;  <span class="hljs-comment">// 当用户真正调用tk()时, 才会在函数内部生成一个局部静态变量(local static)</span><br>        <span class="hljs-keyword">return</span> timekeeper;<br>    &#125;<br>    ....<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// Clock.h		这是一个钟表类</span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;TimeKeeper&quot;</span></span><br>......<br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Clock</span><br>&#123;<br><span class="hljs-keyword">public</span>: <br>    <span class="hljs-built_in">Clock</span>()<br>        :<span class="hljs-built_in">time</span>(<span class="hljs-built_in">tk</span>().<span class="hljs-built_in">GetTime</span>()) <span class="hljs-comment">// 这里只是简单地将tk换成了tk(), 从调用对象改为调用函数而已</span><br>    &#123;&#125;<br>    <br><span class="hljs-keyword">private</span>:<br>    <span class="hljs-type">int</span> time;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// user.cpp</span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;Clock.h&quot;</span></span><br>...<br>Clock clock; <br><span class="hljs-comment">// 设置一个全局变量的Clock类对象clock, 此时一定是clock开始初始化, 当初始化时调用到tk()再进行timekeeper的初始化</span><br>...<br></code></pre></td></tr></table></figure>
+
+<h4 id="多线程情况下的安全性"><a href="#多线程情况下的安全性" class="headerlink" title="多线程情况下的安全性 :"></a>多线程情况下的安全性 :</h4><p>书中指明, <code>内涵static对象</code>在多线程情况下会带有线程安全的问题, 等待某事发生都会有麻烦.</p>
+<p>如果同时调用tk(), 没办法保证只有一个timekeeper生成, 除非用锁, 但那样花销太大得不偿失.</p>
+<p>所以我们可以在线程的单线程启动阶段<code>手工调用</code>所有的初始化函数(例如tk()), 这样在多线程来临前就可以确保初始化完毕.</p>
+<hr>
+<h3 id="请记住"><a href="#请记住" class="headerlink" title="请记住 :"></a>请记住 :</h3><ul>
+<li>对内置型对象进行手工初始化, C++本身并不会保证正确初始化他们.</li>
+<li>最好使用初始化列表, 并且排序要和类内的声明顺序一致.</li>
+<li>如果有跨编译单元的初始化次序问题, 请以local static对象替换non-local static对象.</li>
+</ul>
+<p>刚开始写博客, 如有错误感谢指正!</p>
+<p>by 天目中云</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Effective C++ 条款4 初始化</div>
+      <div>http://example.com/2024/11/29/[Effective C++]条款4/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2024年11月29日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2024/11/30/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE%205%20-%206%20%E9%BB%98%E8%AE%A4%E6%88%90%E5%91%98%E5%87%BD%E6%95%B0/" title="Effective C++ 条款5-6 默认成员函数">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Effective C++ 条款5-6 默认成员函数</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2024/11/29/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE3/" title="Effective C++ 条款3 const">
+                        <span class="hidden-mobile">Effective C++ 条款3 const</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
