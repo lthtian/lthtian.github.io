@@ -1,0 +1,691 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/head.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="天目中云">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="条款18 : 让接口容易被正确使用, 不易被误用. C++在接口之海漂浮, 一个好的接口很容易被正确使用, 不容易被误用.  条款18其实是一个很宏观的条款, 让接口变得正确易用, 简单来说就是”促进正确使用“和”阻止误用“. 我们先从阻止误用的角度考虑, 对接口来说, 是否误用无非就是参数传递的类型对不对, 参数是否合法, 是否符合设计者的设想. 书中给出了一个日期类, 分别由年月日的成员变量,">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Effective C++ 条款18 设计正确易用的接口">
+<meta property="og:url" content="http://example.com/2024/11/30/[Effective%20C++]%E6%9D%A1%E6%AC%BE18%20%20%E8%AE%BE%E8%AE%A1%E6%AD%A3%E7%A1%AE%E6%98%93%E7%94%A8%E7%9A%84%E6%8E%A5%E5%8F%A3/index.html">
+<meta property="og:site_name" content="天目中云">
+<meta property="og:description" content="条款18 : 让接口容易被正确使用, 不易被误用. C++在接口之海漂浮, 一个好的接口很容易被正确使用, 不容易被误用.  条款18其实是一个很宏观的条款, 让接口变得正确易用, 简单来说就是”促进正确使用“和”阻止误用“. 我们先从阻止误用的角度考虑, 对接口来说, 是否误用无非就是参数传递的类型对不对, 参数是否合法, 是否符合设计者的设想. 书中给出了一个日期类, 分别由年月日的成员变量,">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2024-11-30T14:06:52.000Z">
+<meta property="article:modified_time" content="2024-11-30T13:00:54.883Z">
+<meta property="article:author" content="天目中云">
+<meta property="article:tag" content="Effective C++">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>Effective C++ 条款18 设计正确易用的接口 - 天目中云</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>TianMu</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Effective C++ 条款18 设计正确易用的接口"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2024-11-30 22:06" pubdate>
+          2024年11月30日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.8k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          16 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Effective C++ 条款18 设计正确易用的接口</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h2 id="条款18-让接口容易被正确使用-不易被误用"><a href="#条款18-让接口容易被正确使用-不易被误用" class="headerlink" title="条款18 : 让接口容易被正确使用, 不易被误用."></a>条款18 : 让接口容易被正确使用, 不易被误用.</h2><blockquote>
+<p>C++在接口之海漂浮, 一个好的接口很容易被正确使用, 不容易被误用.</p>
+</blockquote>
+<p>条款18其实是一个很宏观的条款, 让接口变得正确易用, 简单来说就是”<strong>促进正确使用</strong>“和”<strong>阻止误用</strong>“.</p>
+<p>我们先从<strong>阻止误用</strong>的角度考虑, 对接口来说, 是否误用无非就是参数传递的类型对不对, 参数是否合法, 是否符合设计者的设想.</p>
+<p>书中给出了一个日期类, 分别由年月日的成员变量, 我们先来看第一个给出的构造函数 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Date</span> &#123;<br><span class="hljs-keyword">public</span>:<br>  <span class="hljs-built_in">Date</span>(<span class="hljs-type">int</span> month, <span class="hljs-type">int</span> day, <span class="hljs-type">int</span> year);<br>  ...<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>这样设计在设计者看来很合理, 但是没有任何合法性检查只会带来无穷的隐患, 我们可以从中看出以下问题 : </p>
+<ul>
+<li>客户不一定知道是按月日年的顺序来输入, 如果是我们的日常习惯, 可能会输入年月日.</li>
+</ul>
+<p>如何使用户在编写过程中就知道自己写错了呢? </p>
+<p>书中告诉我们的方法是 : <strong>导入新类型</strong>, 因为问题的根源是年月日的变量类型都是相同的<code>int</code>, 如果设定为不同的类型, 就可以确保输入的正确性了, 代码如下 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">struct</span> <span class="hljs-title class_">Day</span> &#123;            <span class="hljs-keyword">struct</span> <span class="hljs-title class_">Month</span> &#123;                <span class="hljs-keyword">struct</span> <span class="hljs-title class_">Year</span> &#123;<br>  <span class="hljs-function"><span class="hljs-keyword">explicit</span> <span class="hljs-title">Day</span><span class="hljs-params">(<span class="hljs-type">int</span> d)</span>     <span class="hljs-keyword">explicit</span> <span class="hljs-title">Month</span><span class="hljs-params">(<span class="hljs-type">int</span> m)</span>         <span class="hljs-keyword">explicit</span> <span class="hljs-title">Year</span><span class="hljs-params">(<span class="hljs-type">int</span> y)</span></span><br><span class="hljs-function">  :val(d) &#123;</span>&#125;              :<span class="hljs-built_in">val</span>(m) &#123;&#125;                    :<span class="hljs-built_in">val</span>(y)&#123;&#125;<br><br>  <span class="hljs-type">int</span> val;                <span class="hljs-type">int</span> val;                      <span class="hljs-type">int</span> val;<br>&#125;;                      &#125;;                            &#125;;<br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Date</span> &#123;<br><span class="hljs-keyword">public</span>:<br><span class="hljs-built_in">Date</span>(<span class="hljs-type">const</span> Month&amp; m, <span class="hljs-type">const</span> Day&amp; d, <span class="hljs-type">const</span> Year&amp; y);<br>...<br>&#125;;<br><span class="hljs-function">Date <span class="hljs-title">d</span><span class="hljs-params">(<span class="hljs-number">30</span>, <span class="hljs-number">3</span>, <span class="hljs-number">1995</span>)</span></span>;                      <span class="hljs-comment">// 错误, 不是int!</span><br><span class="hljs-function">Date <span class="hljs-title">d</span><span class="hljs-params">(Day(<span class="hljs-number">30</span>), Month(<span class="hljs-number">3</span>), Year(<span class="hljs-number">1995</span>))</span></span>;    <span class="hljs-comment">// 错误, 顺序错了!</span><br><span class="hljs-function">Date <span class="hljs-title">d</span><span class="hljs-params">(Month(<span class="hljs-number">3</span>), Day(<span class="hljs-number">30</span>), Year(<span class="hljs-number">1995</span>))</span></span>;    <span class="hljs-comment">// 正确, 类型和顺序相对应</span><br></code></pre></td></tr></table></figure>
+
+<p>当然还有一些数值我们可以提前限制, 比如一年肯定只有12个月, 我们就可以让用户不用直接通过构造传参, 而是用函数返回需求的<code>Month</code>对象, 代码如下 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Month</span> &#123;<br><span class="hljs-keyword">public</span>:<br>  <span class="hljs-function"><span class="hljs-type">static</span> Month <span class="hljs-title">Jan</span><span class="hljs-params">()</span> </span>&#123; <span class="hljs-keyword">return</span> <span class="hljs-built_in">Month</span>(<span class="hljs-number">1</span>); &#125; <br>  <span class="hljs-function"><span class="hljs-type">static</span> Month <span class="hljs-title">Feb</span><span class="hljs-params">()</span> </span>&#123; <span class="hljs-keyword">return</span> <span class="hljs-built_in">Month</span>(<span class="hljs-number">2</span>); &#125;  <br>  ...                                       <br>  <span class="hljs-function"><span class="hljs-type">static</span> Month <span class="hljs-title">Dec</span><span class="hljs-params">()</span> </span>&#123; <span class="hljs-keyword">return</span> <span class="hljs-built_in">Month</span>(<span class="hljs-number">12</span>); &#125; <br>  ...                                      <br><span class="hljs-keyword">private</span>:<br>  <span class="hljs-function"><span class="hljs-keyword">explicit</span> <span class="hljs-title">Month</span><span class="hljs-params">(<span class="hljs-type">int</span> m)</span></span>;  <span class="hljs-comment">// 不让用户显式使用构造, 只能通过成员函数内部调用</span><br>&#125;;<br><br><span class="hljs-function">Date <span class="hljs-title">d</span><span class="hljs-params">(Month::Mar(), Day(<span class="hljs-number">30</span>), Year(<span class="hljs-number">1995</span>))</span></span>;  <span class="hljs-comment">// 这样我们就可以这样调用了</span><br></code></pre></td></tr></table></figure>
+
+<p> 书中提出<strong>以函数替换对象</strong>也是一种预防客户输入错误的方式.</p>
+<p>当然通过<strong>const限制类型操作</strong>也是一种方式, 这里就不再举例.</p>
+<hr>
+<p>讲完了阻止误用, 那么如何<strong>促进正确使用</strong>呢? </p>
+<p>正确使用, 简单来说就是<strong>符合使用者的习惯</strong>, 使用者的习惯是什么呢? 当然是<strong>使用内置类型</strong>呀, 使用者当然希望可以像使用<code>int</code>一样使用其他自定义的类型.</p>
+<p>因此书中提出: <strong>除非有好理由, 否则应该尽量令你的自定义类型的行为与内置类型一致.</strong></p>
+<p>实际来说就是<strong>用好运算符重载, 有必要时考虑迭代器的设计模式</strong>.</p>
+<hr>
+<p>书中还提出了一个重要观点 : </p>
+<ul>
+<li><strong>任何接口如果要求用户必须记得做某些事情, 就是有者”不正确使用”的倾向.</strong></li>
+</ul>
+<blockquote>
+<p>接下来的内容有关条款13和14, 没有看过的可以看我往期的博客.</p>
+</blockquote>
+<p>让我们回到条款13中提出的<code>createInvestment()</code>工厂函数, 他会返回一个资源的原始指针, 而我们应当用<code>shared_ptr</code>去封装该指针, 这就成了用户必须记得做的事情, 那么为了让该函数返回的内容更易用, 我们可以在直接返回一个智能指针, 函数声明如下 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// Investment* createInvestment();</span><br><span class="hljs-function">std::shared_ptr&lt;Investment&gt; <span class="hljs-title">createInvestment</span><span class="hljs-params">()</span></span>;<br></code></pre></td></tr></table></figure>
+
+<hr>
+<p>函数内部实现并非本条款的重点, 但是书中也花了部分篇幅去讲解, 我也会跟着解释清楚, 先看内部的代码 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs cpp">std::<span class="hljs-function">tr1::shared_ptr&lt;Investment&gt; <span class="hljs-title">createInvestment</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>  <span class="hljs-function">std::shared_ptr&lt;Investment&gt; <span class="hljs-title">retVal</span><span class="hljs-params">(<span class="hljs-keyword">static_cast</span>&lt;Investment*&gt;(<span class="hljs-literal">nullptr</span>), getRidOfInvestment)</span></span>;<br>    <br>  ...                                <span class="hljs-comment">// 中间部分实现工厂函数的内存分配步骤</span><br>      <br>  <span class="hljs-keyword">return</span> retVal;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>看到<code>shared_ptr</code>构造的两个参数我们可能会有点懵, 我们来一个个分析 : </p>
+<p>首先我们明确<code>stl</code>中<code>shared_ptr</code>构造的第一个参数是<strong>原始资源类型的指针</strong>, 第二个参数是<strong>删除器函数</strong>.</p>
+<p>先讲第二个参数, 看过条款14的都知道, <code>getRidOfInvestmen</code>t应当是我们提供给<code>shared_ptr</code>在析构时使用的函数, 它存在的意义在于某些类型没有传统的析构, 而是一些特殊的释放函数, 需要我们手动调用, 我们把这些函数放在删除器中, 就可以化手动为自动, 我们这里是假定<code>Investment</code>是有这种需求的类型, 如果不是当然可以不写. 这种由设计者自己定制删除器的行为其实也是在减少客户不必要的释放步骤, 与本条款的理念相符合.</p>
+<p>接下来是第一个参数, 我们应当传入一个原始资源类型的指针, 按道理来说应该是通过<code>new Investment()</code> 返回一个指针直接存进去, 但这里选择先不进行动态分配, 直接存入一个<code>nullptr</code>, 而且由于<code>shared_ptr</code>构造不允许隐式类型转换, 所以要把<code>nullptr</code>强转成<code>Investment*</code>类型, 也就是<code>static_cast&lt;Investment*&gt;(nullptr)</code>了, 因此<code>retVal</code>刚生成时并没有分配到资源, 是在接下来中间部分实现内存分配.</p>
+<p>这里深入一下, 为什么工厂函数中要先构造指针再分配内存, 而不是先分配内存再给指针构造? 这里有两点原因 : </p>
+<ol>
+<li><p>可能需要<strong>通过不同的条件以不同的方式分配内存</strong>, 这是也是工厂函数存在的意义所在.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function">std::shared_ptr&lt;Investment&gt; <span class="hljs-title">createInvestment</span><span class="hljs-params">(<span class="hljs-type">bool</span> isPremium)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-function">std::shared_ptr&lt;Investment&gt; <span class="hljs-title">retVal</span><span class="hljs-params">(<span class="hljs-keyword">static_cast</span>&lt;Investment*&gt;(<span class="hljs-literal">nullptr</span>), getRidOfInvestment)</span></span>;<br><br>    <span class="hljs-comment">// 根据条件选择不同的分配方式</span><br>    <span class="hljs-keyword">if</span> (isPremium) &#123;<br>        retVal = std::<span class="hljs-built_in">make_shared</span>&lt;PremiumInvestment&gt;();<br>    &#125; <span class="hljs-keyword">else</span> &#123;<br>        retVal = std::<span class="hljs-built_in">make_shared</span>&lt;RegularInvestment&gt;();<br>    &#125;<br><br>    <span class="hljs-keyword">return</span> retVal;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>分析以上代码, 我们可以知道<code>Investment*</code>的静态类型是一个基类指针, 但是通过<code>isPremium</code>和多态机制, 我们可以根据传入的<code>isPremium</code>来选择其动态类型是派生类的<code>PremiumInvestment</code>还是<code>RegularInvestment</code>进而产生不同的内存分配策略, 而这起码要我们先有一个指针对象才行.</p>
+</li>
+<li><p><strong>分配内存是有可能出现异常的</strong>, 如果出现异常先前分配的内存就泄露了, 但如果提前构造指针, 再用<code>make_shared</code>函数获取内存, 就算发生异常也一定是安全的, 因为<strong>指针会调用析构把先前的内存释放</strong>.</p>
+</li>
+</ol>
+<p>也许略微有些跑题, 但是我觉得能看透问题的本质才是最重要的, 因此多下了一些功夫.</p>
+<hr>
+<h3 id="请记住"><a href="#请记住" class="headerlink" title="请记住 :"></a>请记住 :</h3><ul>
+<li><strong>阻止误用的方法包括 : 导入新类型, 以函数替换对象, 利用const限制, 消除客户的资源管理责任, 不要让客户必须记得某些事情.</strong></li>
+<li><strong>促进正确使用的方法包括 : 保证接口的一致性, 与内置类型行为兼容.</strong></li>
+<li>可以通过设定定制的删除器减少客户手动调用释放函数的负担.</li>
+</ul>
+<p>by 天目中云</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Effective-C/" class="print-no-link">#Effective C++</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Effective C++ 条款18 设计正确易用的接口</div>
+      <div>http://example.com/2024/11/30/[Effective C++]条款18  设计正确易用的接口/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>天目中云</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2024年11月30日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2024/11/30/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE19%20%E8%AE%BE%E8%AE%A1class%E7%8A%B9%E5%A6%82%E8%AE%BE%E8%AE%A1type/" title="Effective C++ 条款19 设计class犹如设计type">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Effective C++ 条款19 设计class犹如设计type</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2024/11/30/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE16-17%20new%20%E5%92%8C%20delete/" title="Effective C++ 条款16-17 new 和 delete">
+                        <span class="hidden-mobile">Effective C++ 条款16-17 new 和 delete</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

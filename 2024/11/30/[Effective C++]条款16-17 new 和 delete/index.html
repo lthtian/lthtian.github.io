@@ -21,21 +21,22 @@
   <meta name="author" content="天目中云">
   <meta name="keywords" content="">
   
-    <meta name="description" content="条款07 : 为多态基类声明virtual析构函数 说到多态, 我们应当非常了解其运行时绑定的机制, 简单来说就是我们可以在任何时候根据用户的需求将基类绑定为不同的派生类, 用相同的操作实现不同的效果, 这其中virtual函数起到了至关重要的作用, 每一个含有虚函数的类都会维护一个虚表, 以此实现基类到派生类的动态绑定.   这里书中提到了一个重要又经常发生的问题 : 如果drived clas">
+    <meta name="description" content="条款16 : 成对使用new和delete时要采用相同形式直接看代码 :  12345std::string *stringPtr1 &#x3D; new std::string;std::string *stringPtr2 &#x3D; new std::string[100];...delete stringPtr1;                     delete [] stringPtr2;  这个其">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Effective C++ 条款7 virtual析构函数">
-<meta property="og:url" content="http://example.com/2024/11/30/[Effective%20C++]%E6%9D%A1%E6%AC%BE7%20virtual%E6%9E%90%E6%9E%84%E5%87%BD%E6%95%B0/index.html">
+<meta property="og:title" content="Effective C++ 条款16-17 new 和 delete">
+<meta property="og:url" content="http://example.com/2024/11/30/[Effective%20C++]%E6%9D%A1%E6%AC%BE16-17%20new%20%E5%92%8C%20delete/index.html">
 <meta property="og:site_name" content="天目中云">
-<meta property="og:description" content="条款07 : 为多态基类声明virtual析构函数 说到多态, 我们应当非常了解其运行时绑定的机制, 简单来说就是我们可以在任何时候根据用户的需求将基类绑定为不同的派生类, 用相同的操作实现不同的效果, 这其中virtual函数起到了至关重要的作用, 每一个含有虚函数的类都会维护一个虚表, 以此实现基类到派生类的动态绑定.   这里书中提到了一个重要又经常发生的问题 : 如果drived clas">
+<meta property="og:description" content="条款16 : 成对使用new和delete时要采用相同形式直接看代码 :  12345std::string *stringPtr1 &#x3D; new std::string;std::string *stringPtr2 &#x3D; new std::string[100];...delete stringPtr1;                     delete [] stringPtr2;  这个其">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2024-11-30T14:05:45.000Z">
-<meta property="article:modified_time" content="2024-11-30T03:09:33.299Z">
+<meta property="article:published_time" content="2024-11-30T14:06:51.000Z">
+<meta property="article:modified_time" content="2024-11-30T12:57:15.789Z">
 <meta property="article:author" content="天目中云">
+<meta property="article:tag" content="Effective C++">
 <meta name="twitter:card" content="summary_large_image">
   
   
   
-  <title>Effective C++ 条款7 virtual析构函数 - 天目中云</title>
+  <title>Effective C++ 条款16-17 new 和 delete - 天目中云</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -201,7 +202,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="Effective C++ 条款7 virtual析构函数"></span>
+            <span id="subtitle" data-typed-text="Effective C++ 条款16-17 new 和 delete"></span>
           
         </div>
 
@@ -212,7 +213,7 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2024-11-30 22:05" pubdate>
+        <time datetime="2024-11-30 22:06" pubdate>
           2024年11月30日 晚上
         </time>
       </span>
@@ -224,7 +225,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          1.5k 字
+          748 字
         
       </span>
     
@@ -235,7 +236,7 @@
         
         
         
-          13 分钟
+          7 分钟
         
       </span>
     
@@ -272,57 +273,52 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <h1 id="seo-header">Effective C++ 条款7 virtual析构函数</h1>
+            <h1 id="seo-header">Effective C++ 条款16-17 new 和 delete</h1>
             
             
               <div class="markdown-body">
                 
-                <h2 id="条款07-为多态基类声明virtual析构函数"><a href="#条款07-为多态基类声明virtual析构函数" class="headerlink" title="条款07 : 为多态基类声明virtual析构函数"></a>条款07 : 为多态基类声明virtual析构函数</h2><blockquote>
-<p>说到多态, 我们应当非常了解其运行时绑定的机制, 简单来说就是我们可以在任何时候根据用户的需求将基类绑定为不同的派生类, 用相同的操作实现不同的效果, 这其中virtual函数起到了至关重要的作用, 每一个含有虚函数的类都会维护一个虚表, 以此实现基类到派生类的动态绑定. </p>
-</blockquote>
-<p>这里书中提到了一个重要又经常发生的问题 : <strong>如果<code>drived class(派生类)</code>对象经由一个<code>base class(基类)</code>指针被删除, 而该base class带着一个non-virtual析构函数, 那么结果是未定义的</strong>.</p>
-<p>这里的结果未定义, 一般情况下是只会调用<code>base class</code>自己的析构函数, 销毁的是该对象的<code>base class</code>部分, 而<code>drived class</code>部分却没有被销毁, 就造成了诡异的”局部销毁”现象.</p>
-<p>而解决这个问题的方法就是 : <strong>给 base class 一个 virtual析构函数</strong>.</p>
-<p>先回忆一下有关派生类析构函数的知识 : <strong>派生类的析构函数会默认先调用上一层的析构函数</strong>. 也就是说是从当前派生类的析构函数开始, 递归式调用上一层的析构函数, 直到到达最深层的基类. </p>
-<p>再思考上面的话, 当<code>base class</code>指针动态绑定<code>drived class</code>对象时, 如果我们想删除这个对象时, 正确的结果应该是调用动态绑定的<code>drived class</code>的析构函数, 这样才能正确地全部销毁, 而想这样调用就只能依赖于虚函数来实现, 也就是我们需要把base class的析构函数设置为virtual, 删除时就会根据虚表找到当前动态类型绑定的析构函数.</p>
-<p>以下是书中的给出的样例 : </p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">TimeKeeper</span> &#123;<br><span class="hljs-keyword">public</span>:<br>  <span class="hljs-built_in">TimeKeeper</span>();<br>  <span class="hljs-keyword">virtual</span> ~<span class="hljs-built_in">TimeKeeper</span>();<br>  ...<br>&#125;;<br>TimeKeeper *ptk = <span class="hljs-built_in">getTimeKeeper</span>();<br>...<br><span class="hljs-keyword">delete</span> ptk;                         <span class="hljs-comment">// 现在, 行为正确</span><br></code></pre></td></tr></table></figure>
+                <h2 id="条款16-成对使用new和delete时要采用相同形式"><a href="#条款16-成对使用new和delete时要采用相同形式" class="headerlink" title="条款16 : 成对使用new和delete时要采用相同形式"></a>条款16 : 成对使用new和delete时要采用相同形式</h2><p>直接看代码 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs cpp">std::string *stringPtr1 = <span class="hljs-keyword">new</span> std::string;<br>std::string *stringPtr2 = <span class="hljs-keyword">new</span> std::string[<span class="hljs-number">100</span>];<br>...<br><span class="hljs-keyword">delete</span> stringPtr1;                     <br><span class="hljs-keyword">delete</span> [] stringPtr2;<br></code></pre></td></tr></table></figure>
 
-<p>书中告诉我们 : </p>
+<p>这个其实没什么好说的, 其实就是相对应就行.</p>
+<hr>
+<h2 id="条款17-以独立语句将newed对象置入智能指针"><a href="#条款17-以独立语句将newed对象置入智能指针" class="headerlink" title="条款17 : 以独立语句将newed对象置入智能指针"></a>条款17 : 以独立语句将newed对象置入智能指针</h2><p>在条款15我们知道C风格API喜欢直接调用原始资源, 那么我们来看一个不用直接调用原始资源的API : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">processWidget</span><span class="hljs-params">(std::tr1::shared_ptr&lt;Widget&gt; pw, <span class="hljs-type">int</span> priority)</span></span>;<br></code></pre></td></tr></table></figure>
+
+<p>这个函数用来在某动态分配的Widget上进行某些带有优先权的操作, 所以需要传入一个智能指针和一个优先度, 那么现在<strong>假定去求优先度其实是一个很复杂的过程</strong>, 我们需要额外封装一个函数来返回求得的优先度 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">priority</span><span class="hljs-params">()</span></span>;<br></code></pre></td></tr></table></figure>
+
+<p>那么我们设想的调用<code>processWidget</code>的方法可能是这样的 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-built_in">processWidget</span>(<span class="hljs-keyword">new</span> Widget, <span class="hljs-built_in">priority</span>());<br></code></pre></td></tr></table></figure>
+
+<p>这里的<code>priority()</code>函数嵌套是没有问题的, 我们日常中也推荐多用这种手法, 但是前面的new就有问题了, 因为<code>shared_ptr</code>不支持隐式转换, 也就是无法通过<code>new</code>出一个<code>Widget*</code>再转换成<code>shared_ptr&lt;Widget&gt;</code>, 那么下面的修改是否合理 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-built_in">processWidget</span>(std::tr1::<span class="hljs-built_in">shared_ptr</span>&lt;Widget&gt;(<span class="hljs-keyword">new</span> Widget), <span class="hljs-built_in">priority</span>());<br></code></pre></td></tr></table></figure>
+
+<p>一眼看上去非常合理, 但是还是有一些隐患在其中, 我们知道<code>priority()</code>是一个很复杂的过程, 既然复杂就有可能会抛出异常, 抛出异常本身并不可怕, 我们可以设置对应的处理逻辑, 但是在这样的调用发生异常就有额外的问题了.</p>
+<p>问题核心在于<strong>C++在函数参数的调用上弹性很大, 并不确定实际的调用步骤</strong> , 真正的调用步骤由编译器选择效率最高的步骤.</p>
+<p>我们先来看看按顺序会发生什么 : </p>
 <ul>
-<li><strong>virtual 函数的目的是允许 derived class 的实现得以客制化</strong>.</li>
-<li><strong>任何 class 只要带有 virtual 函数都几乎确定应该也有一个 virtual 析构函数</strong>.</li>
+<li>执行 <code>&quot;new Widget&quot;</code> 表达式</li>
+<li>调用<code>shared_ptr</code>构造函数</li>
+<li>调用<code>priority()</code></li>
 </ul>
-<hr>
-<p>当然, 无端地将所有的 classes 的析构函数声明为 virtual, 就像从未声明他们为 virtual 一样, 都是错误的.</p>
-<p>如果 class 不含 virtual 函数, 通常表示它并不意图被用作一个 base class, 也就完全不需要声明virtual析构函数.</p>
-<p>我们知道使用虚函数是要带来额外的花销的, 包括维护虚表, 虚指针表等一系列繁杂的动作, 会带来时间成本和空间成本, 而且书中还提到由于对象大小的增加会影响其可移植性.</p>
-<p>所以请记住一个心得 : <strong>只有当 class 内含至少一个 virtual 函数, 才为他声明 virtual析构函数</strong>.</p>
-<hr>
-<p><strong>请不要企图继承我们神圣的STL容器</strong>, 正因为考虑到上面虚函数有关时间, 空间, 可移植性的问题, STL容器并没有考虑被继承的情况, 它们的析构函数都是 non-virtual 的!</p>
-<hr>
-<p>这里书中提到了一个构建抽象类的小窍门 : </p>
-<p>我们一般不希望抽象类被实体化, 它只提供一些接口 : </p>
-<ol>
-<li>被声明为<code>纯虚函数</code>的接口所有派生类必须重写.</li>
-<li>被声明为<code>虚函数</code>的接口提供默认行为同时也允许派生类重写.</li>
-<li>被声明为<code>普通函数</code>的接口可以被所有派生类继承, 使用.</li>
-</ol>
-<p>我们在设计一个抽象类时, 也许并不希望有什么类是必须重写的, 就是不希望有纯虚函数, 只需要提供虚函数和普通函数即可, 然而一个类想要不被实体化, <strong>必须存在一个纯虚函数</strong>, 那么哪里找一个纯虚函数呢? </p>
-<p><strong>如果你拿不定主意, 选析构函数就好了!</strong> 毕竟抽象类一定有多态的需求, 只要有多态的需求, 析构函数就必须是 virtual 的, 已经是虚函数了, 变成纯虚函数也没什么问题, 而且当我们的派生类没有新增动态资源时, 就算我们不手动重写析构函数也没关系! 因为编译器会自动帮我们生成! 这样既满足了必须有一个纯虚函数的要求, 又不需要我们顾及纯虚函数必须重写的问题, 多么完美 !</p>
-<p>不过有一个小细节必须要注意, 所有派生类析构函数最后都会调用到最底层基类的析构函数, 所以我们<strong>需要对纯虚析构函数进行定义</strong>!</p>
-<p>纯虚析构函数真的能定义吗? 答案是能的, 虽然大多数情况下纯虚函数都不用定义, 但是真要定义还是可以的.</p>
-<p>以下是书中的示例 : </p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">AWOV</span> &#123;<br><span class="hljs-keyword">public</span>:<br>  <span class="hljs-keyword">virtual</span> ~<span class="hljs-built_in">AWOV</span>() = <span class="hljs-number">0</span>;  <span class="hljs-comment">// 纯虚函数</span><br>  <span class="hljs-comment">// ...</span><br>&#125;;<br>AWOV::~<span class="hljs-built_in">AWOV</span>()  		<span class="hljs-comment">// 纯虚函数的定义</span><br>&#123;<br>    <span class="hljs-comment">// delete ...</span><br>&#125;                    <br></code></pre></td></tr></table></figure>
+<p>虽然我们确定执行 <code>&quot;new Widget&quot;</code> 表达式一定在调用<code>shared_ptr</code>构造函数之前, 但是我们确实不确定<code>priority()</code>的调用时机 : </p>
+<ul>
+<li>执行 <code>&quot;new Widget&quot;</code> 表达式</li>
+<li>调用<code>priority()</code></li>
+<li>调用<code>shared_ptr</code>构造函数</li>
+</ul>
+<p>如果是这样的话, 在priority()调用过程中发生了异常, 就算之后异常得到了处理,<code> &quot;new Widget&quot;</code>得到的资源也很大可能是被泄露了.</p>
+<p>这一切的问题来源于<strong>在”资源被创建”和”资源被转换为资源管理对象”两个时间点之间有可能发生异常干扰</strong>.</p>
+<p>解决方法很简单, 那就是标题 : <strong>坚持以独立语句将newed对象置入智能指针</strong>, 这样就可以杜绝一切异常干扰了.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function">std::shared_ptr&lt;Widget&gt; <span class="hljs-title">pw</span><span class="hljs-params">(<span class="hljs-keyword">new</span> Widget)</span></span>;  <br><span class="hljs-built_in">processWidget</span>(pw, <span class="hljs-built_in">priority</span>()); <br></code></pre></td></tr></table></figure>
 
-<hr>
-<p>再次重申, 本章的主要观点  <strong>给 base class 一个 virtual析构函数</strong> 只适用于多态用途, 这种<code>base class</code>的设计目的就是为了<strong>用来通过 <code>base class</code> 接口处理 <code>drived class</code> 对象</strong>.</p>
-<p>我们也应当知道很多 class 的设计就不是为了作为 base class 来使用, 也并非所有的 base class 的设计目的是为了多态用途, 就像我们上一个条款的<code>Uncopyable</code>类, 它被作为基类就不是为了多态, 而是为了赋予派生类不可拷贝的属性, 就不需要使用基类接口, 使用也只是使用派生类, 使用 virtual析构函数就没必要了.</p>
+<p>于是以上操作就没有任何问题了!</p>
 <hr>
 <h3 id="请记住"><a href="#请记住" class="headerlink" title="请记住 :"></a>请记住 :</h3><ul>
-<li>请为多态性质的<code>base class</code>设置 virtual析构函数, 反之请不要.</li>
-<li>不要试图继承<code>STL</code>容器.</li>
-<li>想设计抽象类又不知道纯虚函数选谁时, 选析构函数当纯虚函数.</li>
+<li>成对使用<code>new</code>和<code>delete</code>时要采用相同形式.</li>
+<li>以独立语句将<code>newed</code>对象置入智能指针.</li>
 </ul>
 <p>by 天目中云</p>
 
@@ -334,6 +330,13 @@
               <div class="post-metas my-3">
   
   
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Effective-C/" class="print-no-link">#Effective C++</a>
+      
+    </div>
+  
 </div>
 
 
@@ -342,8 +345,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>Effective C++ 条款7 virtual析构函数</div>
-      <div>http://example.com/2024/11/30/[Effective C++]条款7 virtual析构函数/</div>
+      <div>Effective C++ 条款16-17 new 和 delete</div>
+      <div>http://example.com/2024/11/30/[Effective C++]条款16-17 new 和 delete/</div>
     </div>
     <div class="license-meta">
       
@@ -387,9 +390,9 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2024/11/30/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE8%20%E6%9E%90%E6%9E%84%E5%87%BD%E6%95%B0%E7%9A%84%E5%BC%82%E5%B8%B8%E7%AE%A1%E7%90%86/" title="Effective C++ 条款8 析构函数的异常管理">
+                      <a href="/2024/11/30/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE18%20%20%E8%AE%BE%E8%AE%A1%E6%AD%A3%E7%A1%AE%E6%98%93%E7%94%A8%E7%9A%84%E6%8E%A5%E5%8F%A3/" title="Effective C++ 条款18 设计正确易用的接口">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">Effective C++ 条款8 析构函数的异常管理</span>
+                        <span class="hidden-mobile">Effective C++ 条款18 设计正确易用的接口</span>
                         <span class="visible-mobile">上一篇</span>
                       </a>
                     
@@ -397,8 +400,8 @@
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2024/11/30/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE5%20-%206%20%E9%BB%98%E8%AE%A4%E6%88%90%E5%91%98%E5%87%BD%E6%95%B0/" title="Effective C++ 条款5-6 默认成员函数">
-                        <span class="hidden-mobile">Effective C++ 条款5-6 默认成员函数</span>
+                      <a href="/2024/11/30/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE15%20%E5%9C%A8%E8%B5%84%E6%BA%90%E7%AE%A1%E7%90%86%E7%B1%BB%E4%B8%AD%E6%8F%90%E4%BE%9B%E5%AF%B9%E5%8E%9F%E5%A7%8B%E8%B5%84%E6%BA%90%E7%9A%84%E8%AE%BF%E9%97%AE/" title="Effective C++ 条款15 在资源管理类中提供对原始资源的访问">
+                        <span class="hidden-mobile">Effective C++ 条款15 在资源管理类中提供对原始资源的访问</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>

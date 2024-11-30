@@ -21,21 +21,22 @@
   <meta name="author" content="天目中云">
   <meta name="keywords" content="">
   
-    <meta name="description" content="条款07 : 为多态基类声明virtual析构函数 说到多态, 我们应当非常了解其运行时绑定的机制, 简单来说就是我们可以在任何时候根据用户的需求将基类绑定为不同的派生类, 用相同的操作实现不同的效果, 这其中virtual函数起到了至关重要的作用, 每一个含有虚函数的类都会维护一个虚表, 以此实现基类到派生类的动态绑定.   这里书中提到了一个重要又经常发生的问题 : 如果drived clas">
+    <meta name="description" content="条款09 : 绝不在构造和析构函数过程中调用virtual函数开门见山阐释本条款的重点 : 你不该在构造函数和析构函数中调用virtual函数. 书中给出了一个例子 : 假如我们要塑膜股市交易订单模型, 订单可以分成买入, 卖出等不同类型的订单, 当我们产生不同类型的订单, 也就是构造不同类型订单对象时, 我们也许会有记录订单日志的需求, 并我们希望订单根据不同的订单类型产生不同的订单日志. 于是">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Effective C++ 条款7 virtual析构函数">
-<meta property="og:url" content="http://example.com/2024/11/30/[Effective%20C++]%E6%9D%A1%E6%AC%BE7%20virtual%E6%9E%90%E6%9E%84%E5%87%BD%E6%95%B0/index.html">
+<meta property="og:title" content="Effective C++ 条款9 绝不在构造和析构函数过程中调用">
+<meta property="og:url" content="http://example.com/2024/11/30/[Effective%20C++]%E6%9D%A1%E6%AC%BE9%20%E7%BB%9D%E4%B8%8D%E5%9C%A8%E6%9E%84%E9%80%A0%E5%92%8C%E6%9E%90%E6%9E%84%E5%87%BD%E6%95%B0%E8%BF%87%E7%A8%8B%E4%B8%AD%E8%B0%83%E7%94%A8virtual%E5%87%BD%E6%95%B0/index.html">
 <meta property="og:site_name" content="天目中云">
-<meta property="og:description" content="条款07 : 为多态基类声明virtual析构函数 说到多态, 我们应当非常了解其运行时绑定的机制, 简单来说就是我们可以在任何时候根据用户的需求将基类绑定为不同的派生类, 用相同的操作实现不同的效果, 这其中virtual函数起到了至关重要的作用, 每一个含有虚函数的类都会维护一个虚表, 以此实现基类到派生类的动态绑定.   这里书中提到了一个重要又经常发生的问题 : 如果drived clas">
+<meta property="og:description" content="条款09 : 绝不在构造和析构函数过程中调用virtual函数开门见山阐释本条款的重点 : 你不该在构造函数和析构函数中调用virtual函数. 书中给出了一个例子 : 假如我们要塑膜股市交易订单模型, 订单可以分成买入, 卖出等不同类型的订单, 当我们产生不同类型的订单, 也就是构造不同类型订单对象时, 我们也许会有记录订单日志的需求, 并我们希望订单根据不同的订单类型产生不同的订单日志. 于是">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2024-11-30T14:05:45.000Z">
-<meta property="article:modified_time" content="2024-11-30T03:09:33.299Z">
+<meta property="article:published_time" content="2024-11-30T14:06:45.000Z">
+<meta property="article:modified_time" content="2024-11-30T12:53:23.333Z">
 <meta property="article:author" content="天目中云">
+<meta property="article:tag" content="Effective C++">
 <meta name="twitter:card" content="summary_large_image">
   
   
   
-  <title>Effective C++ 条款7 virtual析构函数 - 天目中云</title>
+  <title>Effective C++ 条款9 绝不在构造和析构函数过程中调用 - 天目中云</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -201,7 +202,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="Effective C++ 条款7 virtual析构函数"></span>
+            <span id="subtitle" data-typed-text="Effective C++ 条款9 绝不在构造和析构函数过程中调用"></span>
           
         </div>
 
@@ -212,7 +213,7 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2024-11-30 22:05" pubdate>
+        <time datetime="2024-11-30 22:06" pubdate>
           2024年11月30日 晚上
         </time>
       </span>
@@ -224,7 +225,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          1.5k 字
+          966 字
         
       </span>
     
@@ -235,7 +236,7 @@
         
         
         
-          13 分钟
+          9 分钟
         
       </span>
     
@@ -272,57 +273,32 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <h1 id="seo-header">Effective C++ 条款7 virtual析构函数</h1>
+            <h1 id="seo-header">Effective C++ 条款9 绝不在构造和析构函数过程中调用</h1>
             
             
               <div class="markdown-body">
                 
-                <h2 id="条款07-为多态基类声明virtual析构函数"><a href="#条款07-为多态基类声明virtual析构函数" class="headerlink" title="条款07 : 为多态基类声明virtual析构函数"></a>条款07 : 为多态基类声明virtual析构函数</h2><blockquote>
-<p>说到多态, 我们应当非常了解其运行时绑定的机制, 简单来说就是我们可以在任何时候根据用户的需求将基类绑定为不同的派生类, 用相同的操作实现不同的效果, 这其中virtual函数起到了至关重要的作用, 每一个含有虚函数的类都会维护一个虚表, 以此实现基类到派生类的动态绑定. </p>
-</blockquote>
-<p>这里书中提到了一个重要又经常发生的问题 : <strong>如果<code>drived class(派生类)</code>对象经由一个<code>base class(基类)</code>指针被删除, 而该base class带着一个non-virtual析构函数, 那么结果是未定义的</strong>.</p>
-<p>这里的结果未定义, 一般情况下是只会调用<code>base class</code>自己的析构函数, 销毁的是该对象的<code>base class</code>部分, 而<code>drived class</code>部分却没有被销毁, 就造成了诡异的”局部销毁”现象.</p>
-<p>而解决这个问题的方法就是 : <strong>给 base class 一个 virtual析构函数</strong>.</p>
-<p>先回忆一下有关派生类析构函数的知识 : <strong>派生类的析构函数会默认先调用上一层的析构函数</strong>. 也就是说是从当前派生类的析构函数开始, 递归式调用上一层的析构函数, 直到到达最深层的基类. </p>
-<p>再思考上面的话, 当<code>base class</code>指针动态绑定<code>drived class</code>对象时, 如果我们想删除这个对象时, 正确的结果应该是调用动态绑定的<code>drived class</code>的析构函数, 这样才能正确地全部销毁, 而想这样调用就只能依赖于虚函数来实现, 也就是我们需要把base class的析构函数设置为virtual, 删除时就会根据虚表找到当前动态类型绑定的析构函数.</p>
-<p>以下是书中的给出的样例 : </p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">TimeKeeper</span> &#123;<br><span class="hljs-keyword">public</span>:<br>  <span class="hljs-built_in">TimeKeeper</span>();<br>  <span class="hljs-keyword">virtual</span> ~<span class="hljs-built_in">TimeKeeper</span>();<br>  ...<br>&#125;;<br>TimeKeeper *ptk = <span class="hljs-built_in">getTimeKeeper</span>();<br>...<br><span class="hljs-keyword">delete</span> ptk;                         <span class="hljs-comment">// 现在, 行为正确</span><br></code></pre></td></tr></table></figure>
+                <h2 id="条款09-绝不在构造和析构函数过程中调用virtual函数"><a href="#条款09-绝不在构造和析构函数过程中调用virtual函数" class="headerlink" title="条款09 : 绝不在构造和析构函数过程中调用virtual函数"></a>条款09 : 绝不在构造和析构函数过程中调用virtual函数</h2><p>开门见山阐释本条款的重点 : <strong>你不该在构造函数和析构函数中调用virtual函数</strong>.</p>
+<p>书中给出了一个例子 : 假如我们要塑膜股市交易订单模型, 订单可以分成买入, 卖出等不同类型的订单, 当我们产生不同类型的订单, 也就是构造不同类型订单对象时, 我们也许会有记录订单日志的需求, 并我们希望订单根据不同的订单类型产生不同的订单日志.</p>
+<p>于是我们可以抽象出以上需求的类构建过程, 一个订单基类, 派生出不同的订单派生类(如买入类, 卖出类), 基类的构造函数调用一个虚函数<code>logTransaction()</code>, 派生类重写出不同的<code>logTransaction()</code>, 就可以实现我们以上的需求.</p>
+<p>代码如下:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Transaction</span> &#123;                               <span class="hljs-comment">// 基类</span><br><span class="hljs-keyword">public</span>:                                           <br>  	<span class="hljs-built_in">Transaction</span>()<br>  	&#123;                                                 <br>  		...<br>  		<span class="hljs-built_in">logTransaction</span>();                        <span class="hljs-comment">// 订单构建时依据订单动态类型构建对应日志       </span><br>	&#125;     <br><br>  	<span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">logTransaction</span><span class="hljs-params">()</span> <span class="hljs-type">const</span> </span>= <span class="hljs-number">0</span>;     <span class="hljs-comment">// 要求派生类重写</span><br>  	...<br>&#125;;                       <br>                                            <br><span class="hljs-keyword">class</span> <span class="hljs-title class_">BuyTransaction</span>: <span class="hljs-keyword">public</span> Transaction &#123;       <span class="hljs-comment">// 买入类</span><br><span class="hljs-keyword">public</span>:<br>  <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">logTransaction</span><span class="hljs-params">()</span> <span class="hljs-type">const</span></span>;           <span class="hljs-comment">// 提供重写版本日志</span><br>  ...<br>&#125;;<br><span class="hljs-keyword">class</span> <span class="hljs-title class_">SellTransaction</span>: <span class="hljs-keyword">public</span> Transaction &#123;      <span class="hljs-comment">// 卖出类</span><br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">logTransaction</span><span class="hljs-params">()</span> <span class="hljs-type">const</span></span>;          <br>  	...<br>&#125;;<br></code></pre></td></tr></table></figure>
 
-<p>书中告诉我们 : </p>
-<ul>
-<li><strong>virtual 函数的目的是允许 derived class 的实现得以客制化</strong>.</li>
-<li><strong>任何 class 只要带有 virtual 函数都几乎确定应该也有一个 virtual 析构函数</strong>.</li>
-</ul>
+<p>这段代码看似很完美, 但是真正运行起来是无法实现的!</p>
+<p>当我们创建一个<code>BuyTransaction</code>类对象<code>b</code>时, 并不会调用<code>BuyTransaction</code>重写的<code>logTransaction()</code>, 而是会调用基类<code>Transaction</code>的<code>logTransaction()</code>, 然而我们基类的<code>logTransaction()</code>设置为纯虚函数甚至都没有写, 就更别谈运行了. </p>
+<p>为什么? 书中告诉我们, <strong>在base class构造期间, virtual函数不是virtual函数</strong>, 更细致的说就是<strong>base class构造期间virtual函数绝不会下降到derived class阶层</strong>. 原因很直观, <strong>base class 构造函数执行期间derived class的成员变量一定还未初始化</strong>, 如果此刻就可以通过virtual下降到派生类, 我们怎么确保这个虚函数不会调用派生类的成员变量呢? 太危险了, 所以C++不会让你走这条路.</p>
+<p>而且不止是不能在构造析构函数内调用虚函数, 当然也不能调用包含了虚函数的普通函数, 这是显而易见的, 这就又回到了我们开头说的那句话 : <strong>绝不在构造和析构函数过程中调用virtual函数</strong>, 只要还在过程中, 就不要调用.</p>
 <hr>
-<p>当然, 无端地将所有的 classes 的析构函数声明为 virtual, 就像从未声明他们为 virtual 一样, 都是错误的.</p>
-<p>如果 class 不含 virtual 函数, 通常表示它并不意图被用作一个 base class, 也就完全不需要声明virtual析构函数.</p>
-<p>我们知道使用虚函数是要带来额外的花销的, 包括维护虚表, 虚指针表等一系列繁杂的动作, 会带来时间成本和空间成本, 而且书中还提到由于对象大小的增加会影响其可移植性.</p>
-<p>所以请记住一个心得 : <strong>只有当 class 内含至少一个 virtual 函数, 才为他声明 virtual析构函数</strong>.</p>
-<hr>
-<p><strong>请不要企图继承我们神圣的STL容器</strong>, 正因为考虑到上面虚函数有关时间, 空间, 可移植性的问题, STL容器并没有考虑被继承的情况, 它们的析构函数都是 non-virtual 的!</p>
-<hr>
-<p>这里书中提到了一个构建抽象类的小窍门 : </p>
-<p>我们一般不希望抽象类被实体化, 它只提供一些接口 : </p>
-<ol>
-<li>被声明为<code>纯虚函数</code>的接口所有派生类必须重写.</li>
-<li>被声明为<code>虚函数</code>的接口提供默认行为同时也允许派生类重写.</li>
-<li>被声明为<code>普通函数</code>的接口可以被所有派生类继承, 使用.</li>
-</ol>
-<p>我们在设计一个抽象类时, 也许并不希望有什么类是必须重写的, 就是不希望有纯虚函数, 只需要提供虚函数和普通函数即可, 然而一个类想要不被实体化, <strong>必须存在一个纯虚函数</strong>, 那么哪里找一个纯虚函数呢? </p>
-<p><strong>如果你拿不定主意, 选析构函数就好了!</strong> 毕竟抽象类一定有多态的需求, 只要有多态的需求, 析构函数就必须是 virtual 的, 已经是虚函数了, 变成纯虚函数也没什么问题, 而且当我们的派生类没有新增动态资源时, 就算我们不手动重写析构函数也没关系! 因为编译器会自动帮我们生成! 这样既满足了必须有一个纯虚函数的要求, 又不需要我们顾及纯虚函数必须重写的问题, 多么完美 !</p>
-<p>不过有一个小细节必须要注意, 所有派生类析构函数最后都会调用到最底层基类的析构函数, 所以我们<strong>需要对纯虚析构函数进行定义</strong>!</p>
-<p>纯虚析构函数真的能定义吗? 答案是能的, 虽然大多数情况下纯虚函数都不用定义, 但是真要定义还是可以的.</p>
-<p>以下是书中的示例 : </p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">AWOV</span> &#123;<br><span class="hljs-keyword">public</span>:<br>  <span class="hljs-keyword">virtual</span> ~<span class="hljs-built_in">AWOV</span>() = <span class="hljs-number">0</span>;  <span class="hljs-comment">// 纯虚函数</span><br>  <span class="hljs-comment">// ...</span><br>&#125;;<br>AWOV::~<span class="hljs-built_in">AWOV</span>()  		<span class="hljs-comment">// 纯虚函数的定义</span><br>&#123;<br>    <span class="hljs-comment">// delete ...</span><br>&#125;                    <br></code></pre></td></tr></table></figure>
+<p>那么我们最开始的需求还有其他实现的方式吗?</p>
+<p>书中提出一种解决办法 : 将<code>logTransaction()</code>改为普通函数, 要求派生类构造函数传递必要的日志信息给基类的构造函数, 基类的构造函数再把接收到的日志信息传入<code>logTransaction()</code>, 这样就可以了!</p>
+<p>我们可以宏观地理解一下, 有助于我们的思维进步. 其实派生类的构造函数是一个<code>自底向上</code>的过程, 一直递归调用到最顶层的基类, 当调用到最顶层后, 我们不好奢求基类再自顶向下调用派生类的重写函数, 不如在一开始自底向上时就把必要的信息传递至基类构造函数, 这样想就非常通顺了.</p>
+<p>代码如下 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Transaction</span> &#123;<br><span class="hljs-keyword">public</span>:<br>  	<span class="hljs-function"><span class="hljs-keyword">explicit</span> <span class="hljs-title">Transaction</span><span class="hljs-params">(<span class="hljs-type">const</span> std::string&amp; logInfo)</span>  <span class="hljs-comment">// 接收下层的日志信息</span></span><br><span class="hljs-function">  	</span>&#123;<br>  		...<br>  		<span class="hljs-built_in">logTransaction</span>(logInfo);<br>	&#125;<br><br>  	<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">logTransaction</span><span class="hljs-params">(<span class="hljs-type">const</span> std::string&amp; logInfo)</span> <span class="hljs-type">const</span></span>;   <span class="hljs-comment">// 此时是普通函数</span><br>  	...<br>&#125;;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">BuyTransaction</span>: <span class="hljs-keyword">public</span> Transaction &#123;<br><span class="hljs-keyword">public</span>:<br>	<span class="hljs-built_in">BuyTransaction</span>(<span class="hljs-type">const</span> std::string&amp; parameters)<br>		: <span class="hljs-built_in">Transaction</span>(<span class="hljs-built_in">createLogString</span>(parameters))             <span class="hljs-comment">// 将log信息传递给上层</span><br>  	&#123; ... &#125;                                                 <br>   	...                                                  <br><br><span class="hljs-keyword">private</span>:<br>  <span class="hljs-comment">// 这里利用一个辅助函数创建一个值传给base class构造函数往往比较方便美观可读</span><br>  <span class="hljs-function"><span class="hljs-type">static</span> std::string <span class="hljs-title">createLogString</span><span class="hljs-params">(<span class="hljs-type">const</span> std::string&amp; parameterss)</span></span>;<br>&#125;;<br></code></pre></td></tr></table></figure>
 
-<hr>
-<p>再次重申, 本章的主要观点  <strong>给 base class 一个 virtual析构函数</strong> 只适用于多态用途, 这种<code>base class</code>的设计目的就是为了<strong>用来通过 <code>base class</code> 接口处理 <code>drived class</code> 对象</strong>.</p>
-<p>我们也应当知道很多 class 的设计就不是为了作为 base class 来使用, 也并非所有的 base class 的设计目的是为了多态用途, 就像我们上一个条款的<code>Uncopyable</code>类, 它被作为基类就不是为了多态, 而是为了赋予派生类不可拷贝的属性, 就不需要使用基类接口, 使用也只是使用派生类, 使用 virtual析构函数就没必要了.</p>
 <hr>
 <h3 id="请记住"><a href="#请记住" class="headerlink" title="请记住 :"></a>请记住 :</h3><ul>
-<li>请为多态性质的<code>base class</code>设置 virtual析构函数, 反之请不要.</li>
-<li>不要试图继承<code>STL</code>容器.</li>
-<li>想设计抽象类又不知道纯虚函数选谁时, 选析构函数当纯虚函数.</li>
+<li>绝不在构造和析构函数过程中调用<code>virtual</code>函数.</li>
+<li>对象在<code>derived class构造函数</code>开始执行前不会成为一个<code>derived class对象</code>.</li>
 </ul>
 <p>by 天目中云</p>
 
@@ -334,6 +310,13 @@
               <div class="post-metas my-3">
   
   
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Effective-C/" class="print-no-link">#Effective C++</a>
+      
+    </div>
+  
 </div>
 
 
@@ -342,8 +325,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>Effective C++ 条款7 virtual析构函数</div>
-      <div>http://example.com/2024/11/30/[Effective C++]条款7 virtual析构函数/</div>
+      <div>Effective C++ 条款9 绝不在构造和析构函数过程中调用</div>
+      <div>http://example.com/2024/11/30/[Effective C++]条款9 绝不在构造和析构函数过程中调用virtual函数/</div>
     </div>
     <div class="license-meta">
       
@@ -387,9 +370,9 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2024/11/30/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE8%20%E6%9E%90%E6%9E%84%E5%87%BD%E6%95%B0%E7%9A%84%E5%BC%82%E5%B8%B8%E7%AE%A1%E7%90%86/" title="Effective C++ 条款8 析构函数的异常管理">
+                      <a href="/2024/11/30/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE10-12%20%E6%8B%B7%E8%B4%9D%E4%B8%8E%E8%B5%8B%E5%80%BC/" title="Effective C++ 条款10-12 拷贝与赋值">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">Effective C++ 条款8 析构函数的异常管理</span>
+                        <span class="hidden-mobile">Effective C++ 条款10-12 拷贝与赋值</span>
                         <span class="visible-mobile">上一篇</span>
                       </a>
                     
@@ -397,8 +380,8 @@
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2024/11/30/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE5%20-%206%20%E9%BB%98%E8%AE%A4%E6%88%90%E5%91%98%E5%87%BD%E6%95%B0/" title="Effective C++ 条款5-6 默认成员函数">
-                        <span class="hidden-mobile">Effective C++ 条款5-6 默认成员函数</span>
+                      <a href="/2024/11/30/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE8%20%E6%9E%90%E6%9E%84%E5%87%BD%E6%95%B0%E7%9A%84%E5%BC%82%E5%B8%B8%E7%AE%A1%E7%90%86/" title="Effective C++ 条款8 析构函数的异常管理">
+                        <span class="hidden-mobile">Effective C++ 条款8 析构函数的异常管理</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
