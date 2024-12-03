@@ -21,22 +21,22 @@
   <meta name="author" content="天目中云">
   <meta name="keywords" content="">
   
-    <meta name="description" content="人只有想起自己的无知才能有长进, 但他如此忙碌于运用自己已有的知识, 又如何能想得起来呢?  受制于对自己的看法, 受制于他通过自己行动所赢得的名誉.  大家好像都选择了相同的生活模式, 好像这种模式是在他们清醒时做出的选择, 然而其实他们并不认为还有其他模式可选, 但聪敏而健康的人记得太阳每天都会升起.  所有的改变都是奇迹, 但这种奇迹时时刻刻都在发生.  在当前的境况中找到他们的勇气和灵感">
+    <meta name="description" content="条款20 : 宁以pass-by-reference-to-const替换pass-by-value 本条款将告诉我们函数传参时的最佳策略.  我们都知道, pass-by-value(传值传参)是一个费时费力的过程, 它会直接复制一个原件的拷贝, 如果是自定义类就会调用一次拷贝构造来实现复制, 函数结束时还要额外调用一次析构函数, 我们会很有意愿去削减这方面的花销. 相信我们在别处的很多函数中都">
 <meta property="og:type" content="article">
-<meta property="og:title" content="瓦尔登湖读书摘录(1)">
-<meta property="og:url" content="http://example.com/2024/12/02/2024-12-2-%E7%93%A6%E5%B0%94%E7%99%BB%E6%B9%96%E8%AF%BB%E4%B9%A6%E6%91%98%E5%BD%95(1)/index.html">
+<meta property="og:title" content="Effective C++ 条款20 宁以pass-by-reference-to-const替换pass-by-value">
+<meta property="og:url" content="http://example.com/2024/11/30/[Effective%20C++]%E6%9D%A1%E6%AC%BE20%20%E5%AE%81%E4%BB%A5pass-by-reference-to-const%E6%9B%BF%E6%8D%A2pass-by-value/index.html">
 <meta property="og:site_name" content="天目中云">
-<meta property="og:description" content="人只有想起自己的无知才能有长进, 但他如此忙碌于运用自己已有的知识, 又如何能想得起来呢?  受制于对自己的看法, 受制于他通过自己行动所赢得的名誉.  大家好像都选择了相同的生活模式, 好像这种模式是在他们清醒时做出的选择, 然而其实他们并不认为还有其他模式可选, 但聪敏而健康的人记得太阳每天都会升起.  所有的改变都是奇迹, 但这种奇迹时时刻刻都在发生.  在当前的境况中找到他们的勇气和灵感">
+<meta property="og:description" content="条款20 : 宁以pass-by-reference-to-const替换pass-by-value 本条款将告诉我们函数传参时的最佳策略.  我们都知道, pass-by-value(传值传参)是一个费时费力的过程, 它会直接复制一个原件的拷贝, 如果是自定义类就会调用一次拷贝构造来实现复制, 函数结束时还要额外调用一次析构函数, 我们会很有意愿去削减这方面的花销. 相信我们在别处的很多函数中都">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2024-12-02T12:55:12.000Z">
-<meta property="article:modified_time" content="2024-12-02T12:54:48.724Z">
+<meta property="article:published_time" content="2024-11-30T14:06:54.000Z">
+<meta property="article:modified_time" content="2024-11-30T12:59:01.150Z">
 <meta property="article:author" content="天目中云">
-<meta property="article:tag" content="阅读">
+<meta property="article:tag" content="Effective C++">
 <meta name="twitter:card" content="summary_large_image">
   
   
   
-  <title>瓦尔登湖读书摘录(1) - 天目中云</title>
+  <title>Effective C++ 条款20 宁以pass-by-reference-to-const替换pass-by-value - 天目中云</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -202,7 +202,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="瓦尔登湖读书摘录(1)"></span>
+            <span id="subtitle" data-typed-text="Effective C++ 条款20 宁以pass-by-reference-to-const替换pass-by-value"></span>
           
         </div>
 
@@ -213,8 +213,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2024-12-02 20:55" pubdate>
-          2024年12月2日 晚上
+        <time datetime="2024-11-30 22:06" pubdate>
+          2024年11月30日 晚上
         </time>
       </span>
     
@@ -225,7 +225,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          705 字
+          1.1k 字
         
       </span>
     
@@ -236,7 +236,7 @@
         
         
         
-          6 分钟
+          10 分钟
         
       </span>
     
@@ -273,49 +273,49 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <h1 id="seo-header">瓦尔登湖读书摘录(1)</h1>
+            <h1 id="seo-header">Effective C++ 条款20 宁以pass-by-reference-to-const替换pass-by-value</h1>
             
             
               <div class="markdown-body">
                 
-                <ul>
-<li><p>人只有想起自己的无知才能有长进, 但他如此忙碌于运用自己已有的知识, 又如何能想得起来呢?</p>
-</li>
-<li><p>受制于对自己的看法, 受制于他通过自己行动所赢得的名誉.</p>
-</li>
-<li><p>大家好像都选择了相同的生活模式, 好像这种模式是在他们清醒时做出的选择, 然而其实他们并不认为还有其他模式可选, 但聪敏而健康的人记得太阳每天都会升起.</p>
-</li>
-<li><p>所有的改变都是奇迹, 但这种奇迹时时刻刻都在发生.</p>
-</li>
-<li><p>在当前的境况中找到他们的勇气和灵感, 怀着恋人般的怜爱和热情, 珍惜着此时此刻的生活.</p>
-</li>
-<li><p>没有人会因为衣服上有补丁而显得卑贱.然而我敢说, 普遍而言, 人们追求衣服时髦或者至少干净并且没有补丁的心情, 远比追求良知完整无损的心情要迫切.</p>
-</li>
-<li><p>商品的价格就是你用来换它的那部分生命.</p>
-</li>
-<li><p>让群众热切地跟风的时尚其实都是奢靡浪费的人设定的.</p>
-</li>
-<li><p>最好的艺术作品应该表现人如何奋斗着将自己从这种境况中解放出来, 但我们的艺术却只致力于使某种境界变得舒适, 并让人忘记更高级的境界.</p>
-</li>
-<li><p>在用美丽的物品装饰房子之前, 我们必须清理墙壁, 清理我们的生活, 还必须有美丽的家务管理和美丽的生活方式做基础.</p>
-</li>
-<li><p>对于生活, 大学生不应抱着玩乐的态度, 也不应只是研究它, 而是自始至终真诚地去过好它.</p>
-</li>
-<li><p>我盼望每个人都能非常清醒地去发现和追求他自己的生活方式.</p>
-</li>
-<li><p>做好事, 做人们常说的好事, 绝不应成为我人生的主要目标, 而且基本上绝不应刻意为之.与其去做好事, 不如做个好人.</p>
-</li>
-<li><p>人世间最难闻的莫过于变了味的好事.</p>
-</li>
-<li><p>做好事几乎是人人都称赞的美德, 人们不仅称赞他, 还给予他过高的评价; 而高估他的, 正是我们的自私心.</p>
-</li>
-<li><p>我们应该散发出去的, 不是绝望, 而是勇气, 不是病态, 而是健全.</p>
-</li>
-<li><p>所有的健康和成功都对我有益处, 哪怕他可能显得遥不可及; 所有的疾病和失败只会让我感到悲伤和对我有坏处, 哪怕他能引起我的怜悯, 或者让我得到许多同情.</p>
-</li>
-<li><p>我们不要去做管理穷人的官员, 而是要努力成为对这个世界有贡献的人.</p>
-</li>
+                <h2 id="条款20-宁以pass-by-reference-to-const替换pass-by-value"><a href="#条款20-宁以pass-by-reference-to-const替换pass-by-value" class="headerlink" title="条款20 : 宁以pass-by-reference-to-const替换pass-by-value"></a>条款20 : 宁以pass-by-reference-to-const替换pass-by-value</h2><blockquote>
+<p>本条款将告诉我们函数传参时的最佳策略.</p>
+</blockquote>
+<p>我们都知道, <code>pass-by-value</code>(传值传参)是一个费时费力的过程, 它会直接复制一个原件的拷贝, 如果是自定义类就会调用一次拷贝构造来实现复制, 函数结束时还要额外调用一次析构函数, 我们会很有意愿去削减这方面的花销.</p>
+<p>相信我们在别处的很多函数中都看见过<code>pass-by-reference-to-const</code>的存在, 在本书中也极力推荐这种写法, 足矣见得这种写法的高效与广泛, 就像下面这行函数定义 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">validateStudent</span><span class="hljs-params">(<span class="hljs-type">const</span> Student&amp; s)</span></span>;<br></code></pre></td></tr></table></figure>
+
+<p>reference的底层一般是个指针, 也就是说我们只是用了一个传递指针的花销就实现了参数的传递, 再加上const, 这对我们传入引用的安全性给予了保证,  使得这个写法<strong>兼具了效率与安全</strong>, 是不可多得的好事.</p>
+<p>另外书中还给出了一个好处 : <strong>避免对象切割问题</strong>.</p>
+<p>我们都知道多态中的动态类型是依靠指针和引用来触发的, 简单来说就是也许某个指针或引用的静态类型是基类, 但是动态类型可以通过实际的赋值来改变, 实现动态类型的绑定, 这点可是一个普通的类对象做不到的. 当我们使用<code>pass-by-reference-to-const</code>, 其实也就符合了这种性质, 我们来看代码理解 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Window</span> &#123;						<span class="hljs-comment">// 普通窗口</span><br><span class="hljs-keyword">public</span>:<br>  ...<br>  <span class="hljs-function">std::string <span class="hljs-title">name</span><span class="hljs-params">()</span> <span class="hljs-type">const</span></span>;           <span class="hljs-comment">// 返回窗口名</span><br>  <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">display</span><span class="hljs-params">()</span> <span class="hljs-type">const</span></span>;       <span class="hljs-comment">// 窗口显示函数</span><br>&#125;;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">WindowWithScrollBars</span>: <span class="hljs-keyword">public</span> Window &#123;		<span class="hljs-comment">// 高级窗口! 它带滚动条!</span><br><span class="hljs-keyword">public</span>:<br>  ...<br>  <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">display</span><span class="hljs-params">()</span> <span class="hljs-type">const</span></span>;		<span class="hljs-comment">// 对窗口重写</span><br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>上面是一对父子类, 下面是分别用两种传值方法的函数 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">printNameAndDisplay</span><span class="hljs-params">(Window w)</span>         <span class="hljs-comment">// pass-by-value</span></span><br><span class="hljs-function"></span>&#123;                             <br>  std::cout &lt;&lt; w.<span class="hljs-built_in">name</span>();<br>  w.<span class="hljs-built_in">display</span>();<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">printNameAndDisplay</span><span class="hljs-params">(<span class="hljs-type">const</span> Window&amp; w)</span>   <span class="hljs-comment">// pass-by-reference-to-const</span></span><br><span class="hljs-function"></span>&#123;                                           <br>  std::cout &lt;&lt; w.<span class="hljs-built_in">name</span>();<br>  w.<span class="hljs-built_in">display</span>();<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>当我们使用以下的代码 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs cpp">WindowWithScrollBars wwsb;<br><span class="hljs-built_in">printNameAndDisplay</span>(wwsb);<br></code></pre></td></tr></table></figure>
+
+<p>如果我们调用前者, 答案是只能调用基类的<code>display()</code>, 因为<strong>对象被切割了</strong>, <code>wwsb</code>被强行从派生类被切割成了基类, 这很正常, 传一个对象可没有什么多态的机制.</p>
+<p>如果我们调用后者, 结果很成功, 调用的就是派生类的<code>display()</code>, 因为<code>w</code>虽然静态类型是<code>Window</code>, 但由于引用的对象<code>wwsb</code>类型是<code>WindowWithScrollBars</code>, 所以动态类型绑定为了派生类, 调用就正确了. 说的有些复杂了, 可以宏观理解为<code>pass-by-reference-to-const</code>是虚函数机制实现的必要手段.</p>
+<hr>
+<p>吹了那么久<code>pass-by-reference-to-const</code>, 那么就没有什么情况要用<code>pass-by-value</code>的吗?</p>
+<p>答案是有的, 先看书中给出的最终结论 : <strong>内置类型, STL迭代器, 函数对象推荐用pass-by-value</strong>.</p>
+<p>原因很简单, <code>pass-by-reference-to-const</code>说到底也就是一个指针的花销, <strong>一些内置类型的花销甚至比指针花销还小</strong>, 而<strong>STL迭代器和函数对象内部也就是一个或几个指针</strong>而已, 差不了多少, 当然也有一部分原因是习惯所致.</p>
+<p>有人可能认为只包含小型对象的自定义类型也可以用<code>pass-by-value</code>, 这样的想法是有漏洞的.</p>
+<p>书中给出了三个原因 : </p>
+<ol>
+<li>对象小不代表<strong>构造和析构函数的花销</strong>就不小, 如果你直接<code>pass-by-value</code>一个STL的<code>set</code>, 其内部对象也就是几个指针, 是所谓的”小对象”, 但是构造和析构的开销就不知道大多少倍了.</li>
+<li><strong>某些编译器对待内置类型和自定义类型的态度截然不同</strong>, 编译器很乐意把内置类型对象放进缓存器, 但一个自定义类对象就不会有此般关怀.</li>
+<li><strong>一个类创建完后是需要维护的</strong>, 你现在对象小, 不代表以后就不会根据客户需求加入额外的变量, 除非你在一开始就把框架定死了.</li>
+</ol>
+<p>因此书中才给出了我们上面的最终结论.</p>
+<hr>
+<h3 id="请记住"><a href="#请记住" class="headerlink" title="请记住 :"></a>请记住 :</h3><ul>
+<li>尽量以pass-by-reference-to-const替换pass-by-value, 前者高效, 安全, 并且有效解决了切割问题.</li>
+<li>以上规则不适用于内置类型, STL迭代器, 函数对象, 它们适合pass-by-value.</li>
 </ul>
+<p>by 天目中云</p>
 
                 
               </div>
@@ -328,7 +328,7 @@
     <div class="post-meta">
       <i class="iconfont icon-tags"></i>
       
-        <a href="/tags/%E9%98%85%E8%AF%BB/" class="print-no-link">#阅读</a>
+        <a href="/tags/Effective-C/" class="print-no-link">#Effective C++</a>
       
     </div>
   
@@ -340,8 +340,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>瓦尔登湖读书摘录(1)</div>
-      <div>http://example.com/2024/12/02/2024-12-2-瓦尔登湖读书摘录(1)/</div>
+      <div>Effective C++ 条款20 宁以pass-by-reference-to-const替换pass-by-value</div>
+      <div>http://example.com/2024/11/30/[Effective C++]条款20 宁以pass-by-reference-to-const替换pass-by-value/</div>
     </div>
     <div class="license-meta">
       
@@ -353,7 +353,7 @@
       
         <div class="license-meta-item license-meta-date">
           <div>发布于</div>
-          <div>2024年12月2日</div>
+          <div>2024年11月30日</div>
         </div>
       
       
@@ -385,9 +385,9 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2024/12/03/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE24-%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2%E4%B8%8Enon-member%E5%87%BD%E6%95%B0/" title="Effective C++ 条款24 类型转换与non-member函数">
+                      <a href="/2024/12/01/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE21%20%E5%BF%85%E9%A1%BB%E8%BF%94%E5%9B%9E%E5%AF%B9%E8%B1%A1%E6%97%B6,%E5%88%AB%E5%A6%84%E6%83%B3%E8%BF%94%E5%9B%9E%E5%85%B6reference/" title="Effective C++ 条款21 必须返回对象时, 别妄想返回其reference">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">Effective C++ 条款24 类型转换与non-member函数</span>
+                        <span class="hidden-mobile">Effective C++ 条款21 必须返回对象时, 别妄想返回其reference</span>
                         <span class="visible-mobile">上一篇</span>
                       </a>
                     
@@ -395,8 +395,8 @@
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2024/12/02/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE22-23%20%E5%B0%81%E8%A3%85%E6%80%A7%E7%9B%B8%E5%85%B3/" title="Effective C++ 条款22-23 封装性相关">
-                        <span class="hidden-mobile">Effective C++ 条款22-23 封装性相关</span>
+                      <a href="/2024/11/30/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE19%20%E8%AE%BE%E8%AE%A1class%E7%8A%B9%E5%A6%82%E8%AE%BE%E8%AE%A1type/" title="Effective C++ 条款19 设计class犹如设计type">
+                        <span class="hidden-mobile">Effective C++ 条款19 设计class犹如设计type</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
