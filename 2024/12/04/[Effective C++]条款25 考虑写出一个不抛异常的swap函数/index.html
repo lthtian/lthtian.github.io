@@ -1,0 +1,670 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/head.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="天目中云">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="条款25 : 考虑写出一个不抛异常的swap函数 swap 是一个有趣的函数, 原本它只是STL的一部分, 而后成为了异常安全性编程中的脊柱, 有关异常安全性我在条款11中介绍过, 在之后的条款29中也将着重着墨. 由于swap相当有用, 适当的实现非常重要, 好的swap设计可以带来非凡的效率提升.  swap顾名思义, 意为将两对象的值彼此赋予对方, 在早期标准库中的实现是这样 :  1234">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Effective C++ 条款25 考虑写出一个不抛异常的swap函数">
+<meta property="og:url" content="http://example.com/2024/12/04/[Effective%20C++]%E6%9D%A1%E6%AC%BE25%20%E8%80%83%E8%99%91%E5%86%99%E5%87%BA%E4%B8%80%E4%B8%AA%E4%B8%8D%E6%8A%9B%E5%BC%82%E5%B8%B8%E7%9A%84swap%E5%87%BD%E6%95%B0/index.html">
+<meta property="og:site_name" content="天目中云">
+<meta property="og:description" content="条款25 : 考虑写出一个不抛异常的swap函数 swap 是一个有趣的函数, 原本它只是STL的一部分, 而后成为了异常安全性编程中的脊柱, 有关异常安全性我在条款11中介绍过, 在之后的条款29中也将着重着墨. 由于swap相当有用, 适当的实现非常重要, 好的swap设计可以带来非凡的效率提升.  swap顾名思义, 意为将两对象的值彼此赋予对方, 在早期标准库中的实现是这样 :  1234">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2024-12-04T11:57:12.000Z">
+<meta property="article:modified_time" content="2024-12-04T11:57:40.190Z">
+<meta property="article:author" content="天目中云">
+<meta property="article:tag" content="Effective C++">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>Effective C++ 条款25 考虑写出一个不抛异常的swap函数 - 天目中云</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>TianMu</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Effective C++ 条款25 考虑写出一个不抛异常的swap函数"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2024-12-04 19:57" pubdate>
+          2024年12月4日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.6k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          14 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Effective C++ 条款25 考虑写出一个不抛异常的swap函数</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h2 id="条款25-考虑写出一个不抛异常的swap函数"><a href="#条款25-考虑写出一个不抛异常的swap函数" class="headerlink" title="条款25 : 考虑写出一个不抛异常的swap函数"></a>条款25 : 考虑写出一个不抛异常的swap函数</h2><blockquote>
+<p>swap 是一个有趣的函数, 原本它只是STL的一部分, 而后成为了异常安全性编程中的脊柱, 有关异常安全性我在条款11中介绍过, 在之后的条款29中也将着重着墨. 由于swap相当有用, 适当的实现非常重要, 好的swap设计可以带来非凡的效率提升.</p>
+</blockquote>
+<p>swap顾名思义, 意为将两对象的值彼此赋予对方, 在早期标准库中的实现是这样 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">namespace</span> std &#123;<br>  <span class="hljs-function"><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> T&gt;        </span><br><span class="hljs-function">  <span class="hljs-type">void</span> <span class="hljs-title">swap</span><span class="hljs-params">(T&amp; a, T&amp; b)</span>         </span><br><span class="hljs-function">  </span>&#123;<br>    <span class="hljs-function">T <span class="hljs-title">temp</span><span class="hljs-params">(a)</span></span>;<br>    a = b;<br>    b = temp;<br>  &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>我们可以看出这只是简单的拷贝而已, 而我们经常会写一种类型, 其”以指针指向一个对象, 内涵真正的数据”, 这种手法意在将数据管理和操作管理解耦, 可以进行更有效的设计, 而这种类调用标准库的<code>std::swap</code>往往是效率低下的, 书中给出的代码如下 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">WidgetImpl</span> &#123;                          <span class="hljs-comment">// 保存Widget的数据</span><br><span class="hljs-keyword">public</span>:                                    <br>  ...<br><span class="hljs-keyword">private</span>:<br>  <span class="hljs-type">int</span> a, b, c;                            <br>  std::vector&lt;<span class="hljs-type">double</span>&gt; v;                  <br>  ...<br>&#125;;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Widget</span> &#123;                              <span class="hljs-comment">// 日常使用的Widget</span><br><span class="hljs-keyword">public</span>:<br>  <span class="hljs-built_in">Widget</span>(<span class="hljs-type">const</span> Widget&amp; rhs);<br>  ...<br><span class="hljs-keyword">private</span>:<br>  WidgetImpl *pImpl;                         <span class="hljs-comment">// 一个指针指向数据</span><br>&#125;;           <br></code></pre></td></tr></table></figure>
+
+<p>如果我们调用标准库中的<code>std::swap</code>, 其消耗是<strong>三次拷贝并且还多余地拷贝双方的底层资源</strong>. 所以我们希望自定义的<code>swap</code>可以只交换<code>pImpl</code>的指针即可.</p>
+<p>现在我们现在需要重新拟定一下我们的目标, 其一<strong>确保我们的swap函数不抛异常</strong>, 这是为了其在异常安全性上的功能得以实现; 其二<strong>让其他人调用swap时都能取得我们提供的高效的版本</strong>.</p>
+<p>前者只需我们记得不做有异常风险的举动就行了, 但是在<code>C++11</code>已经推行的当下, 我们还应<strong>必须</strong>给我们的函数贴心地加上<code>noexpect</code>标识符, 用来对编译器保证该函数绝不会抛出函数, <strong>编译器也会回应你的保证, 删去针对该函数的异常处理, 使效率提高</strong>. </p>
+<p>现在开始分析后者, 这里我们要知道一个前提, 大多数用户调用<code>swap</code>其实都是以标准库中的形式来调用的, 也就是说不会通过对象调用<code>swap</code>成员函数, 而是都是<code>std::swap(lhs, rhs)</code>这样的形式, 这样子在<code>C++98</code>的情况下, 只会调用到标准库中的默认函数, 因此书中给出了大量的篇幅去解决这种情况.</p>
+<p>但是先不谈书中怎么解决, 随时间推移, <code>C++11</code>横空出世, 而<code>C++11</code>新增<strong>ADL(Argument Dependent Lookup)机制</strong>, 就是<strong>查找成员函数的机制</strong>, 简单来说就是编译器会先根据调用对象的类型找对应的成员函数, 如果没有找到再用标准库中去找, 我们从C++11标准库中的swap便可窥知一二 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">typename</span> T&gt;<br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">swap</span><span class="hljs-params">(T&amp; a, T&amp; b)</span> <span class="hljs-title">noexcept</span><span class="hljs-params">(<span class="hljs-keyword">noexcept</span>(a.swap(b)))</span> </span>&#123; <span class="hljs-comment">// 判断该成员 swap 是否是 noexcept 的</span><br>    a.<span class="hljs-built_in">swap</span>(b);  <span class="hljs-comment">// 如果类型 T 提供了成员 swap，ADL 会使得这个 swap 成为优先选项</span><br>&#125;<br><br><span class="hljs-comment">// 针对没有成员 swap 的类型，使用默认交换方式</span><br><span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">typename</span> T&gt;<br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">swap</span><span class="hljs-params">(T&amp; a, T&amp; b)</span> <span class="hljs-keyword">noexcept</span> </span>&#123;<br>    <span class="hljs-function">T <span class="hljs-title">temp</span><span class="hljs-params">(a)</span></span>;<br>    a = b;<br>    b = temp;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>我们来分析这段代码进行的步骤 : </p>
+<ol>
+<li>调用<code>std::swap()</code>.</li>
+<li>启用<code>ADL</code>机制, 找寻T类型的成员函数中有没有<code>swap</code>.</li>
+<li>如果<strong>找到了</strong>, 进入上面这段代码, <code>noexcept(a.swap(b))</code>是一个<code>bool</code>表达式, 如果成员函数确实是<code>noexcept</code>的会返回<code>true</code>, 外层就是<code>noexcept(true)</code>, 表示该函数是不会抛出异常的, 然后<strong>使用这个版本的成员函数</strong>; 如果成员函数被检测出确实会抛出异常则返回<code>false</code>, 外层就是<code>noexcept(false)</code>, 表示该函数会抛出异常, 然后也<strong>还是使用这个版本的成员函数</strong>.</li>
+<li>如果<strong>找不到</strong>, 就<strong>调用默认的交换方式</strong>.</li>
+</ol>
+<hr>
+<p>有了以上的知识奠基, 在<strong>C++11</strong>之后, 如果我们想<strong>让其他人调用swap时都能取得我们提供的高效的版本</strong>, 那么其实<strong>写一个swap成员函数就好了</strong>, 并且<strong>最好是noexcept的</strong>, 代码如下 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Widget</span> &#123;<br><span class="hljs-keyword">public</span>:<br>    ...<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">swap</span><span class="hljs-params">(Widget&amp; other)</span> <span class="hljs-keyword">noexcept</span> </span>&#123;  <span class="hljs-comment">// 保证noexcept</span><br>        std::<span class="hljs-built_in">swap</span>(pImpl, other.pImpl);   <span class="hljs-comment">// 注意这里pImpl属于原生指针, 会直接调用默认版本的swap</span><br>    &#125;<br>    ...<br>&#125;;<br><br>Widget a, b;<br>std::<span class="hljs-built_in">swap</span>(a, b);	<span class="hljs-comment">// 这里会调用成员 swap，因为 ADL 机制</span><br></code></pre></td></tr></table></figure>
+
+<p>其实到最后就是多加一个<code>noexcept</code>就行了, 不得不说时代的进步还是会带来便利的.</p>
+<hr>
+<p>接下来说一下书中描述的<code>C++98</code>版本是怎么实现调用高效版本的, 这部分可以选择不看, 毕竟已经有些过时了.</p>
+<p>书中给出的步骤如下:</p>
+<ol>
+<li>像我们先前一样写一个完美的不抛异常的<code>swap</code>成员函数.</li>
+<li>在该<code>class</code>的命名空间下写一个<code>non-member swap</code>函数, 并使它调用该<code>class</code>的成员函数.</li>
+<li>最后如果你的<code>class</code>不是<code>class template</code>(模板类), 为你的<code>class</code>特化<code>std::swap</code>.</li>
+</ol>
+<p>由上面三点构成的最终方案如下 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">namespace</span> WidgetStuff &#123;<br>  ...                                   <br>  <span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> T&gt;      <br>  <span class="hljs-keyword">class</span> <span class="hljs-title class_">Widget</span> &#123; <br>  	<span class="hljs-keyword">public</span>:<br>    	...<br>    	<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">swap</span><span class="hljs-params">(Widget&amp; other)</span>  </span>&#123; <br>        	std::<span class="hljs-built_in">swap</span>(pImpl, other.pImpl); <br>    	&#125;<br>    	...<br>  &#125;;  <br>  ...<br>  <span class="hljs-function"><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> T&gt;    </span><br><span class="hljs-function">  <span class="hljs-type">void</span> <span class="hljs-title">swap</span><span class="hljs-params">(Widget&lt;T&gt;&amp; a, Widget&lt;T&gt;&amp; b)</span>   <span class="hljs-comment">// non-member                                      </span></span><br><span class="hljs-function">  </span>&#123;<br>    	a.<span class="hljs-built_in">swap</span>(b);<br>  &#125;<br>&#125;<br><br><span class="hljs-keyword">namespace</span> std &#123;<br>  <span class="hljs-keyword">template</span>&lt;&gt;                       <span class="hljs-comment">// 对于swap针对Widget类型的全特化</span><br>  <span class="hljs-type">void</span> <span class="hljs-built_in">swap</span>&lt;Widget&gt;(Widget&amp; a, Widget&amp; b)<br>  &#123;<br>    a.<span class="hljs-built_in">swap</span>(b);                 <br>  &#125;                                <br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>至于具体原因, 简单来说就是在客户调用<code>swap(a, b)</code>时, 如果这个函数在<code>WidgetStuff</code>命名空间中, 就会直接匹配<code>non-member</code>版本, 进而调用<code>member</code>版本. 而当客户调用<code>std::swap(a, b)</code>时, 由于模板全特化, 也会自动调用<code>member</code>版本.</p>
+<hr>
+<p>这次我基于<code>C++11</code>的新增机制对书中条款的解读做出了比较大的变化, 让其更适应2024年的现在, 写了很多原本书中没有的内容, 可能会有自己考虑不周的地方, 欢迎评论指正!</p>
+<hr>
+<h3 id="请记住"><a href="#请记住" class="headerlink" title="请记住 :"></a>请记住 :</h3><ul>
+<li><strong>当std::swap对你的类型效率不高时, 提供swap成员函数, 并且确定这个函数不抛出异常, 并且标明noexpect</strong>.</li>
+<li>如果你的版本还在C++98, 可能还要考虑提供一个non-member函数和std::swap模板全特化.</li>
+</ul>
+<p>by 天目中云</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Effective-C/" class="print-no-link">#Effective C++</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Effective C++ 条款25 考虑写出一个不抛异常的swap函数</div>
+      <div>http://example.com/2024/12/04/[Effective C++]条款25 考虑写出一个不抛异常的swap函数/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>天目中云</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2024年12月4日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2024/12/03/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE24-%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2%E4%B8%8Enon-member%E5%87%BD%E6%95%B0/" title="Effective C++ 条款24 类型转换与non-member函数">
+                        <span class="hidden-mobile">Effective C++ 条款24 类型转换与non-member函数</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
