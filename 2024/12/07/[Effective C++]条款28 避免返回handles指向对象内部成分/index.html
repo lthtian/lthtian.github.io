@@ -1,0 +1,670 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/head.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="天目中云">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="条款28 : 避免返回handles指向对象内部成分让我们先来明确本条款中的两个概念 :   handle : 即句柄, 号码牌, 可以理解为各种指针, 引用, 迭代器. 内部成分 : private成员变量和成员函数.  有了上面两个概念, 就可以比较直观地理解本条款了, 不过在通读完本条款后, 本条款虽说是避免返回handles指向对象内部成分, 但是其实内容着重在解释在必须返回handles">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Effective C++ 条款28 避免返回handles指向对象内部成分">
+<meta property="og:url" content="http://example.com/2024/12/07/[Effective%20C++]%E6%9D%A1%E6%AC%BE28%20%E9%81%BF%E5%85%8D%E8%BF%94%E5%9B%9Ehandles%E6%8C%87%E5%90%91%E5%AF%B9%E8%B1%A1%E5%86%85%E9%83%A8%E6%88%90%E5%88%86/index.html">
+<meta property="og:site_name" content="天目中云">
+<meta property="og:description" content="条款28 : 避免返回handles指向对象内部成分让我们先来明确本条款中的两个概念 :   handle : 即句柄, 号码牌, 可以理解为各种指针, 引用, 迭代器. 内部成分 : private成员变量和成员函数.  有了上面两个概念, 就可以比较直观地理解本条款了, 不过在通读完本条款后, 本条款虽说是避免返回handles指向对象内部成分, 但是其实内容着重在解释在必须返回handles">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2024-12-07T08:52:00.000Z">
+<meta property="article:modified_time" content="2024-12-07T08:54:03.313Z">
+<meta property="article:author" content="天目中云">
+<meta property="article:tag" content="Effective C++">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>Effective C++ 条款28 避免返回handles指向对象内部成分 - 天目中云</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>TianMu</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Effective C++ 条款28 避免返回handles指向对象内部成分"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2024-12-07 16:52" pubdate>
+          2024年12月7日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.3k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          11 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Effective C++ 条款28 避免返回handles指向对象内部成分</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h2 id="条款28-避免返回handles指向对象内部成分"><a href="#条款28-避免返回handles指向对象内部成分" class="headerlink" title="条款28 : 避免返回handles指向对象内部成分"></a>条款28 : 避免返回handles指向对象内部成分</h2><p>让我们先来明确本条款中的两个概念 : </p>
+<ul>
+<li>handle : 即句柄, 号码牌, 可以理解为各种<strong>指针, 引用, 迭代器</strong>.</li>
+<li>内部成分 : <strong>private成员变量和成员函数</strong>.</li>
+</ul>
+<p>有了上面两个概念, 就可以比较直观地理解本条款了, 不过在通读完本条款后, 本条款虽说是<strong>避免返回handles指向对象内部成分</strong>, 但是其实内容着重在解释<strong>在必须返回handles指向对象内部成分的情况下, 会带来什么样的风险</strong>, 以此告诫我们注意. </p>
+<hr>
+<h3 id="降低对象封装性"><a href="#降低对象封装性" class="headerlink" title="降低对象封装性"></a>降低对象封装性</h3><p>书中指出, <strong>返回handles指向对象内部成分</strong>, 随之而来的便是**”降低对象封装性”的风险**, 如果不是有意设计, 我们<strong>不应令public成员函数返回一个handle指向private的成员变量</strong>, 这会使后者的<strong>实际访问级别变为public</strong>, 这是完全可以理解的.</p>
+<p>书中描述了GUI中常有的矩形, 它一般会用左上点和右下点表示 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Point</span> &#123;                      <span class="hljs-comment">// 坐标点</span><br><span class="hljs-keyword">public</span>:<br>  <span class="hljs-built_in">Point</span>(<span class="hljs-type">int</span> x, <span class="hljs-type">int</span> y);<br>  ...<br><br>  <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">setX</span><span class="hljs-params">(<span class="hljs-type">int</span> newVal)</span></span>;<br>  <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">setY</span><span class="hljs-params">(<span class="hljs-type">int</span> newVal)</span></span>;<br>  ...<br>&#125;;<br><br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">RectData</span> &#123;                    <span class="hljs-comment">// 矩形资源类</span><br>  Point ulhc;                        <span class="hljs-comment">// 左上点</span><br>  Point lrhc;                        <span class="hljs-comment">// 右下点</span><br>&#125;;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Rectangle</span> &#123;					<span class="hljs-comment">// 资源管理类 见条款13</span><br>  ...<br><span class="hljs-keyword">private</span>:<br>  std::shared_ptr&lt;RectData&gt; pData;    <span class="hljs-comment">// 存入智能指针进行管理    </span><br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>客户一般会要求使用矩形的位置信息 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Rectangle</span> &#123;<br><span class="hljs-keyword">public</span>:<br>  ...<br>  <span class="hljs-function">Point&amp; <span class="hljs-title">upperLeft</span><span class="hljs-params">()</span> <span class="hljs-type">const</span> </span>&#123; <span class="hljs-keyword">return</span> pData-&gt;ulhc; &#125;<br>  <span class="hljs-function">Point&amp; <span class="hljs-title">lowerRight</span><span class="hljs-params">()</span> <span class="hljs-type">const</span> </span>&#123; <span class="hljs-keyword">return</span> pData-&gt;lrhc; &#125;<br>  ...<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>我们用两个函数分别返回左上点和右下点, 这个操作很正常, 但是这给了客户捣乱的方式 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function">Point <span class="hljs-title">coord1</span><span class="hljs-params">(<span class="hljs-number">0</span>, <span class="hljs-number">0</span>)</span></span>;<br><span class="hljs-function">Point <span class="hljs-title">coord2</span><span class="hljs-params">(<span class="hljs-number">100</span>, <span class="hljs-number">100</span>)</span></span>;<br><span class="hljs-function"><span class="hljs-type">const</span> Rectangle <span class="hljs-title">rec</span><span class="hljs-params">(coord1, coord2)</span></span>;    <br><br>rec.<span class="hljs-built_in">upperLeft</span>().<span class="hljs-built_in">setX</span>(<span class="hljs-number">50</span>);  <span class="hljs-comment">// rec的左上点实际被修改为了(50, 0)!</span><br></code></pre></td></tr></table></figure>
+
+<p>这种情况在条款3中也实际发生过, 就是<strong>通过const成员函数的返回值修改了类的内部数据</strong>, 原因条款3中已经解释过了, 解决方式也很简单, 给返回值也加一个<code>const</code>就好了 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Rectangle</span> &#123;<br><span class="hljs-keyword">public</span>:<br>  ...<br>  <span class="hljs-function"><span class="hljs-type">const</span> Point&amp; <span class="hljs-title">upperLeft</span><span class="hljs-params">()</span> <span class="hljs-type">const</span> </span>&#123; <span class="hljs-keyword">return</span> pData-&gt;ulhc; &#125;<br>  <span class="hljs-function"><span class="hljs-type">const</span> Point&amp; <span class="hljs-title">lowerRight</span><span class="hljs-params">()</span> <span class="hljs-type">const</span> </span>&#123; <span class="hljs-keyword">return</span> pData-&gt;lrhc; &#125;<br>  ...<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>重新整理思路, 封装性在于<strong>数据隐藏</strong>, 在于<strong>限制外部对内部的访问与修改</strong>. 以上函数做到了<strong>访问权的让渡与修改权的禁止</strong>, 访问权让渡是因为有必要的客户需求, 修改权禁止是应为客户没有权限修改内部, 以此在提供必要功能的前提下使对象达到了最好的封装性.</p>
+<hr>
+<h3 id="空悬句柄-dangling-handles"><a href="#空悬句柄-dangling-handles" class="headerlink" title="空悬句柄(dangling handles)"></a>空悬句柄(dangling handles)</h3><p>空悬句柄和C中的野指针很相似, 书中给出了某个函数返回GUI对象的外框(矩形)的例子 :</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">GUIObject</span> &#123; ... &#125;; <br><span class="hljs-function"><span class="hljs-type">const</span> Rectangle <span class="hljs-title">boundingBox</span><span class="hljs-params">(<span class="hljs-type">const</span> GUIObject&amp; obj)</span></span>;  <span class="hljs-comment">// 返回一个矩形    </span><br><br>GUIObject *pgo;   <br>...                                  <br><span class="hljs-type">const</span> Point *pUpperLeft = &amp;(<span class="hljs-built_in">boundingBox</span>(*pgo).<span class="hljs-built_in">upperLeft</span>());  <span class="hljs-comment">// 这里pUpperLeft是一个空悬句柄                   </span><br></code></pre></td></tr></table></figure>
+
+<p>我们来解释最后一句代码 : </p>
+<ol>
+<li><code>boundingBox(*pgo)</code> 利用<code>pgo</code>调用<code>boundingBox</code>函数</li>
+<li><code>boundingBox</code>函数返回一个临时矩形对象(这是一个匿名对象, 以下简称<code>temp</code>)</li>
+<li><code>temp</code>调用<code>upperLeft()</code>得到该临时对象的左上点</li>
+<li>取出右上点的地址赋值给<code>pUpperLeft</code></li>
+</ol>
+<p>最后的结果就是<code>pUpperLeft</code>获得了一个来自临时对象的指针, 当控制域离开该行, 这个指针将成为一个野指针, 则称<code>pUpperLeft</code>是一个空悬句柄, 它指向了一个不存在的对象.</p>
+<p>因此书中告诉我们, <strong>返回handles指向对象内部成分总是危险的</strong>, 不管这个<code>handle</code>是否为<code>const</code> 唯一造成危险的事实就是, <strong>有个handle被传出去了</strong>, 因此就有可能出现<strong>handle比其所指对象更长寿</strong>的风险, 这才是问题的核心.</p>
+<p>然而指出这个风险不是说就不应该返回<code>handles</code>, 我们总会有许多需求需要访问内部成分, 这种风险避无可避, 而是在告诫我们时常注意空悬句柄问题, <strong>不要让我们的指针&#x2F;引用&#x2F;迭代器因为比其所指对象更长寿而失效</strong>.</p>
+<p>我们可以再通过一个例子来加深理解 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs cpp">vector&lt;<span class="hljs-type">int</span>&gt; v = &#123; <span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>, <span class="hljs-number">3</span>, <span class="hljs-number">5</span> &#125;;<br>vector&lt;<span class="hljs-type">int</span>&gt;::iterator it = v.<span class="hljs-built_in">begin</span>();<br><span class="hljs-keyword">while</span> (it != v.<span class="hljs-built_in">end</span>())<br>&#123;<br>	<span class="hljs-keyword">if</span> (*it == <span class="hljs-number">3</span>) v.<span class="hljs-built_in">erase</span>(it);<br>    ++it;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>这个就是非常经典<strong>迭代器失效</strong>问题, 这个例子在遍历<code>v</code>, 将<code>v</code>中等于3的元素删除, 这段代码看似合理, 但是结合我们上面的理解, 在触发<code>erase</code>后, <code>it</code>迭代器指向的对象其实已经被销毁了, 这时<code>++it</code>就变为了未定义的操作, 在<code>vs</code>中甚至会直接报错, 如果我们可以提前发现这个问题, 就可以做出以下改进 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs cpp">vector&lt;<span class="hljs-type">int</span>&gt; v = &#123; <span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>, <span class="hljs-number">3</span>, <span class="hljs-number">5</span> &#125;;<br>vector&lt;<span class="hljs-type">int</span>&gt;::iterator it = v.<span class="hljs-built_in">begin</span>();<br><span class="hljs-keyword">while</span> (it != v.<span class="hljs-built_in">end</span>())<br>&#123;<br>	<span class="hljs-keyword">if</span> (*it == <span class="hljs-number">3</span>) it = v.<span class="hljs-built_in">erase</span>(it);<br>    <span class="hljs-keyword">else</span> ++it;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>我们利用<code>erase</code>的返回值对<code>it</code>重新赋值, 使其免于失效.</p>
+<hr>
+<h3 id="请记住"><a href="#请记住" class="headerlink" title="请记住 :"></a>请记住 :</h3><ul>
+<li>尽可能避免返回<code>handles</code>指向对象内部成分, 这可以提升对象封装性, 避免<code>dangling handles</code>出现.</li>
+<li>避无可避时谨慎释出内部成分的访问权与修改权, 修改权可用<code>const</code>禁止, 注意<code>dangling handles</code>问题.</li>
+</ul>
+<p>by 天目中云</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Effective-C/" class="print-no-link">#Effective C++</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Effective C++ 条款28 避免返回handles指向对象内部成分</div>
+      <div>http://example.com/2024/12/07/[Effective C++]条款28 避免返回handles指向对象内部成分/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>天目中云</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2024年12月7日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2024/12/06/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE27%20%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2/" title="Effective C++ 条款27 类型转换">
+                        <span class="hidden-mobile">Effective C++ 条款27 类型转换</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
