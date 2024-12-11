@@ -21,24 +21,25 @@
   <meta name="author" content="天目中云">
   <meta name="keywords" content="">
   
-    <meta name="description" content="条款30 : 透彻了解inlining的里里外外 inline 函数, 多么棒的点子! 本条款将带我们透彻了解inlining的里里外外, 与往常的形式不同, 我会以知识点集的形式把书中对inline的描述列举处理, 可更简单明了的认识inline.  inline的优劣 inline函数, 看起来像函数, 动作像函数, 却比宏好得多, 调用它们不用蒙受函数调用所带来的额外开销. 编译器会对inl">
+    <meta name="description" content="只要紧紧跟随你的天赋, 它每时每刻都将让你看到全新的景色.  从事商业需要极具自信, 认真, 机警, 敢于冒险和不知疲倦的精神.  当了解某个人的真实性格以后, 我自认为是不可能去改变它的, 无论是让它变得更好还是更坏.  我既可以因为看戏而感动, 但我也可以对和我有重要关系的实际事件无动于衷.  我们活得太拥挤, 因袭彼此的生活方式, 相互之间磕磕绊绊, 我想我们因此失去了彼此之间的尊重. 对">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Effective C++ 条款30 inline">
-<meta property="og:url" content="http://example.com/2024/12/09/[Effective%20C++]%E6%9D%A1%E6%AC%BE30%20inline/index.html">
+<meta property="og:title" content="瓦尔登湖读书摘录(3)">
+<meta property="og:url" content="http://example.com/2024/12/11/2024-12-11-%E7%93%A6%E5%B0%94%E7%99%BB%E6%B9%96%E8%AF%BB%E4%B9%A6%E6%91%98%E5%BD%95(3)/index.html">
 <meta property="og:site_name" content="天目中云">
-<meta property="og:description" content="条款30 : 透彻了解inlining的里里外外 inline 函数, 多么棒的点子! 本条款将带我们透彻了解inlining的里里外外, 与往常的形式不同, 我会以知识点集的形式把书中对inline的描述列举处理, 可更简单明了的认识inline.  inline的优劣 inline函数, 看起来像函数, 动作像函数, 却比宏好得多, 调用它们不用蒙受函数调用所带来的额外开销. 编译器会对inl">
+<meta property="og:description" content="只要紧紧跟随你的天赋, 它每时每刻都将让你看到全新的景色.  从事商业需要极具自信, 认真, 机警, 敢于冒险和不知疲倦的精神.  当了解某个人的真实性格以后, 我自认为是不可能去改变它的, 无论是让它变得更好还是更坏.  我既可以因为看戏而感动, 但我也可以对和我有重要关系的实际事件无动于衷.  我们活得太拥挤, 因袭彼此的生活方式, 相互之间磕磕绊绊, 我想我们因此失去了彼此之间的尊重. 对">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2024-12-09T06:49:00.000Z">
-<meta property="article:modified_time" content="2024-12-09T06:49:45.000Z">
+<meta property="article:published_time" content="2024-12-11T13:24:32.000Z">
+<meta property="article:modified_time" content="2024-12-11T13:04:38.847Z">
 <meta property="article:author" content="天目中云">
-<meta property="article:tag" content="Effective C++">
+<meta property="article:tag" content="阅读">
+<meta property="article:tag" content="瓦尔登湖">
 <meta name="twitter:card" content="summary_large_image">
   
   
     <meta name="referrer" content="no-referrer-when-downgrade">
   
   
-  <title>Effective C++ 条款30 inline - 天目中云</title>
+  <title>瓦尔登湖读书摘录(3) - 天目中云</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -217,7 +218,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="Effective C++ 条款30 inline"></span>
+            <span id="subtitle" data-typed-text="瓦尔登湖读书摘录(3)"></span>
           
         </div>
 
@@ -228,8 +229,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2024-12-09 14:49" pubdate>
-          2024年12月9日 下午
+        <time datetime="2024-12-11 21:24" pubdate>
+          2024年12月11日 晚上
         </time>
       </span>
     
@@ -240,7 +241,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          943 字
+          907 字
         
       </span>
     
@@ -297,48 +298,49 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <h1 id="seo-header">Effective C++ 条款30 inline</h1>
+            <h1 id="seo-header">瓦尔登湖读书摘录(3)</h1>
             
             
               <div class="markdown-body">
                 
-                <h2 id="条款30-透彻了解inlining的里里外外"><a href="#条款30-透彻了解inlining的里里外外" class="headerlink" title="条款30 : 透彻了解inlining的里里外外"></a>条款30 : 透彻了解inlining的里里外外</h2><blockquote>
-<p>inline 函数, 多么棒的点子! 本条款将带我们透彻了解inlining的里里外外, 与往常的形式不同, 我会以知识点集的形式把书中对inline的描述列举处理, 可更简单明了的认识inline.</p>
-</blockquote>
-<h2 id="inline的优劣"><a href="#inline的优劣" class="headerlink" title="inline的优劣"></a>inline的优劣</h2><ul>
-<li><code>inline</code>函数, 看起来像函数, 动作像函数, 却比宏好得多, 调用它们<strong>不用蒙受函数调用所带来的额外开销</strong>.</li>
-<li>编译器会对<code>inline</code>函数执行语境相关最优化, 会<strong>提升编译效率</strong>.</li>
-<li>如果内存有限, 过度<code>inlining</code>会造成程序<strong>体积太大</strong>.</li>
-<li><code>inline</code>会带来<strong>代码膨胀</strong>, 进而导致额外的<strong>换页</strong>行为, 降低高速缓存装置的<strong>击中率</strong>.</li>
-<li><strong>如果inline函数的本体很小</strong>, 编译器针对”函数本体”产出的码可能比针对”函数调用”产出的码更小, 反而会促成与上一条相反的情况, 可以导致较小的目标码和较高的高速缓存装置击中率.</li>
-<li><code>inline</code>函数无法随程序库的升级而升级, 简单说如果程序库中有一个<code>inline</code>函数, 如果决定改变该函数, 那么程序库中所有用到该函数的程序就必须重新编译. 如果是<code>non-inline</code>函数,客户端只需要重新连接就好了, 没有那么大的编译负担, 如果是动态库就更没有了.</li>
+                <ul>
+<li><p>只要紧紧跟随你的天赋, 它每时每刻都将让你看到全新的景色.</p>
+</li>
+<li><p>从事商业需要极具自信, 认真, 机警, 敢于冒险和不知疲倦的精神.</p>
+</li>
+<li><p>当了解某个人的真实性格以后, 我自认为是不可能去改变它的, 无论是让它变得更好还是更坏.</p>
+</li>
+<li><p>我既可以因为看戏而感动, 但我也可以对和我有重要关系的实际事件无动于衷.</p>
+</li>
+<li><p>我们活得太拥挤, 因袭彼此的生活方式, 相互之间磕磕绊绊, 我想我们因此失去了彼此之间的尊重. 对所有热忱的交往来说, 次数再少肯定也是足够的.</p>
+</li>
+<li><p>每个人清醒过来之后都应该了解自己所处的位置, 只有到了失去这个世界之后, 我们才能开始找到我们自己, 才能发现我们所处的位置, 以及我们与万事万物的联系是多么紧密.</p>
+</li>
+<li><p>别让谋生变成苦差事, 而是让它成为娱乐活动. 尽情地享受大地吧, 但别去占有它. 世人往往缺少冒险精神和信仰, 所以他们忙于买卖经营, 过着奴隶般的日子.</p>
+</li>
+<li><p>人们每天只去离家不远的田野和街道, 到了夜里就乖乖回去, 他们到底生命渐渐失去了活力, 因为缺乏新鲜的空气.</p>
+</li>
+<li><p>我既热爱善良的人性, 也热爱野蛮的兽性.</p>
+</li>
+<li><p>打猎是我受过最好的教育, 尽管起初他们只能是玩玩而已, 最后未必能够成为厉害的猎人, 这样他们将来反而不会在这片或其他旷野上滥杀无辜, 不会以同类为渔猎的对象.</p>
+</li>
+<li><p>几乎所有的成虫吃的东西都比幼虫少得多, 饕餮者都是处于幼虫时期的人, 有些民族整个都处在这种阶段, 那些民族的人没有理想和创造力, 有的是出卖了他们的便便大腹.</p>
+</li>
+<li><p>只要坚持茹素, 你将会欢快地迎接白天和黑夜的到来, 生活将如鲜花和芳草般散发着香气, 并且变得更加乐观和高尚, 而且更有仙气—那就是你的成功.</p>
+</li>
+<li><p>也许最让人震惊, 最为真切的事实从来不曾在人与人之间交流过.</p>
+</li>
+<li><p>我认为白水是唯一适合智者的饮料, 酒并非高贵的液体, 一杯咖啡能够冲走清晨的希望, 一杯热茶可以破坏夜晚的美梦.</p>
+</li>
+<li><p>能够污秽人的, 不是吃进嘴里的食物, 而是不知餍足的食欲. 应该受到谴责的不是食物的事务或品质, 而是对口腹之欲的痴迷; 加入你吃东西不是为了维持我们的生命, 也不是为了激发我们的灵感, 而是为了喂饱控制我们的馋虫, 那么你应该感到惭愧.</p>
+</li>
+<li><p>许多烦人的噪音传到远处之后, 人们居然将其当成音乐来倾听, 着对我们低贱的生活来说, 真实莫大的讽刺.</p>
+</li>
+<li><p>饕餮, 贪杯, 好色或嗜睡其实是一回事, 它们无非都是肉体的欲求, 只要看到有人犯了其中之一, 我们便知道他是耽于声色犬马之徒, 污秽与纯洁是不能并存的.</p>
+</li>
+<li><p>智慧和纯洁出自勤奋, 无知与堕落源于懒惰. 对学生来说, 堕落就是思考的懒惰.</p>
+</li>
 </ul>
-<hr>
-<h2 id="inline的特性"><a href="#inline的特性" class="headerlink" title="inline的特性"></a>inline的特性</h2><ul>
-<li><p><strong>inline不是一个强制命令, 它只是对编译器的一个申请!</strong> 编译器可以加以忽略, 大部分编译器将拒绝太过复杂的函数(含循环, 递归, 长度过长)进行<code>inlining</code>. 简而言之, <strong>一个表面看似inline的函数是否真的是inline, 取决于你的建置环境, 主要取决于编译器</strong>.</p>
-</li>
-<li><p><code>inline</code>可以明确提出, 也可以<strong>隐喻提出</strong>.</p>
-</li>
-<li><p>隐喻提出的方式是<strong>将函数定义在class定义式中</strong>. 这便是为什么很多<code>class</code>会将实现简短的函数直接在<code>class</code>定义式中将声明定义一并给出, 其实就是在方便的前提下还隐喻地使用了<code>inline</code>函数, 以达到”没有声明任何<code>inline</code>却处处都是<code>inline</code>“的效果. </p>
-</li>
-<li><p>隐喻<code>inline</code>函数通常是<strong>成员函数</strong>, 也可以是<code>friend</code>函数.</p>
-</li>
-<li><p>所有<code>virtual</code>函数与调用<code>virtual</code>的函数都无法<code>inlining</code>. <code>virtual</code>代表着等待运行时判定, 而<code>inline</code>代表编译时提前替换, 这两种行为是绝对冲突的.</p>
-</li>
-</ul>
-<hr>
-<h2 id="inline的使用"><a href="#inline的使用" class="headerlink" title="inline的使用"></a>inline的使用</h2><ul>
-<li><code>inline</code>函数通常<strong>一定被置于头文件内</strong>, 因为大多数建置环境都在编译过程中进行<code>inline</code>.</li>
-<li><code>templates</code>(泛型类&#x2F;函数)通常也被置于头文件内, 很多程序员认为泛型函数一定都是<code>inline</code>, 但这是错误的, <strong>template的实例化与inline无关</strong>, 不应该这样考量, 还是应该依照代码长度,内容以及环境做具体考量.</li>
-<li><strong>构造函数和析构函数往往是inlining的糟糕候选人</strong>, 因为就算它们是空白的, 也有可能在底层被编译器施加很多额外的代码, 例如基类的构造与析构, 这导致它们的实际代码量远比我们看见的要多得多, 令它们<code>inlining</code>很有可能会发生代码膨胀.</li>
-<li>一开始先不要将任何函数声明成<code>inline</code>, 除非你非常笃定它就是<code>inline</code>的典型案例, 当你开始关心效率时, 再分析是否可以<code>inlining</code>.</li>
-</ul>
-<hr>
-<h2 id="请记住"><a href="#请记住" class="headerlink" title="请记住 :"></a>请记住 :</h2><ul>
-<li>请将大多数的<code>inlining</code>限制在<strong>小型, 被频繁调用</strong>的函数身上.</li>
-<li>通过将函数定义在<code>class</code>定义式中实现隐喻<code>inline</code>.</li>
-</ul>
-<p>by 天目中云</p>
 
                 
               </div>
@@ -351,7 +353,9 @@
     <div class="post-meta">
       <i class="iconfont icon-tags"></i>
       
-        <a href="/tags/Effective-C/" class="print-no-link">#Effective C++</a>
+        <a href="/tags/%E9%98%85%E8%AF%BB/" class="print-no-link">#阅读</a>
+      
+        <a href="/tags/%E7%93%A6%E5%B0%94%E7%99%BB%E6%B9%96/" class="print-no-link">#瓦尔登湖</a>
       
     </div>
   
@@ -363,8 +367,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>Effective C++ 条款30 inline</div>
-      <div>http://example.com/2024/12/09/[Effective C++]条款30 inline/</div>
+      <div>瓦尔登湖读书摘录(3)</div>
+      <div>http://example.com/2024/12/11/2024-12-11-瓦尔登湖读书摘录(3)/</div>
     </div>
     <div class="license-meta">
       
@@ -376,7 +380,7 @@
       
         <div class="license-meta-item license-meta-date">
           <div>发布于</div>
-          <div>2024年12月9日</div>
+          <div>2024年12月11日</div>
         </div>
       
       
@@ -408,18 +412,12 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2024/12/11/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE31%20%E7%BC%96%E8%AF%91%E4%BE%9D%E5%AD%98%E6%80%A7/" title="Effective C++ 条款31 编译依存性">
-                        <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">Effective C++ 条款31 编译依存性</span>
-                        <span class="visible-mobile">上一篇</span>
-                      </a>
-                    
                   </article>
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2024/12/08/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE29-%E5%BC%82%E5%B8%B8%E5%AE%89%E5%85%A8%E6%80%A7/" title="Effective C++ 条款29 异常安全性">
-                        <span class="hidden-mobile">Effective C++ 条款29 异常安全性</span>
+                      <a href="/2024/12/11/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE31%20%E7%BC%96%E8%AF%91%E4%BE%9D%E5%AD%98%E6%80%A7/" title="Effective C++ 条款31 编译依存性">
+                        <span class="hidden-mobile">Effective C++ 条款31 编译依存性</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
