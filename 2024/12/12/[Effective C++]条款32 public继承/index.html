@@ -21,25 +21,25 @@
   <meta name="author" content="天目中云">
   <meta name="keywords" content="">
   
-    <meta name="description" content="只要紧紧跟随你的天赋, 它每时每刻都将让你看到全新的景色.  从事商业需要极具自信, 认真, 机警, 敢于冒险和不知疲倦的精神.  当了解某个人的真实性格以后, 我自认为是不可能去改变它的, 无论是让它变得更好还是更坏.  我既可以因为看戏而感动, 但我也可以对和我有重要关系的实际事件无动于衷.  我们活得太拥挤, 因袭彼此的生活方式, 相互之间磕磕绊绊, 我想我们因此失去了彼此之间的尊重. 对">
+    <meta name="description" content="条款32 : 确定你的public继承塑膜出 is-a 关系 从本条款开始我们将步入面向对象编程这一重要领域进行讨论, 首先我们将会围绕public继承, 分析public继承的意义与目的, 再举出两个错误的public继承典例.  public继承意味”is-a”(是一种)的关系这便是C++面向对象编程的最重要的一个规则, 请把这个规则牢牢记在心中吧, 相信很多人以及对这种认知有所耳闻, 我甚至">
 <meta property="og:type" content="article">
-<meta property="og:title" content="瓦尔登湖读书摘录(3)">
-<meta property="og:url" content="http://example.com/2024/12/11/2024-12-11-%E7%93%A6%E5%B0%94%E7%99%BB%E6%B9%96%E8%AF%BB%E4%B9%A6%E6%91%98%E5%BD%95(3)/index.html">
+<meta property="og:title" content="Effective C++ 条款32 public继承">
+<meta property="og:url" content="http://example.com/2024/12/12/[Effective%20C++]%E6%9D%A1%E6%AC%BE32%20public%E7%BB%A7%E6%89%BF/index.html">
 <meta property="og:site_name" content="天目中云">
-<meta property="og:description" content="只要紧紧跟随你的天赋, 它每时每刻都将让你看到全新的景色.  从事商业需要极具自信, 认真, 机警, 敢于冒险和不知疲倦的精神.  当了解某个人的真实性格以后, 我自认为是不可能去改变它的, 无论是让它变得更好还是更坏.  我既可以因为看戏而感动, 但我也可以对和我有重要关系的实际事件无动于衷.  我们活得太拥挤, 因袭彼此的生活方式, 相互之间磕磕绊绊, 我想我们因此失去了彼此之间的尊重. 对">
+<meta property="og:description" content="条款32 : 确定你的public继承塑膜出 is-a 关系 从本条款开始我们将步入面向对象编程这一重要领域进行讨论, 首先我们将会围绕public继承, 分析public继承的意义与目的, 再举出两个错误的public继承典例.  public继承意味”is-a”(是一种)的关系这便是C++面向对象编程的最重要的一个规则, 请把这个规则牢牢记在心中吧, 相信很多人以及对这种认知有所耳闻, 我甚至">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2024-12-11T13:24:32.000Z">
-<meta property="article:modified_time" content="2024-12-11T13:04:38.847Z">
+<meta property="article:published_time" content="2024-12-12T09:26:00.000Z">
+<meta property="article:modified_time" content="2024-12-12T09:27:26.282Z">
 <meta property="article:author" content="天目中云">
-<meta property="article:tag" content="阅读">
-<meta property="article:tag" content="瓦尔登湖">
+<meta property="article:tag" content="Effective C++">
+<meta property="article:tag" content="继承">
 <meta name="twitter:card" content="summary_large_image">
   
   
     <meta name="referrer" content="no-referrer-when-downgrade">
   
   
-  <title>瓦尔登湖读书摘录(3) - 天目中云</title>
+  <title>Effective C++ 条款32 public继承 - 天目中云</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -218,7 +218,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="瓦尔登湖读书摘录(3)"></span>
+            <span id="subtitle" data-typed-text="Effective C++ 条款32 public继承"></span>
           
         </div>
 
@@ -229,8 +229,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2024-12-11 21:24" pubdate>
-          2024年12月11日 晚上
+        <time datetime="2024-12-12 17:26" pubdate>
+          2024年12月12日 下午
         </time>
       </span>
     
@@ -241,7 +241,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          907 字
+          1.3k 字
         
       </span>
     
@@ -252,7 +252,7 @@
         
         
         
-          8 分钟
+          11 分钟
         
       </span>
     
@@ -298,49 +298,45 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <h1 id="seo-header">瓦尔登湖读书摘录(3)</h1>
+            <h1 id="seo-header">Effective C++ 条款32 public继承</h1>
             
             
               <div class="markdown-body">
                 
-                <ul>
-<li><p>只要紧紧跟随你的天赋, 它每时每刻都将让你看到全新的景色.</p>
-</li>
-<li><p>从事商业需要极具自信, 认真, 机警, 敢于冒险和不知疲倦的精神.</p>
-</li>
-<li><p>当了解某个人的真实性格以后, 我自认为是不可能去改变它的, 无论是让它变得更好还是更坏.</p>
-</li>
-<li><p>我既可以因为看戏而感动, 但我也可以对和我有重要关系的实际事件无动于衷.</p>
-</li>
-<li><p>我们活得太拥挤, 因袭彼此的生活方式, 相互之间磕磕绊绊, 我想我们因此失去了彼此之间的尊重. 对所有热忱的交往来说, 次数再少肯定也是足够的.</p>
-</li>
-<li><p>每个人清醒过来之后都应该了解自己所处的位置, 只有到了失去这个世界之后, 我们才能开始找到我们自己, 才能发现我们所处的位置, 以及我们与万事万物的联系是多么紧密.</p>
-</li>
-<li><p>别让谋生变成苦差事, 而是让它成为娱乐活动. 尽情地享受大地吧, 但别去占有它. 世人往往缺少冒险精神和信仰, 所以他们忙于买卖经营, 过着奴隶般的日子.</p>
-</li>
-<li><p>人们每天只去离家不远的田野和街道, 到了夜里就乖乖回去, 他们到底生命渐渐失去了活力, 因为缺乏新鲜的空气.</p>
-</li>
-<li><p>我既热爱善良的人性, 也热爱野蛮的兽性.</p>
-</li>
-<li><p>打猎是我受过最好的教育, 尽管起初他们只能是玩玩而已, 最后未必能够成为厉害的猎人, 这样他们将来反而不会在这片或其他旷野上滥杀无辜, 不会以同类为渔猎的对象.</p>
-</li>
-<li><p>几乎所有的成虫吃的东西都比幼虫少得多, 饕餮者都是处于幼虫时期的人, 有些民族整个都处在这种阶段, 那些民族的人没有理想和创造力, 有的是出卖了他们的便便大腹.</p>
-</li>
-<li><p>只要坚持茹素, 你将会欢快地迎接白天和黑夜的到来, 生活将如鲜花和芳草般散发着香气, 并且变得更加乐观和高尚, 而且更有仙气—那就是你的成功.</p>
-</li>
-<li><p>也许最让人震惊, 最为真切的事实从来不曾在人与人之间交流过.</p>
-</li>
-<li><p>我认为白水是唯一适合智者的饮料, 酒并非高贵的液体, 一杯咖啡能够冲走清晨的希望, 一杯热茶可以破坏夜晚的美梦.</p>
-</li>
-<li><p>能够污秽人的, 不是吃进嘴里的食物, 而是不知餍足的食欲. 应该受到谴责的不是食物的事务或品质, 而是对口腹之欲的痴迷; 加入你吃东西不是为了维持我们的生命, 也不是为了激发我们的灵感, 而是为了喂饱控制我们的馋虫, 那么你应该感到惭愧.</p>
-</li>
-<li><p>许多烦人的噪音传到远处之后, 人们居然将其当成音乐来倾听, 着对我们低贱的生活来说, 真实莫大的讽刺.</p>
-</li>
-<li><p>饕餮, 贪杯, 好色或嗜睡其实是一回事, 它们无非都是肉体的欲求, 只要看到有人犯了其中之一, 我们便知道他是耽于声色犬马之徒, 污秽与纯洁是不能并存的.</p>
-</li>
-<li><p>智慧和纯洁出自勤奋, 无知与堕落源于懒惰. 对学生来说, 堕落就是思考的懒惰.</p>
-</li>
+                <h2 id="条款32-确定你的public继承塑膜出-is-a-关系"><a href="#条款32-确定你的public继承塑膜出-is-a-关系" class="headerlink" title="条款32 : 确定你的public继承塑膜出 is-a 关系"></a>条款32 : 确定你的public继承塑膜出 is-a 关系</h2><blockquote>
+<p>从本条款开始我们将步入面向对象编程这一重要领域进行讨论, 首先我们将会围绕public继承, 分析public继承的意义与目的, 再举出两个错误的public继承典例.</p>
+</blockquote>
+<h3 id="public继承意味”is-a”-是一种-的关系"><a href="#public继承意味”is-a”-是一种-的关系" class="headerlink" title="public继承意味”is-a”(是一种)的关系"></a>public继承意味”is-a”(是一种)的关系</h3><p>这便是C++面向对象编程的最重要的一个规则, 请把这个规则牢牢记在心中吧, 相信很多人以及对这种认知有所耳闻, 我甚至在学java的多态时都听到过这个概念, 可见此思想影响之深远.</p>
+<p>如果你令B公开继承自A, 那么代表着<strong>B是一种A</strong>,  进而代表着<strong>所有可以使用A的场景都可以使用B, 所有A可以产生的行为B都可以产生</strong>. 反之则不然, 需要B的场景并不能用A替代.</p>
+<p>这种规则表面上很容易理解, 但是我们应当多去站在语法和程序本身的角度去理解, 因为我们在生活中的直觉可能会误导我们, 它并不一定是富有逻辑性而且缜密, 这会让我们想当然地去认为xxx是一种xxx.</p>
+<p>让我们通过两个例子来揭露这种错误.</p>
+<hr>
+<h3 id="鸟会飞"><a href="#鸟会飞" class="headerlink" title="鸟会飞?"></a>鸟会飞?</h3><p>直觉来看, 鸟应该是会飞的, 但是当我们想到鸵鸟和企鹅, 事情就开始不对劲了, 我们先来看第一版 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Bird</span> &#123;<br><span class="hljs-keyword">public</span>:<br>  <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">fly</span><span class="hljs-params">()</span></span>;                  <span class="hljs-comment">// 鸟会飞</span><br>  ...<br>&#125;;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Penguin</span>:<span class="hljs-keyword">public</span> Bird &#123;            <span class="hljs-comment">// 企鹅是鸟</span><br>  ...<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>这里我们可以看出, 企鹅确实是鸟, 但企鹅确实不会飞, 它本就不应该继承fly()函数, 于是我们就会有下一版 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Bird</span> &#123;<br>  ...                                      <span class="hljs-comment">// 不在声明fly()函数</span><br>&#125;;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">FlyingBird</span>: <span class="hljs-keyword">public</span> Bird &#123;				<span class="hljs-comment">// 一个新的派生类, 用来做所有飞鸟的基类</span><br><span class="hljs-keyword">public</span>:<br>  <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">fly</span><span class="hljs-params">()</span></span>;<br>  ...<br>&#125;;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Penguin</span>: <span class="hljs-keyword">public</span> Bird &#123;<br>  ...                                       <span class="hljs-comment">// 这里就继承不到fly()了</span><br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>至此逻辑就合理了,  这也在告诫我们应当仔细分析设置在类中的每个成员函数是否合理.</p>
+<hr>
+<h3 id="进一步梳理"><a href="#进一步梳理" class="headerlink" title="进一步梳理"></a>进一步梳理</h3><p>上一个例子因为鸟是否会飞的需求而产生了不同的设计, 但是书中想告诉我们, <strong>世界上并不存在一个”适用于所有软件”的完美设计</strong>, 因为时间在流逝, 需求在变化, 我们的设计一定要符合需求, 假如我们整个体系就是针对飞鸟来建立的, 完全不会与企鹅鸵鸟相关, 那么最开始的设计完全是可行的. 简单来说, <strong>我们要明确需求, 根据需求分析各种不同的情况, 做出符合当前需求的继承设计</strong>, 当然也可以有一定的前瞻性, 但不要与当下的需求相悖.</p>
+<hr>
+<h3 id="正方形是一种矩形"><a href="#正方形是一种矩形" class="headerlink" title="正方形是一种矩形?"></a>正方形是一种矩形?</h3><p>这相比于上一例中由于常识产生的错误不同, 这就是数理方面的真理, 但从最终结果上并不适合<code>public</code>继承, 我们来看代码 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Rectangle</span> &#123;<br><span class="hljs-keyword">public</span>:<br>  	<span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">setHeight</span><span class="hljs-params">(<span class="hljs-type">int</span> newHeight)</span></span>;<br>  	<span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">setWidth</span><span class="hljs-params">(<span class="hljs-type">int</span> newWidth)</span></span>;<br><br>  	<span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">int</span> <span class="hljs-title">height</span><span class="hljs-params">()</span> <span class="hljs-type">const</span></span>;               <span class="hljs-comment">// return current values</span><br>  	<span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">int</span> <span class="hljs-title">width</span><span class="hljs-params">()</span> <span class="hljs-type">const</span></span>;<br>    <br>  	<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">addWidth</span><span class="hljs-params">()</span>               <span class="hljs-comment">// 调用这个函数会使这个width增加10, 并且height不加</span></span><br><span class="hljs-function">	</span>&#123;<br>  		<span class="hljs-type">int</span> oldHeight = <span class="hljs-built_in">height</span>();<br>  		<span class="hljs-built_in">setWidth</span>(<span class="hljs-built_in">width</span>() + <span class="hljs-number">10</span>);<br>  		<span class="hljs-built_in">assert</span>(<span class="hljs-built_in">height</span>() == oldHeight);          <span class="hljs-comment">// 检察height是否变化</span><br>	&#125; <br>  ...<br>&#125;;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Square</span>: <span class="hljs-keyword">public</span> Rectangle &#123;...&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>当我们用<code>Square</code>写出如下代码就会发生问题 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs cpp">Square s;<br><span class="hljs-built_in">assert</span>(s.<span class="hljs-built_in">width</span>() == s.<span class="hljs-built_in">height</span>());           <span class="hljs-comment">// 看正方形的性质是否保持</span><br>s.<span class="hljs-built_in">addWidth</span>();   <span class="hljs-comment">// 调用addWidth</span><br><span class="hljs-built_in">assert</span>(s.<span class="hljs-built_in">width</span>() == s.<span class="hljs-built_in">height</span>());		   <span class="hljs-comment">// 看正方形的性质是否保持</span><br></code></pre></td></tr></table></figure>
+
+<p>最后一条<code>assert</code>将会触发, 原因很容易理解, <code>addWidth</code>只增加了宽度, 这打破的正方形的性质.</p>
+<p>进一步分析, <code>addWidth()</code>这个函数本身是完全合理的, 因为一个矩形就是可以只增加宽度而不增加长度, 错的是自顾自<code>public</code>继承自它的<code>Square</code>, 因为它假定了正方形是一种矩形, 尽管这在公理上确实是成立的,  但是我们要求的是<strong>正方形可以做出所有矩形可以做出的行为</strong>, 这仿佛就不行了, 因为矩形可以只增加宽度而正方形不可以.</p>
+<hr>
+<h3 id="尾声"><a href="#尾声" class="headerlink" title="尾声"></a>尾声</h3><p><code>is-a(是一种)</code>并非是唯一存在于继承中关系, 我们还会再条款38和条款39讨论另外两个常见的关系, <code>has-a(有一个)</code>和<code>is-implemented-in-terms-of(根据某物实现出)</code>, 而我们上文正方形和矩形的关系便可以用<code>has-a</code>来解释. 在学完另外两种关系之后, 我们便应当好好了解这些关系之间的差异, 在继承中做到正确的选择.</p>
+<hr>
+<h3 id="请记住"><a href="#请记住" class="headerlink" title="请记住 :"></a>请记住 :</h3><ul>
+<li><code>public</code>继承意味”<code>is-a</code>“(是一种)的关系, 若B继承自A, 所有可以使用A的场景都可以使用B, 所有A可以产生的行为B都可以产生.</li>
+<li>不要太相信直觉, 当你认为某些事物有 “<code>is-a</code>“的关系, 不妨再看看是否符合上一条的后半句.</li>
 </ul>
+<p>by 天目中云</p>
 
                 
               </div>
@@ -353,9 +349,9 @@
     <div class="post-meta">
       <i class="iconfont icon-tags"></i>
       
-        <a href="/tags/%E9%98%85%E8%AF%BB/" class="print-no-link">#阅读</a>
+        <a href="/tags/Effective-C/" class="print-no-link">#Effective C++</a>
       
-        <a href="/tags/%E7%93%A6%E5%B0%94%E7%99%BB%E6%B9%96/" class="print-no-link">#瓦尔登湖</a>
+        <a href="/tags/%E7%BB%A7%E6%89%BF/" class="print-no-link">#继承</a>
       
     </div>
   
@@ -367,8 +363,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>瓦尔登湖读书摘录(3)</div>
-      <div>http://example.com/2024/12/11/2024-12-11-瓦尔登湖读书摘录(3)/</div>
+      <div>Effective C++ 条款32 public继承</div>
+      <div>http://example.com/2024/12/12/[Effective C++]条款32 public继承/</div>
     </div>
     <div class="license-meta">
       
@@ -380,7 +376,7 @@
       
         <div class="license-meta-item license-meta-date">
           <div>发布于</div>
-          <div>2024年12月11日</div>
+          <div>2024年12月12日</div>
         </div>
       
       
@@ -412,18 +408,12 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2024/12/12/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE32%20public%E7%BB%A7%E6%89%BF/" title="Effective C++ 条款32 public继承">
-                        <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">Effective C++ 条款32 public继承</span>
-                        <span class="visible-mobile">上一篇</span>
-                      </a>
-                    
                   </article>
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2024/12/11/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE31%20%E7%BC%96%E8%AF%91%E4%BE%9D%E5%AD%98%E6%80%A7/" title="Effective C++ 条款31 编译依存性">
-                        <span class="hidden-mobile">Effective C++ 条款31 编译依存性</span>
+                      <a href="/2024/12/11/2024-12-11-%E7%93%A6%E5%B0%94%E7%99%BB%E6%B9%96%E8%AF%BB%E4%B9%A6%E6%91%98%E5%BD%95(3)/" title="瓦尔登湖读书摘录(3)">
+                        <span class="hidden-mobile">瓦尔登湖读书摘录(3)</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
