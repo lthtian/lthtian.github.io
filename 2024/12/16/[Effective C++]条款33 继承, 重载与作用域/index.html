@@ -21,25 +21,24 @@
   <meta name="author" content="天目中云">
   <meta name="keywords" content="">
   
-    <meta name="description" content="条款32 : 确定你的public继承塑膜出 is-a 关系 从本条款开始我们将步入面向对象编程这一重要领域进行讨论, 首先我们将会围绕public继承, 分析public继承的意义与目的, 再举出两个错误的public继承典例.  public继承意味”is-a”(是一种)的关系这便是C++面向对象编程的最重要的一个规则, 请把这个规则牢牢记在心中吧, 相信很多人以及对这种认知有所耳闻, 我甚至">
+    <meta name="description" content="条款33 : 避免遮掩继承而来的名称 本条款并非和继承有关, 而是在讨论由继承引发的作用域问题, 其有可能破坏条款32所确定的法则, 因此我们在其之后介绍本条款。  我们知道在不同作用域下如果有相同名称的事物, 无论其功能或类型, 都是局部优先的. 继承的父子类也是类似, 不管是不是虚函数, 亦或是纯虚函数都完全没有关系, 都遵守相同名称局部优先的原则, 我们来看看一下的代码 :   123456">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Effective C++ 条款32 public继承">
-<meta property="og:url" content="http://example.com/2024/12/12/[Effective%20C++]%E6%9D%A1%E6%AC%BE32%20public%E7%BB%A7%E6%89%BF/index.html">
+<meta property="og:title" content="Effective C++ 条款33 继承, 重载与作用域">
+<meta property="og:url" content="http://example.com/2024/12/16/[Effective%20C++]%E6%9D%A1%E6%AC%BE33%20%E7%BB%A7%E6%89%BF,%20%E9%87%8D%E8%BD%BD%E4%B8%8E%E4%BD%9C%E7%94%A8%E5%9F%9F/index.html">
 <meta property="og:site_name" content="天目中云">
-<meta property="og:description" content="条款32 : 确定你的public继承塑膜出 is-a 关系 从本条款开始我们将步入面向对象编程这一重要领域进行讨论, 首先我们将会围绕public继承, 分析public继承的意义与目的, 再举出两个错误的public继承典例.  public继承意味”is-a”(是一种)的关系这便是C++面向对象编程的最重要的一个规则, 请把这个规则牢牢记在心中吧, 相信很多人以及对这种认知有所耳闻, 我甚至">
+<meta property="og:description" content="条款33 : 避免遮掩继承而来的名称 本条款并非和继承有关, 而是在讨论由继承引发的作用域问题, 其有可能破坏条款32所确定的法则, 因此我们在其之后介绍本条款。  我们知道在不同作用域下如果有相同名称的事物, 无论其功能或类型, 都是局部优先的. 继承的父子类也是类似, 不管是不是虚函数, 亦或是纯虚函数都完全没有关系, 都遵守相同名称局部优先的原则, 我们来看看一下的代码 :   123456">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2024-12-12T09:26:00.000Z">
-<meta property="article:modified_time" content="2024-12-12T09:27:26.282Z">
+<meta property="article:published_time" content="2024-12-16T07:40:00.000Z">
+<meta property="article:modified_time" content="2024-12-16T07:39:44.787Z">
 <meta property="article:author" content="天目中云">
 <meta property="article:tag" content="Effective C++">
-<meta property="article:tag" content="继承">
 <meta name="twitter:card" content="summary_large_image">
   
   
     <meta name="referrer" content="no-referrer-when-downgrade">
   
   
-  <title>Effective C++ 条款32 public继承 - 天目中云</title>
+  <title>Effective C++ 条款33 继承, 重载与作用域 - 天目中云</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -218,7 +217,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="Effective C++ 条款32 public继承"></span>
+            <span id="subtitle" data-typed-text="Effective C++ 条款33 继承, 重载与作用域"></span>
           
         </div>
 
@@ -229,8 +228,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2024-12-12 17:26" pubdate>
-          2024年12月12日 下午
+        <time datetime="2024-12-16 15:40" pubdate>
+          2024年12月16日 下午
         </time>
       </span>
     
@@ -241,7 +240,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          1.3k 字
+          751 字
         
       </span>
     
@@ -252,7 +251,7 @@
         
         
         
-          11 分钟
+          7 分钟
         
       </span>
     
@@ -298,43 +297,37 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <h1 id="seo-header">Effective C++ 条款32 public继承</h1>
+            <h1 id="seo-header">Effective C++ 条款33 继承, 重载与作用域</h1>
             
             
               <div class="markdown-body">
                 
-                <h2 id="条款32-确定你的public继承塑膜出-is-a-关系"><a href="#条款32-确定你的public继承塑膜出-is-a-关系" class="headerlink" title="条款32 : 确定你的public继承塑膜出 is-a 关系"></a>条款32 : 确定你的public继承塑膜出 is-a 关系</h2><blockquote>
-<p>从本条款开始我们将步入面向对象编程这一重要领域进行讨论, 首先我们将会围绕public继承, 分析public继承的意义与目的, 再举出两个错误的public继承典例.</p>
+                <h2 id="条款33-避免遮掩继承而来的名称"><a href="#条款33-避免遮掩继承而来的名称" class="headerlink" title="条款33 : 避免遮掩继承而来的名称"></a>条款33 : 避免遮掩继承而来的名称</h2><blockquote>
+<p>本条款并非和继承有关, 而是在讨论由继承引发的作用域问题, 其有可能破坏条款32所确定的法则, 因此我们在其之后介绍本条款。</p>
 </blockquote>
-<h3 id="public继承意味”is-a”-是一种-的关系"><a href="#public继承意味”is-a”-是一种-的关系" class="headerlink" title="public继承意味”is-a”(是一种)的关系"></a>public继承意味”is-a”(是一种)的关系</h3><p>这便是C++面向对象编程的最重要的一个规则, 请把这个规则牢牢记在心中吧, 相信很多人以及对这种认知有所耳闻, 我甚至在学java的多态时都听到过这个概念, 可见此思想影响之深远.</p>
-<p>如果你令B公开继承自A, 那么代表着<strong>B是一种A</strong>,  进而代表着<strong>所有可以使用A的场景都可以使用B, 所有A可以产生的行为B都可以产生</strong>. 反之则不然, 需要B的场景并不能用A替代.</p>
-<p>这种规则表面上很容易理解, 但是我们应当多去站在语法和程序本身的角度去理解, 因为我们在生活中的直觉可能会误导我们, 它并不一定是富有逻辑性而且缜密, 这会让我们想当然地去认为xxx是一种xxx.</p>
-<p>让我们通过两个例子来揭露这种错误.</p>
-<hr>
-<h3 id="鸟会飞"><a href="#鸟会飞" class="headerlink" title="鸟会飞?"></a>鸟会飞?</h3><p>直觉来看, 鸟应该是会飞的, 但是当我们想到鸵鸟和企鹅, 事情就开始不对劲了, 我们先来看第一版 : </p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Bird</span> &#123;<br><span class="hljs-keyword">public</span>:<br>  <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">fly</span><span class="hljs-params">()</span></span>;                  <span class="hljs-comment">// 鸟会飞</span><br>  ...<br>&#125;;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Penguin</span>:<span class="hljs-keyword">public</span> Bird &#123;            <span class="hljs-comment">// 企鹅是鸟</span><br>  ...<br>&#125;;<br></code></pre></td></tr></table></figure>
+<p>我们知道在不同作用域下如果有相同名称的事物, 无论其功能或类型, 都是局部优先的. 继承的父子类也是类似, 不管是不是虚函数, 亦或是纯虚函数都完全没有关系, 都遵守相同名称局部优先的原则, 我们来看看一下的代码 :  </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Base</span> &#123;<br><span class="hljs-keyword">private</span>:<br>  <span class="hljs-type">int</span> x;<br><span class="hljs-keyword">public</span>:<br>  <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">mf1</span><span class="hljs-params">()</span> </span>= <span class="hljs-number">0</span>;<br>  <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">mf2</span><span class="hljs-params">()</span></span>;<br>  <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">mf3</span><span class="hljs-params">()</span></span>;<br>  ...<br>&#125;;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Derived</span>: <span class="hljs-keyword">public</span> Base &#123;<br><span class="hljs-keyword">public</span>:<br>  <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">mf1</span><span class="hljs-params">()</span> <span class="hljs-keyword">override</span></span>;<br>  <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">mf2</span><span class="hljs-params">()</span> <span class="hljs-keyword">override</span></span>;<br>  ...<br>&#125;;<br></code></pre></td></tr></table></figure>
 
-<p>这里我们可以看出, 企鹅确实是鸟, 但企鹅确实不会飞, 它本就不应该继承fly()函数, 于是我们就会有下一版 : </p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Bird</span> &#123;<br>  ...                                      <span class="hljs-comment">// 不在声明fly()函数</span><br>&#125;;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">FlyingBird</span>: <span class="hljs-keyword">public</span> Bird &#123;				<span class="hljs-comment">// 一个新的派生类, 用来做所有飞鸟的基类</span><br><span class="hljs-keyword">public</span>:<br>  <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">fly</span><span class="hljs-params">()</span></span>;<br>  ...<br>&#125;;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Penguin</span>: <span class="hljs-keyword">public</span> Bird &#123;<br>  ...                                       <span class="hljs-comment">// 这里就继承不到fly()了</span><br>&#125;;<br></code></pre></td></tr></table></figure>
+<p>分析代码我们可以发现, 派生类的函数都将覆盖基类相同名称的函数, 但没有什么原则上的问题.</p>
+<p>但是如果加入重载, 事情就变得有些复杂了, 我们来看看接下来的代码 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Base</span> &#123;<br><span class="hljs-keyword">private</span>:<br>  <span class="hljs-type">int</span> x;<br><br><span class="hljs-keyword">public</span>:<br>  <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">mf1</span><span class="hljs-params">()</span> </span>= <span class="hljs-number">0</span>;<br>  <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">mf1</span><span class="hljs-params">(<span class="hljs-type">int</span>)</span></span>;  <span class="hljs-comment">// mf1的重载</span><br><br>  <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">mf2</span><span class="hljs-params">()</span></span>;<br><br>  <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">mf3</span><span class="hljs-params">()</span></span>;<br>  <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">mf3</span><span class="hljs-params">(<span class="hljs-type">double</span>)</span></span>;  <span class="hljs-comment">// mf3的重载</span><br>  ...<br>&#125;;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Derived</span>: <span class="hljs-keyword">public</span> Base &#123;<br><span class="hljs-keyword">public</span>:<br>  <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">mf1</span><span class="hljs-params">()</span></span>;<br>  <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">mf3</span><span class="hljs-params">()</span></span>;<br>  ...<br>&#125;;<br></code></pre></td></tr></table></figure>
 
-<p>至此逻辑就合理了,  这也在告诫我们应当仔细分析设置在类中的每个成员函数是否合理.</p>
+<p>我们经过测试发现, 派生类调用<code>mf1</code>将只能调用到<code>Derived</code>中的<code>mf1()</code>, <code>mf3</code>也是如此, 而基类中的重载版本将无法再获取(除非用<code>Base::</code>). 以下我们将会介绍两种应用于不同情况下的解决办法.</p>
 <hr>
-<h3 id="进一步梳理"><a href="#进一步梳理" class="headerlink" title="进一步梳理"></a>进一步梳理</h3><p>上一个例子因为鸟是否会飞的需求而产生了不同的设计, 但是书中想告诉我们, <strong>世界上并不存在一个”适用于所有软件”的完美设计</strong>, 因为时间在流逝, 需求在变化, 我们的设计一定要符合需求, 假如我们整个体系就是针对飞鸟来建立的, 完全不会与企鹅鸵鸟相关, 那么最开始的设计完全是可行的. 简单来说, <strong>我们要明确需求, 根据需求分析各种不同的情况, 做出符合当前需求的继承设计</strong>, 当然也可以有一定的前瞻性, 但不要与当下的需求相悖.</p>
-<hr>
-<h3 id="正方形是一种矩形"><a href="#正方形是一种矩形" class="headerlink" title="正方形是一种矩形?"></a>正方形是一种矩形?</h3><p>这相比于上一例中由于常识产生的错误不同, 这就是数理方面的真理, 但从最终结果上并不适合<code>public</code>继承, 我们来看代码 : </p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Rectangle</span> &#123;<br><span class="hljs-keyword">public</span>:<br>  	<span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">setHeight</span><span class="hljs-params">(<span class="hljs-type">int</span> newHeight)</span></span>;<br>  	<span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">setWidth</span><span class="hljs-params">(<span class="hljs-type">int</span> newWidth)</span></span>;<br><br>  	<span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">int</span> <span class="hljs-title">height</span><span class="hljs-params">()</span> <span class="hljs-type">const</span></span>;               <span class="hljs-comment">// return current values</span><br>  	<span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">int</span> <span class="hljs-title">width</span><span class="hljs-params">()</span> <span class="hljs-type">const</span></span>;<br>    <br>  	<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">addWidth</span><span class="hljs-params">()</span>               <span class="hljs-comment">// 调用这个函数会使这个width增加10, 并且height不加</span></span><br><span class="hljs-function">	</span>&#123;<br>  		<span class="hljs-type">int</span> oldHeight = <span class="hljs-built_in">height</span>();<br>  		<span class="hljs-built_in">setWidth</span>(<span class="hljs-built_in">width</span>() + <span class="hljs-number">10</span>);<br>  		<span class="hljs-built_in">assert</span>(<span class="hljs-built_in">height</span>() == oldHeight);          <span class="hljs-comment">// 检察height是否变化</span><br>	&#125; <br>  ...<br>&#125;;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Square</span>: <span class="hljs-keyword">public</span> Rectangle &#123;...&#125;;<br></code></pre></td></tr></table></figure>
+<h3 id="using声明式"><a href="#using声明式" class="headerlink" title="using声明式"></a>using声明式</h3><p>让我们回顾条款32 : “<strong>public意味is-a</strong>“ , 也就是说派生类可以干出所有<code>Base</code>可以干的事, 但是在这种情况下, 基类可以使用<code>mf1(int)</code>, 而派生类却不可, 这便是打破了这个规则. 因此我们可以再在派生类重写对应的重载, 亦或是直接接受父类的重载版本, 就像如下代码 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Derived</span>: <span class="hljs-keyword">public</span> Base &#123;<br><span class="hljs-keyword">public</span>:<br>  <span class="hljs-keyword">using</span> Base::mf1;       <br>  <span class="hljs-keyword">using</span> Base::mf3;      <span class="hljs-comment">// 所有Base中的mf1和mf2在Derived中都可见</span><br>  <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">mf1</span><span class="hljs-params">()</span></span>;<br>  <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">mf3</span><span class="hljs-params">()</span></span>;<br>  <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">mf4</span><span class="hljs-params">()</span></span>;<br>  ...<br>&#125;;<br></code></pre></td></tr></table></figure>
 
-<p>当我们用<code>Square</code>写出如下代码就会发生问题 : </p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs cpp">Square s;<br><span class="hljs-built_in">assert</span>(s.<span class="hljs-built_in">width</span>() == s.<span class="hljs-built_in">height</span>());           <span class="hljs-comment">// 看正方形的性质是否保持</span><br>s.<span class="hljs-built_in">addWidth</span>();   <span class="hljs-comment">// 调用addWidth</span><br><span class="hljs-built_in">assert</span>(s.<span class="hljs-built_in">width</span>() == s.<span class="hljs-built_in">height</span>());		   <span class="hljs-comment">// 看正方形的性质是否保持</span><br></code></pre></td></tr></table></figure>
-
-<p>最后一条<code>assert</code>将会触发, 原因很容易理解, <code>addWidth</code>只增加了宽度, 这打破的正方形的性质.</p>
-<p>进一步分析, <code>addWidth()</code>这个函数本身是完全合理的, 因为一个矩形就是可以只增加宽度而不增加长度, 错的是自顾自<code>public</code>继承自它的<code>Square</code>, 因为它假定了正方形是一种矩形, 尽管这在公理上确实是成立的,  但是我们要求的是<strong>正方形可以做出所有矩形可以做出的行为</strong>, 这仿佛就不行了, 因为矩形可以只增加宽度而正方形不可以.</p>
+<p>如此便可<strong>避免遮掩继承而来的名称</strong>.</p>
 <hr>
-<h3 id="尾声"><a href="#尾声" class="headerlink" title="尾声"></a>尾声</h3><p><code>is-a(是一种)</code>并非是唯一存在于继承中关系, 我们还会再条款38和条款39讨论另外两个常见的关系, <code>has-a(有一个)</code>和<code>is-implemented-in-terms-of(根据某物实现出)</code>, 而我们上文正方形和矩形的关系便可以用<code>has-a</code>来解释. 在学完另外两种关系之后, 我们便应当好好了解这些关系之间的差异, 在继承中做到正确的选择.</p>
+<h3 id="转交函数"><a href="#转交函数" class="headerlink" title="转交函数"></a>转交函数</h3><p><code>public</code>继承可以通过<code>using</code>暴露所有基类的名称及其对应的重载版本, 但当然也会有<code>private</code>继承(具体细节在条款39中讲解)有类似的需求, 但<code>private</code>继承不一定需要继承所有基类的重载版本, 可能只是某个被遮掩的版本, 于是我们可以通过<strong>转交函数</strong>, 来缩小获取的范围, 让我们看以下代码 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Base</span> &#123;<br><span class="hljs-keyword">public</span>:<br>  <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">mf1</span><span class="hljs-params">()</span> </span>= <span class="hljs-number">0</span>;<br>  <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">mf1</span><span class="hljs-params">(<span class="hljs-type">int</span>)</span></span>;<br>  ...                                   <br>&#125;;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Derived</span>: <span class="hljs-keyword">private</span> Base &#123;<br><span class="hljs-keyword">public</span>:<br>  <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">mf1</span><span class="hljs-params">()</span></span><br><span class="hljs-function">  </span>&#123; Base::<span class="hljs-built_in">mf1</span>(); &#125;                     <span class="hljs-comment">// 转交给基类, 选取其中的无参数版本</span><br>  ...<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>这样<code>mf1</code>就只会有基类无参数版本的<code>mf1</code>对应的功能, 而使用不到带<code>int</code>的重载版本.</p>
 <hr>
 <h3 id="请记住"><a href="#请记住" class="headerlink" title="请记住 :"></a>请记住 :</h3><ul>
-<li><code>public</code>继承意味”<code>is-a</code>“(是一种)的关系, 若B继承自A, 所有可以使用A的场景都可以使用B, 所有A可以产生的行为B都可以产生.</li>
-<li>不要太相信直觉, 当你认为某些事物有 “<code>is-a</code>“的关系, 不妨再看看是否符合上一条的后半句.</li>
+<li>派生类中的名称会遮掩基类中的名称.</li>
+<li><code>public</code>继承必须接受所有基类中所有被遮掩的名称, 故用<code>using</code>声明式.</li>
+<li><code>private</code>继承中可能有需要基类中被遮掩物的需求, 可以用转交函数声明调用基类函数.</li>
 </ul>
 <p>by 天目中云</p>
 
@@ -351,8 +344,6 @@
       
         <a href="/tags/Effective-C/" class="print-no-link">#Effective C++</a>
       
-        <a href="/tags/%E7%BB%A7%E6%89%BF/" class="print-no-link">#继承</a>
-      
     </div>
   
 </div>
@@ -363,8 +354,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>Effective C++ 条款32 public继承</div>
-      <div>http://example.com/2024/12/12/[Effective C++]条款32 public继承/</div>
+      <div>Effective C++ 条款33 继承, 重载与作用域</div>
+      <div>http://example.com/2024/12/16/[Effective C++]条款33 继承, 重载与作用域/</div>
     </div>
     <div class="license-meta">
       
@@ -376,7 +367,7 @@
       
         <div class="license-meta-item license-meta-date">
           <div>发布于</div>
-          <div>2024年12月12日</div>
+          <div>2024年12月16日</div>
         </div>
       
       
@@ -408,18 +399,12 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2024/12/16/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE33%20%E7%BB%A7%E6%89%BF,%20%E9%87%8D%E8%BD%BD%E4%B8%8E%E4%BD%9C%E7%94%A8%E5%9F%9F/" title="Effective C++ 条款33 继承, 重载与作用域">
-                        <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">Effective C++ 条款33 继承, 重载与作用域</span>
-                        <span class="visible-mobile">上一篇</span>
-                      </a>
-                    
                   </article>
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2024/12/11/2024-12-11-%E7%93%A6%E5%B0%94%E7%99%BB%E6%B9%96%E8%AF%BB%E4%B9%A6%E6%91%98%E5%BD%95(3)/" title="瓦尔登湖读书摘录(3)">
-                        <span class="hidden-mobile">瓦尔登湖读书摘录(3)</span>
+                      <a href="/2024/12/12/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE32%20public%E7%BB%A7%E6%89%BF/" title="Effective C++ 条款32 public继承">
+                        <span class="hidden-mobile">Effective C++ 条款32 public继承</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
