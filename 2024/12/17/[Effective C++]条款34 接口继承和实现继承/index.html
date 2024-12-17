@@ -21,24 +21,25 @@
   <meta name="author" content="天目中云">
   <meta name="keywords" content="">
   
-    <meta name="description" content="条款33 : 避免遮掩继承而来的名称 本条款并非和继承有关, 而是在讨论由继承引发的作用域问题, 其有可能破坏条款32所确定的法则, 因此我们在其之后介绍本条款。  我们知道在不同作用域下如果有相同名称的事物, 无论其功能或类型, 都是局部优先的. 继承的父子类也是类似, 不管是不是虚函数, 亦或是纯虚函数都完全没有关系, 都遵守相同名称局部优先的原则, 我们来看看一下的代码 :   123456">
+    <meta name="description" content="条款34 : 区分接口继承和实现继承 作为class的设计者, 我们有时希望派生类只继承成员函数的接口, 有时又希望同时继承接口和实现, 有时又希望能够重写所继承的实现,  因此我们的选择是多样的, 这里大有可以探讨的地方, 本条款将带我们区分不同的继承方法, 并对其做出建议  三种继承方式首先让我们明晰各种继承方式的区别, 大体有三种继承方式 :   接口继承 : pure virtual函数实">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Effective C++ 条款33 继承, 重载与作用域">
-<meta property="og:url" content="http://example.com/2024/12/16/[Effective%20C++]%E6%9D%A1%E6%AC%BE33%20%E7%BB%A7%E6%89%BF,%20%E9%87%8D%E8%BD%BD%E4%B8%8E%E4%BD%9C%E7%94%A8%E5%9F%9F/index.html">
+<meta property="og:title" content="Effective C++ 条款34 接口继承和实现继承">
+<meta property="og:url" content="http://example.com/2024/12/17/[Effective%20C++]%E6%9D%A1%E6%AC%BE34%20%E6%8E%A5%E5%8F%A3%E7%BB%A7%E6%89%BF%E5%92%8C%E5%AE%9E%E7%8E%B0%E7%BB%A7%E6%89%BF/index.html">
 <meta property="og:site_name" content="天目中云">
-<meta property="og:description" content="条款33 : 避免遮掩继承而来的名称 本条款并非和继承有关, 而是在讨论由继承引发的作用域问题, 其有可能破坏条款32所确定的法则, 因此我们在其之后介绍本条款。  我们知道在不同作用域下如果有相同名称的事物, 无论其功能或类型, 都是局部优先的. 继承的父子类也是类似, 不管是不是虚函数, 亦或是纯虚函数都完全没有关系, 都遵守相同名称局部优先的原则, 我们来看看一下的代码 :   123456">
+<meta property="og:description" content="条款34 : 区分接口继承和实现继承 作为class的设计者, 我们有时希望派生类只继承成员函数的接口, 有时又希望同时继承接口和实现, 有时又希望能够重写所继承的实现,  因此我们的选择是多样的, 这里大有可以探讨的地方, 本条款将带我们区分不同的继承方法, 并对其做出建议  三种继承方式首先让我们明晰各种继承方式的区别, 大体有三种继承方式 :   接口继承 : pure virtual函数实">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2024-12-16T07:40:00.000Z">
-<meta property="article:modified_time" content="2024-12-16T07:39:44.787Z">
+<meta property="article:published_time" content="2024-12-17T09:13:00.000Z">
+<meta property="article:modified_time" content="2024-12-17T09:14:36.466Z">
 <meta property="article:author" content="天目中云">
 <meta property="article:tag" content="Effective C++">
+<meta property="article:tag" content="继承">
 <meta name="twitter:card" content="summary_large_image">
   
   
     <meta name="referrer" content="no-referrer-when-downgrade">
   
   
-  <title>Effective C++ 条款33 继承, 重载与作用域 - 天目中云</title>
+  <title>Effective C++ 条款34 接口继承和实现继承 - 天目中云</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -217,7 +218,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="Effective C++ 条款33 继承, 重载与作用域"></span>
+            <span id="subtitle" data-typed-text="Effective C++ 条款34 接口继承和实现继承"></span>
           
         </div>
 
@@ -228,8 +229,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2024-12-16 15:40" pubdate>
-          2024年12月16日 下午
+        <time datetime="2024-12-17 17:13" pubdate>
+          2024年12月17日 下午
         </time>
       </span>
     
@@ -240,7 +241,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          751 字
+          1.3k 字
         
       </span>
     
@@ -251,7 +252,7 @@
         
         
         
-          7 分钟
+          12 分钟
         
       </span>
     
@@ -297,37 +298,64 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <h1 id="seo-header">Effective C++ 条款33 继承, 重载与作用域</h1>
+            <h1 id="seo-header">Effective C++ 条款34 接口继承和实现继承</h1>
             
             
               <div class="markdown-body">
                 
-                <h2 id="条款33-避免遮掩继承而来的名称"><a href="#条款33-避免遮掩继承而来的名称" class="headerlink" title="条款33 : 避免遮掩继承而来的名称"></a>条款33 : 避免遮掩继承而来的名称</h2><blockquote>
-<p>本条款并非和继承有关, 而是在讨论由继承引发的作用域问题, 其有可能破坏条款32所确定的法则, 因此我们在其之后介绍本条款。</p>
+                <h2 id="条款34-区分接口继承和实现继承"><a href="#条款34-区分接口继承和实现继承" class="headerlink" title="条款34 : 区分接口继承和实现继承"></a>条款34 : 区分接口继承和实现继承</h2><blockquote>
+<p>作为class的设计者, 我们有时希望派生类只继承成员函数的接口, 有时又希望同时继承接口和实现, 有时又希望能够重写所继承的实现,  因此我们的选择是多样的, 这里大有可以探讨的地方, 本条款将带我们区分不同的继承方法, 并对其做出建议</p>
 </blockquote>
-<p>我们知道在不同作用域下如果有相同名称的事物, 无论其功能或类型, 都是局部优先的. 继承的父子类也是类似, 不管是不是虚函数, 亦或是纯虚函数都完全没有关系, 都遵守相同名称局部优先的原则, 我们来看看一下的代码 :  </p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Base</span> &#123;<br><span class="hljs-keyword">private</span>:<br>  <span class="hljs-type">int</span> x;<br><span class="hljs-keyword">public</span>:<br>  <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">mf1</span><span class="hljs-params">()</span> </span>= <span class="hljs-number">0</span>;<br>  <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">mf2</span><span class="hljs-params">()</span></span>;<br>  <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">mf3</span><span class="hljs-params">()</span></span>;<br>  ...<br>&#125;;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Derived</span>: <span class="hljs-keyword">public</span> Base &#123;<br><span class="hljs-keyword">public</span>:<br>  <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">mf1</span><span class="hljs-params">()</span> <span class="hljs-keyword">override</span></span>;<br>  <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">mf2</span><span class="hljs-params">()</span> <span class="hljs-keyword">override</span></span>;<br>  ...<br>&#125;;<br></code></pre></td></tr></table></figure>
-
-<p>分析代码我们可以发现, 派生类的函数都将覆盖基类相同名称的函数, 但没有什么原则上的问题.</p>
-<p>但是如果加入重载, 事情就变得有些复杂了, 我们来看看接下来的代码 : </p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Base</span> &#123;<br><span class="hljs-keyword">private</span>:<br>  <span class="hljs-type">int</span> x;<br><br><span class="hljs-keyword">public</span>:<br>  <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">mf1</span><span class="hljs-params">()</span> </span>= <span class="hljs-number">0</span>;<br>  <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">mf1</span><span class="hljs-params">(<span class="hljs-type">int</span>)</span></span>;  <span class="hljs-comment">// mf1的重载</span><br><br>  <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">mf2</span><span class="hljs-params">()</span></span>;<br><br>  <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">mf3</span><span class="hljs-params">()</span></span>;<br>  <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">mf3</span><span class="hljs-params">(<span class="hljs-type">double</span>)</span></span>;  <span class="hljs-comment">// mf3的重载</span><br>  ...<br>&#125;;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Derived</span>: <span class="hljs-keyword">public</span> Base &#123;<br><span class="hljs-keyword">public</span>:<br>  <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">mf1</span><span class="hljs-params">()</span></span>;<br>  <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">mf3</span><span class="hljs-params">()</span></span>;<br>  ...<br>&#125;;<br></code></pre></td></tr></table></figure>
-
-<p>我们经过测试发现, 派生类调用<code>mf1</code>将只能调用到<code>Derived</code>中的<code>mf1()</code>, <code>mf3</code>也是如此, 而基类中的重载版本将无法再获取(除非用<code>Base::</code>). 以下我们将会介绍两种应用于不同情况下的解决办法.</p>
+<h3 id="三种继承方式"><a href="#三种继承方式" class="headerlink" title="三种继承方式"></a>三种继承方式</h3><p>首先让我们明晰各种继承方式的区别, 大体有三种继承方式 : </p>
+<ul>
+<li><p>接口继承 : <strong>pure virtual函数</strong>实现, 强制派生类<strong>继承接口</strong>.</p>
+<p>这种方式的通过强制继承接口确保必需功能的实现.</p>
+</li>
+<li><p>接口 + 缺省实现继承 : <strong>virtual函数</strong>实现, 派生类可以选择重写, <strong>继承基类提供的接口和缺省实现</strong>.</p>
+<p>这种方式可以灵活选择是继承缺省版本还是重写.</p>
+</li>
+<li><p>接口 + 强制实现继承 : <strong>non-virtual函数</strong>实现, 派生类<strong>继承接口和唯一实现</strong>.</p>
+<p>这种方式就是给整个继承体系增加了一个固定的工具函数, 该函数不可重写.</p>
+</li>
+</ul>
+<p>简单来说就是继承会继承接口, 但是否继承一份实现是看具体情况而定的.</p>
 <hr>
-<h3 id="using声明式"><a href="#using声明式" class="headerlink" title="using声明式"></a>using声明式</h3><p>让我们回顾条款32 : “<strong>public意味is-a</strong>“ , 也就是说派生类可以干出所有<code>Base</code>可以干的事, 但是在这种情况下, 基类可以使用<code>mf1(int)</code>, 而派生类却不可, 这便是打破了这个规则. 因此我们可以再在派生类重写对应的重载, 亦或是直接接受父类的重载版本, 就像如下代码 : </p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Derived</span>: <span class="hljs-keyword">public</span> Base &#123;<br><span class="hljs-keyword">public</span>:<br>  <span class="hljs-keyword">using</span> Base::mf1;       <br>  <span class="hljs-keyword">using</span> Base::mf3;      <span class="hljs-comment">// 所有Base中的mf1和mf2在Derived中都可见</span><br>  <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">mf1</span><span class="hljs-params">()</span></span>;<br>  <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">mf3</span><span class="hljs-params">()</span></span>;<br>  <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">mf4</span><span class="hljs-params">()</span></span>;<br>  ...<br>&#125;;<br></code></pre></td></tr></table></figure>
+<h3 id="纯虚函数也可以被定义"><a href="#纯虚函数也可以被定义" class="headerlink" title="纯虚函数也可以被定义"></a>纯虚函数也可以被定义</h3><p>在前面的条款中应该有提过纯虚函数定义的问题, 这里再着重研究一下 : </p>
+<ul>
+<li><strong>纯虚函数可以被定义</strong>, 但调用它的唯一途径是调用时<strong>明确指出其class名称</strong>.</li>
+</ul>
+<p>就像如下代码 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Shape</span><br>&#123;<br>  <span class="hljs-keyword">public</span>:  <br>    <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">draw</span><span class="hljs-params">()</span> <span class="hljs-type">const</span> </span>= <span class="hljs-number">0</span>;<br>  ...<br>&#125;;<br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Rectangle</span> : <span class="hljs-keyword">public</span> Shape &#123;...&#125;;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">Shape::draw</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    cout &lt;&lt; <span class="hljs-string">&quot;draw&quot;</span> &lt;&lt; endl;<br>&#125;<br><br>Shape* ps = <span class="hljs-keyword">new</span> Rectangle;<br>ps-&gt;Shape::<span class="hljs-built_in">draw</span>(); 				<span class="hljs-comment">// 这样便可以调用纯虚函数</span><br></code></pre></td></tr></table></figure>
 
-<p>如此便可<strong>避免遮掩继承而来的名称</strong>.</p>
+<p>有了该定义, 便可以为上述的第二种继承方式提供<strong>更平常更安全的缺省实现</strong>.</p>
 <hr>
-<h3 id="转交函数"><a href="#转交函数" class="headerlink" title="转交函数"></a>转交函数</h3><p><code>public</code>继承可以通过<code>using</code>暴露所有基类的名称及其对应的重载版本, 但当然也会有<code>private</code>继承(具体细节在条款39中讲解)有类似的需求, 但<code>private</code>继承不一定需要继承所有基类的重载版本, 可能只是某个被遮掩的版本, 于是我们可以通过<strong>转交函数</strong>, 来缩小获取的范围, 让我们看以下代码 : </p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Base</span> &#123;<br><span class="hljs-keyword">public</span>:<br>  <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">mf1</span><span class="hljs-params">()</span> </span>= <span class="hljs-number">0</span>;<br>  <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">mf1</span><span class="hljs-params">(<span class="hljs-type">int</span>)</span></span>;<br>  ...                                   <br>&#125;;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Derived</span>: <span class="hljs-keyword">private</span> Base &#123;<br><span class="hljs-keyword">public</span>:<br>  <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">mf1</span><span class="hljs-params">()</span></span><br><span class="hljs-function">  </span>&#123; Base::<span class="hljs-built_in">mf1</span>(); &#125;                     <span class="hljs-comment">// 转交给基类, 选取其中的无参数版本</span><br>  ...<br>&#125;;<br></code></pre></td></tr></table></figure>
+<h3 id="“使用纯虚函数并定义”来替换普通虚函数的使用"><a href="#“使用纯虚函数并定义”来替换普通虚函数的使用" class="headerlink" title="“使用纯虚函数并定义”来替换普通虚函数的使用"></a>“使用纯虚函数并定义”来替换普通虚函数的使用</h3><p>先来引入前提, <strong>普通虚函数的重写并没有强制性, 并且在没有重写的情况下会自动继承缺省版本</strong>, 这点在实际应用中被认为是有风险的. 因为自动使用某些功能总是有可能超出使用者的预期的, 有些时候往往可能只是我们忘记重写, 本身并不希望使用缺省, 但实际却还是调用到了缺省, 这很有可能<strong>和我们想要实现的目的不一致, 但是在语法上是正确的, 我们不一定会意识到我们的错误</strong>. 书中举出了一个飞机公司的例子, 一开始有两种型号的飞机A和B, 新加入一个型号的飞机C,  其默认的飞行方式和AB都不同, 如果我们忘记重写fly函数, 自动调用的缺省函数可能不会符合我们的预期 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Airport</span> &#123; ... &#125;;                     <span class="hljs-comment">// represents airports</span><br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Airplane</span> &#123;<br><span class="hljs-keyword">public</span>:<br>  <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">fly</span><span class="hljs-params">(<span class="hljs-type">const</span> Airport&amp; destination)</span></span>;<br>  ...<br>&#125;;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">Airplane::fly</span><span class="hljs-params">(<span class="hljs-type">const</span> Airport&amp; destination)</span></span><br><span class="hljs-function"></span>&#123;<br>   <span class="hljs-comment">// fly的缺省行为</span><br>&#125;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">ModelA</span>: <span class="hljs-keyword">public</span> Airplane &#123; ... &#125;;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">ModelB</span>: <span class="hljs-keyword">public</span> Airplane &#123; ... &#125;;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">ModelC</span>: <span class="hljs-keyword">public</span> Airplane &#123;<br>  ...                                   <span class="hljs-comment">// 忘记重写C的fly, 调用的缺省行为也可能不符合我们的预期</span><br>&#125;;<br></code></pre></td></tr></table></figure>
 
-<p>这样<code>mf1</code>就只会有基类无参数版本的<code>mf1</code>对应的功能, 而使用不到带<code>int</code>的重载版本.</p>
+<p>理解起来并没有那么麻烦, 就是使用<code>virtual</code>函数并没有强制性检查, 程序员的疏忽可能导致错误.</p>
+<p>于是我们提出了一个新的方式替代<code>virtual</code>函数(第二种继承方案) : </p>
+<ul>
+<li><strong>使用pure virtual函数并定义,  在想要使用缺省版本时显示指定缺省版本</strong>.</li>
+</ul>
+<p>代码如下 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Airplane</span> &#123;<br><span class="hljs-keyword">public</span>:<br>  <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">fly</span><span class="hljs-params">(<span class="hljs-type">const</span> Airport&amp; destination)</span> </span>= <span class="hljs-number">0</span>; <span class="hljs-comment">// 纯虚函数声明fly</span><br>  ...<br>&#125;;<br><br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">Airplane::fly</span><span class="hljs-params">(<span class="hljs-type">const</span> Airport&amp; destination)</span>     </span><br><span class="hljs-function"></span>&#123;                                                  <br>  <span class="hljs-comment">// 用纯虚函数的定义当作缺省版本</span><br>&#125;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">ModelA</span>: <span class="hljs-keyword">public</span> Airplane &#123;<br><span class="hljs-keyword">public</span>:<br>  <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">fly</span><span class="hljs-params">(<span class="hljs-type">const</span> Airport&amp; destination)</span></span><br><span class="hljs-function">  </span>&#123; Airplane::<span class="hljs-built_in">fly</span>(destination); &#125;   <span class="hljs-comment">// 在想要调用缺省版本时显示调用</span><br>  ...<br>&#125;;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">ModelB</span>: <span class="hljs-keyword">public</span> Airplane &#123;<br><span class="hljs-keyword">public</span>:<br>  <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">fly</span><span class="hljs-params">(<span class="hljs-type">const</span> Airport&amp; destination)</span></span><br><span class="hljs-function">  </span>&#123; Airplane::<span class="hljs-built_in">fly</span>(destination); &#125;<br>  ...<br>&#125;;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">ModelC</span>: <span class="hljs-keyword">public</span> Airplane &#123;<br><span class="hljs-keyword">public</span>:<br>  <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">fly</span><span class="hljs-params">(<span class="hljs-type">const</span> Airport&amp; destination)</span></span>;<br>  ...<br>&#125;;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">ModelC::fly</span><span class="hljs-params">(<span class="hljs-type">const</span> Airport&amp; destination)</span></span><br><span class="hljs-function"></span>&#123;<br>  	<span class="hljs-comment">// 这里强制我们重写fly, 不想调用缺省版本就只能老实重写</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>这样我们可以用更安全地方式实现普通<code>virtual</code>函数的作用, <strong>利用纯虚函数必须重写的机制来让我必须在缺省和重写中做出选择, 而没有”忘了”这种选项</strong>.</p>
+<hr>
+<h3 id="继承方式的选择"><a href="#继承方式的选择" class="headerlink" title="继承方式的选择"></a>继承方式的选择</h3><p>具体选择还是依靠我们的需求来决定, 每种继承方式应用的场景我们都应明晰, 最后做出明智的判断, 最后作者还给出了几点提醒: </p>
+<ul>
+<li>除非你的<code>class</code>没有多态用途, 不要将所有函数声明为<code>non-virtual</code>.</li>
+<li>除非你要写接口类, 不要将所有函数声明为<code>virtual</code>, 这是不想思考的体现.</li>
+<li><code>virtual</code>函数是有成本的, 但是考虑到80-20法则(程序有80%的时间花费在20%的代码身上), 有80%的<code>virtual</code>函数不会对效率产生冲击, 这需要我们合理考量.</li>
+</ul>
 <hr>
 <h3 id="请记住"><a href="#请记住" class="headerlink" title="请记住 :"></a>请记住 :</h3><ul>
-<li>派生类中的名称会遮掩基类中的名称.</li>
-<li><code>public</code>继承必须接受所有基类中所有被遮掩的名称, 故用<code>using</code>声明式.</li>
-<li><code>private</code>继承中可能有需要基类中被遮掩物的需求, 可以用转交函数声明调用基类函数.</li>
+<li><p><code>pure virtual</code>函数只确保接口继承, 但是也可以进行定义.</p>
+</li>
+<li><p><code>virtual</code>函数在接口继承的同时可以选择是否继承实现, 可以用”使用纯虚函数并定义”的方式来替换以提高安全性.</p>
+</li>
+<li><p><code>non-virtual</code>函数在接口继承的同时继承一份强制性实现.</p>
+</li>
 </ul>
 <p>by 天目中云</p>
 
@@ -344,6 +372,8 @@
       
         <a href="/tags/Effective-C/" class="print-no-link">#Effective C++</a>
       
+        <a href="/tags/%E7%BB%A7%E6%89%BF/" class="print-no-link">#继承</a>
+      
     </div>
   
 </div>
@@ -354,8 +384,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>Effective C++ 条款33 继承, 重载与作用域</div>
-      <div>http://example.com/2024/12/16/[Effective C++]条款33 继承, 重载与作用域/</div>
+      <div>Effective C++ 条款34 接口继承和实现继承</div>
+      <div>http://example.com/2024/12/17/[Effective C++]条款34 接口继承和实现继承/</div>
     </div>
     <div class="license-meta">
       
@@ -367,7 +397,7 @@
       
         <div class="license-meta-item license-meta-date">
           <div>发布于</div>
-          <div>2024年12月16日</div>
+          <div>2024年12月17日</div>
         </div>
       
       
@@ -399,18 +429,12 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2024/12/17/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE34%20%E6%8E%A5%E5%8F%A3%E7%BB%A7%E6%89%BF%E5%92%8C%E5%AE%9E%E7%8E%B0%E7%BB%A7%E6%89%BF/" title="Effective C++ 条款34 接口继承和实现继承">
-                        <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">Effective C++ 条款34 接口继承和实现继承</span>
-                        <span class="visible-mobile">上一篇</span>
-                      </a>
-                    
                   </article>
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2024/12/12/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE32%20public%E7%BB%A7%E6%89%BF/" title="Effective C++ 条款32 public继承">
-                        <span class="hidden-mobile">Effective C++ 条款32 public继承</span>
+                      <a href="/2024/12/16/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE33%20%E7%BB%A7%E6%89%BF,%20%E9%87%8D%E8%BD%BD%E4%B8%8E%E4%BD%9C%E7%94%A8%E5%9F%9F/" title="Effective C++ 条款33 继承, 重载与作用域">
+                        <span class="hidden-mobile">Effective C++ 条款33 继承, 重载与作用域</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
