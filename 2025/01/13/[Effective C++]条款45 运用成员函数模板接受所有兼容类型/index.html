@@ -1,0 +1,745 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/head.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="天目中云">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="条款45 : 运用成员函数模板接受所有兼容类型 本条款中我们将会以智能指针为例, 介绍如何通过成员函数模板使一个模板类可以接受所有兼容类型.  我们先来构建一个简单的继承体系 :  123456class Top &#123; ... &#125;;class Middle: public Top &#123; ... &#125;;class Bottom: public Middle &amp;#12">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Effective C++ 条款45 运用成员函数模板接受所有兼容类型">
+<meta property="og:url" content="http://example.com/2025/01/13/[Effective%20C++]%E6%9D%A1%E6%AC%BE45%20%E8%BF%90%E7%94%A8%E6%88%90%E5%91%98%E5%87%BD%E6%95%B0%E6%A8%A1%E6%9D%BF%E6%8E%A5%E5%8F%97%E6%89%80%E6%9C%89%E5%85%BC%E5%AE%B9%E7%B1%BB%E5%9E%8B/index.html">
+<meta property="og:site_name" content="天目中云">
+<meta property="og:description" content="条款45 : 运用成员函数模板接受所有兼容类型 本条款中我们将会以智能指针为例, 介绍如何通过成员函数模板使一个模板类可以接受所有兼容类型.  我们先来构建一个简单的继承体系 :  123456class Top &#123; ... &#125;;class Middle: public Top &#123; ... &#125;;class Bottom: public Middle &amp;#12">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-01-13T09:38:00.000Z">
+<meta property="article:modified_time" content="2025-01-13T09:39:44.962Z">
+<meta property="article:author" content="天目中云">
+<meta property="article:tag" content="Effective C++">
+<meta property="article:tag" content="模板">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>Effective C++ 条款45 运用成员函数模板接受所有兼容类型 - 天目中云</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":"NhgfDy2CEByjwxuxPM1Le2t6-MdYXbMMI","app_key":"nvGMdqKfKbpkVnojLSbwmasv","server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>TianMu</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/03.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Effective C++ 条款45 运用成员函数模板接受所有兼容类型"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-01-13 17:38" pubdate>
+          2025年1月13日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.2k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          11 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Effective C++ 条款45 运用成员函数模板接受所有兼容类型</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h2 id="条款45-运用成员函数模板接受所有兼容类型"><a href="#条款45-运用成员函数模板接受所有兼容类型" class="headerlink" title="条款45 : 运用成员函数模板接受所有兼容类型"></a>条款45 : 运用成员函数模板接受所有兼容类型</h2><blockquote>
+<p>本条款中我们将会以智能指针为例, 介绍如何通过成员函数模板使一个模板类可以接受所有兼容类型.</p>
+</blockquote>
+<p>我们先来构建一个简单的继承体系 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Top</span> &#123; ... &#125;;<br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Middle</span>: <span class="hljs-keyword">public</span> Top &#123; ... &#125;;<br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Bottom</span>: <span class="hljs-keyword">public</span> Middle &#123; ... &#125;;<br>Top *pt1 = <span class="hljs-keyword">new</span> Middle;                   <span class="hljs-comment">// Middle*隐式转换为Top*</span><br>Top *pt2 = <span class="hljs-keyword">new</span> Bottom;                   <span class="hljs-comment">// Bottom*隐式转换为Top*</span><br><span class="hljs-type">const</span> Top *pct2 = pt1; 					 <span class="hljs-comment">// Top*隐式转换为const Top*</span><br></code></pre></td></tr></table></figure>
+
+<p>在本例中, <code>Top</code>是最初始的基类, 依次派生出<code>Middle</code>和<code>Bottom</code>, 通过隐式转换, 各种指针类型是可以合理地进行隐式转换的. 但当我们想用智能指针代行管理事务时, 再想这样的转换就比较麻烦了, 当然标准库中的智能指针已经解决了这种问题, 我们现在要讨论的就是标准库是如何实现智能指针之间的隐式转换的, 我们期待的效果如下 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> T&gt;<br><span class="hljs-keyword">class</span> <span class="hljs-title class_">SmartPtr</span> &#123;<br><span class="hljs-keyword">public</span>:                             <br>  <span class="hljs-function"><span class="hljs-keyword">explicit</span> <span class="hljs-title">SmartPtr</span><span class="hljs-params">(T *realPtr)</span></span>;    <span class="hljs-comment">// 通过资源指针进行初始化</span><br>  ...<br>&#125;;<br><br>SmartPtr&lt;Top&gt; pt1 = <span class="hljs-built_in">SmartPtr</span>&lt;Middle&gt;(<span class="hljs-keyword">new</span> Middle);   <br>SmartPtr&lt;Top&gt; pt2 = <span class="hljs-built_in">SmartPtr</span>&lt;Bottom&gt;(<span class="hljs-keyword">new</span> Bottom); <br>SmartPtr&lt;<span class="hljs-type">const</span> Top&gt; pct2 = pt1; <br></code></pre></td></tr></table></figure>
+
+<p>这段代码是无法通过编译的, 因为就算是<code>Top</code>和<code>Middle</code>有联系, <code>SmartPtr&lt;Top&gt;</code>和<code>SmartPtr&lt;Middle&gt;</code>也没有任何联系, 它们是无法隐式转换的, 但是我们可以通过成员函数模板, 具体说是写一个泛化copy构造函数来创造这种联系.</p>
+<hr>
+<h3 id="泛化copy构造函数"><a href="#泛化copy构造函数" class="headerlink" title="泛化copy构造函数"></a>泛化copy构造函数</h3><p>我们先来写一个成员函数模板中的<strong>泛化copy构造函数</strong> : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> T&gt;<br><span class="hljs-keyword">class</span> <span class="hljs-title class_">SmartPtr</span> &#123;<br><span class="hljs-keyword">public</span>:<br>  <span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> U&gt;                       <span class="hljs-comment">// 泛化copy构造函数</span><br>  <span class="hljs-built_in">SmartPtr</span>(<span class="hljs-type">const</span> SmartPtr&lt;U&gt;&amp; other);       <br>  ...                 <br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>这个模板函数接受用一个<code>SmartPtr&lt;U&gt;</code>类型的参数去构造一个<code>SmartPtr&lt;T&gt;</code>类型的对象, 现在还只是声明, 我们应该考虑如何定义内部逻辑, 正常逻辑应该是先看<code>U*</code>是否可以隐式转换为<code>T*</code>, 如果可以转换也就可以进行智能指针之间的转换, 我们来看代码 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> T&gt;<br><span class="hljs-keyword">class</span> <span class="hljs-title class_">SmartPtr</span> &#123;<br><span class="hljs-keyword">public</span>:<br>  <span class="hljs-function"><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> U&gt;</span><br><span class="hljs-function">  <span class="hljs-title">SmartPtr</span><span class="hljs-params">(<span class="hljs-type">const</span> SmartPtr&lt;U&gt;&amp; other)</span>         </span><br><span class="hljs-function">  : heldPtr(other.get()) &#123;</span>...&#125;            <span class="hljs-comment">// 关键代码</span><br>    <br>  <span class="hljs-function">T* <span class="hljs-title">get</span><span class="hljs-params">()</span> <span class="hljs-type">const</span> </span>&#123; <span class="hljs-keyword">return</span> heldPtr; &#125;<br>  ...<br><span class="hljs-keyword">private</span>:                                     <br>  T *heldPtr;                                <br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>这里直接将参数other中的<code>heldPtr</code>取出, 赋值给当前对象的<code>heldPtr</code>. 其实在这里就进行了检查 : </p>
+<ul>
+<li><code>other.get()</code>取出的指针类型为<code>U*</code>, 如果<code>U*</code>可以隐式转换为<code>T*</code>, 那么可以进行智能指针之间的转换.</li>
+<li>如果不可以隐式转换, 编译错误, 会被系统拦截.</li>
+</ul>
+<p>至此, 通过泛化copy构造函数这个成员函数模板, 只要<code>U*</code>可以隐式转换为<code>T*</code>, 那么<code>SmartPtr&lt;U&gt;</code>也可以隐式转换为<code>SmartPtr&lt;T&gt;</code>.</p>
+<hr>
+<h3 id="成员函数模板"><a href="#成员函数模板" class="headerlink" title="成员函数模板"></a>成员函数模板</h3><p>成员函数模板的效用不只局限于构造函数, 也可以支持赋值操作, 其不改变语言规则, 但是可以帮助你让class在构造和赋值操作上可以兼容更多类型, 让我们在使用模板类型时可以像使用非模板类型时一样自然流畅. 我们可以了解一下标准库中<code>shared_ptr</code>的简略版本, 看看其对成员函数模板的使用 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">class</span> <span class="hljs-title class_">T</span>&gt; <br><span class="hljs-keyword">class</span> <span class="hljs-title class_">shared_ptr</span> &#123;<br><span class="hljs-keyword">public</span>:<br>  <span class="hljs-comment">// 构造</span><br>  <span class="hljs-function"><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">class</span> Y&gt;                                     </span><br><span class="hljs-function">    <span class="hljs-keyword">explicit</span> <span class="hljs-title">shared_ptr</span><span class="hljs-params">(Y * p)</span></span>;                         <span class="hljs-comment">// 泛化构造函数</span><br>  <span class="hljs-function"><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">class</span> Y&gt;                                     </span><br><span class="hljs-function">    <span class="hljs-title">shared_ptr</span><span class="hljs-params">(shared_ptr&lt;Y&gt; <span class="hljs-type">const</span>&amp; r)</span></span>;                 <span class="hljs-comment">// 泛化copy构造函数</span><br>  <span class="hljs-function"><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">class</span> Y&gt;                                     </span><br><span class="hljs-function">    <span class="hljs-keyword">explicit</span> <span class="hljs-title">shared_ptr</span><span class="hljs-params">(weak_ptr&lt;Y&gt; <span class="hljs-type">const</span>&amp; r)</span></span>;          <span class="hljs-comment">// 通过weak_ptr构造</span><br>  <span class="hljs-function"><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">class</span> Y&gt;</span><br><span class="hljs-function">    <span class="hljs-keyword">explicit</span> <span class="hljs-title">shared_ptr</span><span class="hljs-params">(unique_ptr&lt;Y&gt;&amp; r)</span></span>;				<span class="hljs-comment">// 通过unique_ptr构造</span><br>  <span class="hljs-comment">// 赋值</span><br>  <span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">class</span> <span class="hljs-title class_">Y</span>&gt;                                    <br>    shared_ptr&amp; <span class="hljs-keyword">operator</span>=(shared_ptr&lt;Y&gt; <span class="hljs-type">const</span>&amp; r);      <span class="hljs-comment">// 泛化赋值重载</span><br>  <span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">class</span> <span class="hljs-title class_">Y</span>&gt;                                     <br>    shared_ptr&amp; <span class="hljs-keyword">operator</span>=(unique_ptr&lt;Y&gt;&amp; r);            <span class="hljs-comment">// 用unique_ptr赋值</span><br>  ...<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>在本例中,  构造函数中只有泛化copy构造函数没有explicit, 说明其他构造函数都不应当支持隐式类型转换, 也就是说T和Y的类型应当一致. 另外成员模板函数并<strong>不改变语言规则</strong>, 就算我们写了泛化的拷贝构造函数和赋值重载, 依旧不影响普通的拷贝构造和赋值重载, 如果我们没有写, 编译器还是会自动生成, 所以如果想要控制构造的方方面面, 我们应当<strong>同时声明普通版本和泛化版本</strong>.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">class</span> <span class="hljs-title class_">T</span>&gt; <br><span class="hljs-keyword">class</span> <span class="hljs-title class_">shared_ptr</span> &#123;<br><span class="hljs-keyword">public</span>:<br>  <span class="hljs-built_in">shared_ptr</span>(shared_ptr <span class="hljs-type">const</span>&amp; r);                 <span class="hljs-comment">// 普通拷贝构造</span><br>  <span class="hljs-function"><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">class</span> Y&gt;                                </span><br><span class="hljs-function">    <span class="hljs-title">shared_ptr</span><span class="hljs-params">(shared_ptr&lt;Y&gt; <span class="hljs-type">const</span>&amp; r)</span></span>;            <span class="hljs-comment">// 泛化拷贝构造</span><br><br>  shared_ptr&amp; <span class="hljs-keyword">operator</span>=(shared_ptr <span class="hljs-type">const</span>&amp; r);      <span class="hljs-comment">// 普通赋值重载</span><br>  <span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">class</span> <span class="hljs-title class_">Y</span>&gt;                               <br>    shared_ptr&amp; <span class="hljs-keyword">operator</span>=(shared_ptr&lt;Y&gt; <span class="hljs-type">const</span>&amp; r); <span class="hljs-comment">// 泛化赋值重载</span><br>  ...<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="请记住"><a href="#请记住" class="headerlink" title="请记住 :"></a>请记住 :</h3><ul>
+<li>使用成员函数模板可以生成”可接受所有兼容类型”的函数.</li>
+<li>当我们声明泛化拷贝构造和赋值重载时, 也应该声明其普通版本.</li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Effective-C/" class="print-no-link">#Effective C++</a>
+      
+        <a href="/tags/%E6%A8%A1%E6%9D%BF/" class="print-no-link">#模板</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Effective C++ 条款45 运用成员函数模板接受所有兼容类型</div>
+      <div>http://example.com/2025/01/13/[Effective C++]条款45 运用成员函数模板接受所有兼容类型/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>天目中云</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年1月13日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/01/12/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE44%20%E9%98%B2%E6%AD%A2%E4%BB%A3%E7%A0%81%E8%86%A8%E8%83%80/" title="Effective C++ 条款44 防止代码膨胀">
+                        <span class="hidden-mobile">Effective C++ 条款44 防止代码膨胀</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"NhgfDy2CEByjwxuxPM1Le2t6-MdYXbMMI","appKey":"nvGMdqKfKbpkVnojLSbwmasv","path":"window.location.pathname","placeholder":null,"avatar":"retro","meta":["nick","mail","link"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":false,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":false},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
