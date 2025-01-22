@@ -1,0 +1,778 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/head.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="天目中云">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="条款48 : 认识template元编程 在条款47我们主要了解了萃取器这种模板元编程, 也初步进入了模板元编程的世界. 在本条款中, 我们将继续认识模板元编程, 认识其必要性和应用场景, 相比于条款47讲的还算比较深入,本条款真的就只是简介, 因为其体量确实非常庞大, 甚至可以单独作为一个学科研究.  Template metaprogramming, 模板元编程, 简称TMP, 是编写temp">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Effective C++ 条款48 模板元编程(TMP)">
+<meta property="og:url" content="http://example.com/2025/01/22/[Effective%20C++]%E6%9D%A1%E6%AC%BE48%20%E6%A8%A1%E6%9D%BF%E5%85%83%E7%BC%96%E7%A8%8B(TMP)/index.html">
+<meta property="og:site_name" content="天目中云">
+<meta property="og:description" content="条款48 : 认识template元编程 在条款47我们主要了解了萃取器这种模板元编程, 也初步进入了模板元编程的世界. 在本条款中, 我们将继续认识模板元编程, 认识其必要性和应用场景, 相比于条款47讲的还算比较深入,本条款真的就只是简介, 因为其体量确实非常庞大, 甚至可以单独作为一个学科研究.  Template metaprogramming, 模板元编程, 简称TMP, 是编写temp">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-01-22T13:07:00.000Z">
+<meta property="article:modified_time" content="2025-01-22T13:07:58.304Z">
+<meta property="article:author" content="天目中云">
+<meta property="article:tag" content="Effective C++">
+<meta property="article:tag" content="模板">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>Effective C++ 条款48 模板元编程(TMP) - 天目中云</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":"NhgfDy2CEByjwxuxPM1Le2t6-MdYXbMMI","app_key":"nvGMdqKfKbpkVnojLSbwmasv","server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>TianMu</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/03.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Effective C++ 条款48 模板元编程(TMP)"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-01-22 21:07" pubdate>
+          2025年1月22日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.6k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          14 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Effective C++ 条款48 模板元编程(TMP)</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h2 id="条款48-认识template元编程"><a href="#条款48-认识template元编程" class="headerlink" title="条款48 : 认识template元编程"></a>条款48 : 认识template元编程</h2><blockquote>
+<p>在条款47我们主要了解了萃取器这种模板元编程, 也初步进入了模板元编程的世界. 在本条款中, 我们将继续认识模板元编程, 认识其必要性和应用场景, 相比于条款47讲的还算比较深入,本条款真的就只是简介, 因为其体量确实非常庞大, 甚至可以单独作为一个学科研究.</p>
+</blockquote>
+<p><code>Template metaprogramming</code>, 模板元编程, 简称TMP, 是<strong>编写template-based C++程序并执行于编译期的过程</strong>.</p>
+<hr>
+<h3 id="模板元编程的效用"><a href="#模板元编程的效用" class="headerlink" title="模板元编程的效用"></a>模板元编程的效用</h3><p>我们目前可以用在条款47中学到的萃取器的知识来理解模板元的效用 : </p>
+<ul>
+<li>它让某些事情更容易, 这些事情原本比较困难甚至不可能.(例如针对迭代器类型进行可靠的条件编译)</li>
+<li>它将工作期从运行期移至编译期, 大大提高了运行效率, 有更小的可执行文件, 更短的运行期, 更少的内存消耗.</li>
+</ul>
+<p>假设我们使用萃取器时不采用重载或<code>if constexpr</code>这种模板元编程, 而是就是在运行期通过判断迭代器类型来条件判断, 我们看看最后的效果怎样 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> IterT, <span class="hljs-keyword">typename</span> DistT&gt;</span><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">advance</span><span class="hljs-params">(IterT&amp; iter, DistT d)</span></span><br><span class="hljs-function"></span>&#123;<br>  <span class="hljs-keyword">if</span> (<span class="hljs-built_in">typeid</span>(<span class="hljs-keyword">typename</span> std::iterator_traits&lt;IterT&gt;::iterator_category) ==<br>      <span class="hljs-built_in">typeid</span>(std::random_access_iterator_tag)) &#123;<br>     iter += d;                                     <br>  &#125;                                                 <br>  <span class="hljs-keyword">else</span> &#123;<br>    <span class="hljs-keyword">if</span> (d &gt;= <span class="hljs-number">0</span>) &#123; <span class="hljs-keyword">while</span> (d--) ++iter; &#125;             <br>    <span class="hljs-keyword">else</span> &#123; <span class="hljs-keyword">while</span> (d++) --iter; &#125;                    <br>  &#125;                                                 <br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>这里还是用萃取器提取出类型, 利用<code>typeid</code>在运行期进行条件判断, 但是这种方法不仅不高效(对应效用2), 而且不可行(对应效用1).</p>
+<ul>
+<li><p>不高效 : 这个很容易理解, 利用模板元编程在编译期即可实现的效果, 这样却要在运行期花时间判断.</p>
+</li>
+<li><p>不可行 : 这段代码在一些情况下甚至都无法通过编译, 如果我们像下面这样使用 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs cpp">std::list&lt;<span class="hljs-type">int</span>&gt;::iterator iter;<br><span class="hljs-built_in">advance</span>(iter, <span class="hljs-number">10</span>);<br></code></pre></td></tr></table></figure>
+
+<p>这样使用非常合理, 但是会运行崩溃, 因为list的迭代器是双向迭代器, 而非随机访问迭代器, 所以<code>iter += d;</code>这段代码根本无法通过编译! 也许你会认为因为条件判断, 如果是list的迭代器, 这句代码永远不会触发, 但是我们应当知道 : </p>
+<ul>
+<li><strong>编译器必须确保所有源码都有效, 纵使是不会执行起来的代码.</strong></li>
+</ul>
+</li>
+</ul>
+<p>至此我们应该已经可以理解到部分模板元编程可以达到的效用了.</p>
+<hr>
+<h3 id="模板元编程中的”hello-world-”"><a href="#模板元编程中的”hello-world-”" class="headerlink" title="模板元编程中的”hello world!”"></a>模板元编程中的”hello world!”</h3><p>我们可以了解模板元编程中的一个入门编程, 它相当于初入编程的”hello world”, 即<strong>在编译期计算阶乘</strong>.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">template</span>&lt;<span class="hljs-type">unsigned</span> n&gt;                 <br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">Factorial</span> &#123;                   <br>  <span class="hljs-keyword">enum</span> &#123; value = n * Factorial&lt;n<span class="hljs-number">-1</span>&gt;::value &#125;;<br>&#125;;<br><br><span class="hljs-keyword">template</span>&lt;&gt;                          <br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">Factorial</span>&lt;<span class="hljs-number">0</span>&gt; &#123;            <span class="hljs-comment">// 全特化</span><br>  <span class="hljs-keyword">enum</span> &#123; value = <span class="hljs-number">1</span> &#125;;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>我们通过代码应该可以推导出一个递归的过程, 并且这个过程是通过模板在编译期来实现的! 于是我们就可以这样使用 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>  std::cout &lt;&lt; Factorial&lt;<span class="hljs-number">5</span>&gt;::value &lt;&lt; std::endl;   <span class="hljs-comment">// 直接打印出120</span><br>  std::cout &lt;&lt; Factorial&lt;<span class="hljs-number">10</span>&gt;::value;               <span class="hljs-comment">// 直接打印出3628800</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>我们可以和普通递归求阶乘进行对比 : </p>
+<ul>
+<li>普通递归 : 运行期实现, 可以通过用户输入动态计算任意数的阶乘.</li>
+<li>模板元递归 : 编译期实现, 只可以得到预先设置的数的阶乘.</li>
+</ul>
+<p>简单来说就是前者耗费运行期时间但是灵活, 后者不费运行期时间但是不可变.</p>
+<p>当然使用enum是一个比较原始且可读性较差的做法, 在C++11已经引入constexpr : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">template</span>&lt;<span class="hljs-type">unsigned</span> n&gt;<br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">Factorial</span> &#123;<br>  <span class="hljs-type">static</span> <span class="hljs-keyword">constexpr</span> <span class="hljs-type">unsigned</span> value = n * Factorial&lt;n - <span class="hljs-number">1</span>&gt;::value;  <span class="hljs-comment">// constexpr代替enum</span><br>&#125;;<br><br><span class="hljs-keyword">template</span>&lt;&gt;<br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">Factorial</span>&lt;<span class="hljs-number">0</span>&gt; &#123;<br>  <span class="hljs-type">static</span> <span class="hljs-keyword">constexpr</span> <span class="hljs-type">unsigned</span> value = <span class="hljs-number">1</span>;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="三个应用场景案例"><a href="#三个应用场景案例" class="headerlink" title="三个应用场景案例"></a>三个应用场景案例</h3><ul>
+<li><p>确保度量单位正确.</p>
+<p>在科学工程中, 我们可以提前确定度量单位的结合正确, 可以进行早期的错误侦测.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iostream&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;type_traits&gt;</span></span><br><br><span class="hljs-comment">// 定义不同的单位类型</span><br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">Time</span> &#123; <span class="hljs-type">static</span> <span class="hljs-keyword">constexpr</span> <span class="hljs-type">const</span> <span class="hljs-type">char</span>* name = <span class="hljs-string">&quot;Time&quot;</span>; &#125;;		<span class="hljs-comment">// 时间</span><br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">Length</span> &#123; <span class="hljs-type">static</span> <span class="hljs-keyword">constexpr</span> <span class="hljs-type">const</span> <span class="hljs-type">char</span>* name = <span class="hljs-string">&quot;Length&quot;</span>; &#125;;	<span class="hljs-comment">// 长度</span><br><br><span class="hljs-comment">// 计算单位的乘法</span><br><span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">typename</span> Unit1, <span class="hljs-keyword">typename</span> Unit2&gt;<br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">MultiplyUnits</span>;<br><br><span class="hljs-comment">// 两个长度相乘得到面积</span><br><span class="hljs-keyword">template</span> &lt;&gt;<br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">MultiplyUnits</span>&lt;Length, Length&gt; &#123;   <span class="hljs-comment">// 全特化</span><br>    <span class="hljs-keyword">using</span> type = <span class="hljs-keyword">struct</span> Area &#123; <span class="hljs-type">static</span> <span class="hljs-keyword">constexpr</span> <span class="hljs-type">const</span> <span class="hljs-type">char</span>* name = <span class="hljs-string">&quot;Area&quot;</span>; &#125;; <span class="hljs-comment">// 定义面积类型</span><br>&#125;;<br><br><span class="hljs-comment">// 时间与长度相除，得到速度</span><br><span class="hljs-keyword">template</span> &lt;&gt;<br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">MultiplyUnits</span>&lt;Length, Time&gt; &#123;<br>    <span class="hljs-keyword">using</span> type = <span class="hljs-keyword">struct</span> Velocity &#123; <span class="hljs-type">static</span> <span class="hljs-keyword">constexpr</span> <span class="hljs-type">const</span> <span class="hljs-type">char</span>* name = <span class="hljs-string">&quot;Velocity&quot;</span>; &#125;; <span class="hljs-comment">// 定义速度类型</span><br>&#125;;<br><br><span class="hljs-comment">// 打印单位名称</span><br><span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">typename</span> Unit&gt;<br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">printType</span><span class="hljs-params">()</span> </span>&#123;<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;TypeName: &quot;</span> &lt;&lt; Unit::name &lt;&lt; std::endl;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-comment">// 计算长度与时间的组合，得到速度</span><br>	<span class="hljs-keyword">typedef</span> <span class="hljs-keyword">typename</span> MultiplyUnits&lt;Length, Time&gt;::type unit1;<br>	<span class="hljs-built_in">printType</span>&lt;unit1&gt;();  <span class="hljs-comment">// 输出: Unit: Velocity</span><br><br>	<span class="hljs-comment">// 计算长度与长度的组合，得到面积</span><br>	<span class="hljs-keyword">typedef</span> <span class="hljs-keyword">typename</span> MultiplyUnits&lt;Length, Length&gt;::type unit2;<br>	<span class="hljs-built_in">printType</span>&lt;unit2&gt;();  <span class="hljs-comment">// 输出: Unit: Area</span><br>    <br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>本例中就可以根据向<code>MultiplyUnits</code>中传入的类型在编译期进行判断其结果的类型.</p>
+</li>
+<li><p>优化矩阵运算.</p>
+<p>在条款44中我们编写过矩阵, 假如我们进行下面的运算 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">typedef</span> SquareMatrix&lt;<span class="hljs-type">double</span>, <span class="hljs-number">10000</span>&gt; BigMatrix;<br>BigMatrix m1, m2, m3, m4, m5;              <br>BigMatrix result = m1 * m2 * m3 * m4 * m5; <br></code></pre></td></tr></table></figure>
+
+<p>如果这些在运行期完成, 将会产生内存巨大的临时对象和不低的时间成本, 但假如用模板元编程就可能消除临时对象并合并循环, 大大降低成本, 具体细节书中没有给出, 这里就不再细讲.</p>
+</li>
+<li><p>可以生成客户定制之设计模式实现品.</p>
+<p>这里的命题就更加广阔了, 简单理解就是许多设计模式都和类与模板有关, 可以利用模板元编程根据需求将一些设计模式的行为从运行期搬到编译期中, 不仅实现了定制, 还提高了运行效率.</p>
+</li>
+</ul>
+<hr>
+<h3 id="现代模板元编程"><a href="#现代模板元编程" class="headerlink" title="现代模板元编程"></a>现代模板元编程</h3><p>随C++11, C++14, C++17的引入, 模板元编程的语法日渐丰富, 这一领域虽然有些晦涩难懂, 但是其确实有其价值所在, 并且越来越被重视. 我们虽然不一定要完全掌握, 但是可以逐步了解一下模板元编程的语法, 例如constexpr, if constexpr, SFINAE技术, 模板元函数等等.</p>
+<hr>
+<h3 id="请记住"><a href="#请记住" class="headerlink" title="请记住 :"></a>请记住 :</h3><ul>
+<li>模板元编程可将工作由运行期移往编译期, 因而得以实现早期错误侦测和更高的执行效率.</li>
+</ul>
+<p>by 天目中云</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Effective-C/" class="print-no-link">#Effective C++</a>
+      
+        <a href="/tags/%E6%A8%A1%E6%9D%BF/" class="print-no-link">#模板</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Effective C++ 条款48 模板元编程(TMP)</div>
+      <div>http://example.com/2025/01/22/[Effective C++]条款48 模板元编程(TMP)/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>天目中云</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年1月22日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/01/16/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE47%20%E8%90%83%E5%8F%96%E5%99%A8/" title="Effective C++ 条款47 萃取器">
+                        <span class="hidden-mobile">Effective C++ 条款47 萃取器</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"NhgfDy2CEByjwxuxPM1Le2t6-MdYXbMMI","appKey":"nvGMdqKfKbpkVnojLSbwmasv","path":"window.location.pathname","placeholder":null,"avatar":"retro","meta":["nick","mail","link"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":false,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":false},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
