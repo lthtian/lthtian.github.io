@@ -1,0 +1,768 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/head.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="天目中云">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="条款49 : 了解new-handler的行为条款50 : 了解new和delete的合理替换时机条款51 : 编写new和delete时需固守常规条款52 ：写了placement new也要写placement delete 条款49-52中详细讲述了定制new和delete的实现, 加上前面所讲述的智能指针及资源管理类, 让我们对内存管理有了比较深刻的认知. 但是这部分有些内容经查证已经相对">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Effective C++ 条款49-52 内存分配">
+<meta property="og:url" content="http://example.com/2025/01/30/[Effective%20C++]%E6%9D%A1%E6%AC%BE49-52%20%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D/index.html">
+<meta property="og:site_name" content="天目中云">
+<meta property="og:description" content="条款49 : 了解new-handler的行为条款50 : 了解new和delete的合理替换时机条款51 : 编写new和delete时需固守常规条款52 ：写了placement new也要写placement delete 条款49-52中详细讲述了定制new和delete的实现, 加上前面所讲述的智能指针及资源管理类, 让我们对内存管理有了比较深刻的认知. 但是这部分有些内容经查证已经相对">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-01-30T10:21:00.000Z">
+<meta property="article:modified_time" content="2025-01-30T10:22:14.376Z">
+<meta property="article:author" content="天目中云">
+<meta property="article:tag" content="Effective C++">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>Effective C++ 条款49-52 内存分配 - 天目中云</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":"NhgfDy2CEByjwxuxPM1Le2t6-MdYXbMMI","app_key":"nvGMdqKfKbpkVnojLSbwmasv","server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>TianMu</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/03.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Effective C++ 条款49-52 内存分配"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-01-30 18:21" pubdate>
+          2025年1月30日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          17 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Effective C++ 条款49-52 内存分配</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h2 id="条款49-了解new-handler的行为"><a href="#条款49-了解new-handler的行为" class="headerlink" title="条款49 : 了解new-handler的行为"></a>条款49 : 了解new-handler的行为</h2><h2 id="条款50-了解new和delete的合理替换时机"><a href="#条款50-了解new和delete的合理替换时机" class="headerlink" title="条款50 : 了解new和delete的合理替换时机"></a>条款50 : 了解new和delete的合理替换时机</h2><h2 id="条款51-编写new和delete时需固守常规"><a href="#条款51-编写new和delete时需固守常规" class="headerlink" title="条款51 : 编写new和delete时需固守常规"></a>条款51 : 编写new和delete时需固守常规</h2><h2 id="条款52-：写了placement-new也要写placement-delete"><a href="#条款52-：写了placement-new也要写placement-delete" class="headerlink" title="条款52 ：写了placement new也要写placement delete"></a>条款52 ：写了placement new也要写placement delete</h2><blockquote>
+<p>条款49-52中详细讲述了定制new和delete的实现, 加上前面所讲述的智能指针及资源管理类, 让我们对内存管理有了比较深刻的认知. 但是这部分有些内容经查证已经相对过时, 所以我将统合这四个条款, 先对内存分配有一个初步的认识, 然后再简单讲解一下定制new和delete的编写, 之后再讨论一下各种内存分配的方式.</p>
+</blockquote>
+<h3 id="内存分配的整体认知"><a href="#内存分配的整体认知" class="headerlink" title="内存分配的整体认知"></a>内存分配的整体认知</h3><p>相比于java等编程语言以垃圾回收功能津津乐道, 但其实际也会带来运行效率下降的弊端, C++因此并没有纳入垃圾回收的机制, 将内存分配的任务交给了程序员自己, 所以学习内存分配是成为一个优秀C++程序员的所必须的. 为了实现更好的内存分配, 诸如智能指针, allocator等的各种资源管理类如雨后春笋般产生, 当然在此之外C++本身就可以对new进行定制, 这种做法虽然原始, 但是也有一定的用武之地.</p>
+<p>先让我们了解一下内存分配的流程 : </p>
+<ul>
+<li>C : 内存申请(malloc) -&gt; …(使用) -&gt; 释放内存(free)</li>
+<li>C++ : 内存申请 -&gt; 构造 -&gt; …(使用) -&gt; 析构 -&gt; 释放内存</li>
+</ul>
+<p>上面展示了C&#x2F;C++内存分配的流程, 其实内存申请和释放在底层都是调用malloc和free, 但是在C++中对其进行了封装, 因为其OOP的特性, 在new中不仅申请了内存, 还进行了对应的构造, 简单来说就是先调用malloc申请了一块内存, 然后在这片内存上调用对应对象的构造函数, delete也是同理不再赘述.</p>
+<hr>
+<h3 id="定制new和delete"><a href="#定制new和delete" class="headerlink" title="定制new和delete"></a>定制new和delete</h3><ul>
+<li><p>什么是定制new和delete?</p>
+<p>即对new和delete运算符进行重载, 包括new和delete的使用以及运算符重载学到这里我们应当都已经非常熟悉.</p>
+</li>
+<li><p>为什么要定制new和delete?</p>
+<p>根本原因就是标准版本的new和delete提供的服务太少, 只有申请和构造, 析构和销毁, 因此定制可以实现更多的操作.</p>
+<p>书中这里用了一个条款来解释, 我这里简单提炼一下定制new和delete主要可以做到的提升 : </p>
+<ul>
+<li>提前检测运用new或delete上的错误.</li>
+<li>强化分配的效能, 可以引入内存池提升分配和释放的效率.</li>
+<li>收集统计数据, 加入日志功能, 记录内存分配情况, 便于信息分析.</li>
+</ul>
+</li>
+<li><p>如何实现定制new和delete?</p>
+<p>主要就是学会new和delete的运算符重载, 但是其中还是有一些门道, 我们不妨来回顾一下new是如何使用的 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cpp">MyClass* myclass = <span class="hljs-keyword">new</span> <span class="hljs-built_in">MyClass</span>(<span class="hljs-number">42</span>);<br></code></pre></td></tr></table></figure>
+
+<p>假设有一个MyClass类, 其构造需要传入一个int, 这段代码便可以实现申请内存 + 构造的全过程, 但是我们还可以通过下面的代码实现 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-type">void</span>* ptr = ::<span class="hljs-keyword">operator</span> <span class="hljs-built_in">new</span>(<span class="hljs-built_in">sizeof</span>(MyClass));    <span class="hljs-comment">// ::operator new</span><br>MyClass* myclass = <span class="hljs-built_in">new</span>(ptr) <span class="hljs-built_in">MyClass</span>(<span class="hljs-number">42</span>);	    <span class="hljs-comment">// placement new</span><br></code></pre></td></tr></table></figure>
+
+<p>这和上面代码实现的效果是一样的, 里面的两个语法::operator new(全局分配函数)和placement new(定位new), 都是C++基础中应该学到过的, 其实也就分别对应了申请内存和构造, 于是我们可以对内存分配流程做出如下的对应 : </p>
+<ul>
+<li>内存申请(::operator new) -&gt; 构造(placement new) -&gt; …(使用) -&gt; 析构(placement delete) -&gt; 释放内存(::operator delete)</li>
+</ul>
+<p>那么定制new和delete就变成了定制::operator new和placement new(及对应deltete版本)了, 定制方法也很简单 : </p>
+<ul>
+<li><p>重载operator new, <strong>不同的参数对应不用的功能</strong>, 只传入一个size对应::operator new, 不仅传入size还传入ptr对应placement new, 也许这样设定你会觉得很怪, 但是事实就是这样, 我们通过代码来认识 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// 定制 ::operator new</span><br><span class="hljs-function"><span class="hljs-type">void</span>* <span class="hljs-keyword">operator</span> <span class="hljs-title">new</span><span class="hljs-params">(std::<span class="hljs-type">size_t</span> size)</span> </span>&#123;<br>    <span class="hljs-comment">// 进行参数检测, 日志记录, 调用内存池等</span><br>    <span class="hljs-comment">// ......</span><br>    <span class="hljs-keyword">return</span> ::<span class="hljs-keyword">operator</span> <span class="hljs-built_in">new</span>(size);  <span class="hljs-comment">// 可以仍然使用标准的 ::operator new, 当然也可以自己malloc</span><br>&#125;<br><br><span class="hljs-comment">// 定制 placement new 操作符</span><br><span class="hljs-function"><span class="hljs-type">void</span>* <span class="hljs-keyword">operator</span> <span class="hljs-title">new</span><span class="hljs-params">(std::<span class="hljs-type">size_t</span> size, <span class="hljs-type">void</span>* ptr)</span> <span class="hljs-keyword">noexcept</span> </span>&#123;<br>    <span class="hljs-comment">// 进行日志记录等操作</span><br>    <span class="hljs-keyword">return</span> ptr;  <span class="hljs-comment">// 不进行内存分配，只是返回已分配的内存地址</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>当然这种运算符重载如果放在类外就是作用于全局, 放在类内就是类专属, 我们应当有所认知.</p>
+</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h3 id="申请内存失败的处理方式"><a href="#申请内存失败的处理方式" class="headerlink" title="申请内存失败的处理方式"></a>申请内存失败的处理方式</h3><p>我们知道malloc是可能出错的, 内存不足等问题都有可能发送, malloc出错会返回一个nullptr, 在标准库中new会抛出<code>std::bad_alloc</code>这个异常, 因此我们在自己的<code>operator new</code>中如果使用malloc, 当其返回一个nullptr时也应抛出一个<code>bad_alloc</code>.</p>
+<p>当然书中也提出应该有更优秀的处理方式, 不应该只是抛出异常, 在条款49中便提出标准库内置了一个错误处理函数<code>new_handler</code>, 可以通过<code>set_new_handler(handler)</code>这个函数来设置, 参数是一个函数指针, 也就是我们可以自己写回调函数并将其设置为<code>new_handler</code>, 在发生内存失败时可以自动调用该函数. 我们可以在其中记录日志, 使用内存池机制(如果用了内存池的话), 决定是否抛出异常(如果申请失败无所谓的话可以不抛出异常).</p>
+<p>但是真的有必要吗?</p>
+<p>其实new_handler在实际运用中已经很少使用, 根本原因还是在现代内存大小已经不再是问题, 也就是说内存申请失败几乎不可能出现, 只在极少嵌入式设备中可能有需要了. 而且如果真的出现了申请内存失败那只能说明问题很大, 不是硬件有问题就是代码哪里出现了严重的内存泄露, 这不是写一个new_handler可以解决的了, 因此其实在现代背景下还是老实抛出异常就行了.</p>
+<hr>
+<h3 id="浅谈内存分配"><a href="#浅谈内存分配" class="headerlink" title="浅谈内存分配"></a>浅谈内存分配</h3><p>关于内存分配我认为学好智能指针的使用是最关键的, 因为其可以很大程度上保证我们的代码不会内存泄漏, 只要不发生内存泄漏, 内存大小一般不会是问题.</p>
+<p>我们对于内存分配的关注点应该放在如何避免内存泄漏和提升效率上, 内存泄漏有智能指针避免, 提速可以通过<strong>引入内存池</strong>来缓解, 内存池这里不再详述, 简单来说就是申请和释放内存其实是有一定花销的, 不断的一小块一小块地申请内存然后构造其实是效率远低于直接申请一大块内存, 然后根据需求分配这块内存的, 而内存池就是做到了后者.</p>
+<p>至于如何引入, 可以通过上文的定制new和delete的重载函数中引入, 也可以通过自定义的allocator(分配器)来引入, allocator也是一种相对有用的内存分配技术, 如果感兴趣可以自己搜索学习.</p>
+<hr>
+<h3 id="请记住"><a href="#请记住" class="headerlink" title="请记住 :"></a>请记住 :</h3><ul>
+<li>内存分配在现代主要还是依赖智能指针, 可以有效避免内存泄露.</li>
+<li>如果想对内存分配做更细致的处理, 例如提速或记录日志等, 可以尝试定制new和delete, 使用allocator, 引入内存池.</li>
+<li>内存分配失败的情况在当下非常少见, 可以写简单的失败处理机制, 但没必要投入过多精力.</li>
+</ul>
+<p>by 天目中云</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Effective-C/" class="print-no-link">#Effective C++</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Effective C++ 条款49-52 内存分配</div>
+      <div>http://example.com/2025/01/30/[Effective C++]条款49-52 内存分配/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>天目中云</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年1月30日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/01/22/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE48%20%E6%A8%A1%E6%9D%BF%E5%85%83%E7%BC%96%E7%A8%8B(TMP)/" title="Effective C++ 条款48 模板元编程(TMP)">
+                        <span class="hidden-mobile">Effective C++ 条款48 模板元编程(TMP)</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"NhgfDy2CEByjwxuxPM1Le2t6-MdYXbMMI","appKey":"nvGMdqKfKbpkVnojLSbwmasv","path":"window.location.pathname","placeholder":null,"avatar":"retro","meta":["nick","mail","link"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":false,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":false},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
