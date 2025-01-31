@@ -4,6 +4,25 @@
   
   
   <entry>
+    <title>Effective C++ 条款53-55 杂项讨论</title>
+    <link href="/2025/01/31/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE53-55%20%E6%9D%82%E9%A1%B9%E8%AE%A8%E8%AE%BA/"/>
+    <url>/2025/01/31/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE53-55%20%E6%9D%82%E9%A1%B9%E8%AE%A8%E8%AE%BA/</url>
+    
+    <content type="html"><![CDATA[<blockquote><p>学到这里, Effective C++至此也算是告一段落了, 还剩下一些杂七杂八的讨论, 我们将在本文逐一列举.</p></blockquote><h2 id="条款53-不要忽视编译器的警告"><a href="#条款53-不要忽视编译器的警告" class="headerlink" title="条款53 : 不要忽视编译器的警告"></a>条款53 : 不要忽视编译器的警告</h2><ul><li>我们应严肃对待编译器发出的警告信息, 努力在你的编译器最高警告级别下争取无警告的荣誉.</li><li>同时也不要过度依赖编译器的报警能力, 有些可能导致运行崩溃的错误编译器无法准确检测.</li></ul><hr><h2 id="条款54-让自己熟悉包括Tr1在内的标准程序库"><a href="#条款54-让自己熟悉包括Tr1在内的标准程序库" class="headerlink" title="条款54 : 让自己熟悉包括Tr1在内的标准程序库"></a>条款54 : 让自己熟悉包括Tr1在内的标准程序库</h2><p>Tr1其实是早期的实验标准库, 如今已经废弃, 许多功能都已经正式并入标准库中, 例如 : </p><ul><li>智能指针</li><li>functional</li><li>bind</li><li>unordered_set &#x2F; unordered_map</li><li>type_traits</li></ul><p>这些技术其实在现在都已经成熟并且被广泛运用, 成为了我们必须学习的一部分.</p><hr><h2 id="条款55-让自己熟悉Boost"><a href="#条款55-让自己熟悉Boost" class="headerlink" title="条款55 : 让自己熟悉Boost"></a>条款55 : 让自己熟悉Boost</h2><p>Boost 是 C++ 社区广泛使用的<strong>高质量开源库集合</strong>，旨在扩展 C++ 标准库功能，并推动新特性进入 C++ 标准。其特点包括：</p><ol><li><strong>高质量代码</strong>：经过严格代码审查和跨平台测试。</li><li><strong>与标准兼容</strong>：多个 Boost 组件（如智能指针、正则表达式）已被纳入 C++11 及后续标准。</li><li><strong>模块化设计</strong>：可按需引入单个头文件或编译库，减少依赖。</li><li><strong>跨平台支持</strong>：兼容主流操作系统和编译器。</li></ol><p>Boost 是 C++ 开发者的重要工具库，提供丰富的扩展功能，涵盖系统编程、算法、并发等领域。对于需要高性能和现代编程范式的项目，Boost 能显著提升开发效率和代码健壮性。</p><p>by 天目中云</p>]]></content>
+    
+    
+    
+    <tags>
+      
+      <tag>Effective C++</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>Effective C++ 条款49-52 内存分配</title>
     <link href="/2025/01/30/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE49-52%20%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D/"/>
     <url>/2025/01/30/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE49-52%20%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D/</url>
