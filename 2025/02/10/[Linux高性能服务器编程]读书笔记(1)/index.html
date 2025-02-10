@@ -1,0 +1,759 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/head.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="天目中云">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="第五章  Linux网络编程基础API  字节序什么是大小端字节序?这里以32位机举例, 32位机CPU一次可以装载4字节,  那么这4个字节不同的排序方式就对应了不同的字节序 :   大端字节序 : 顺着排, 0x12345678 将被排序为 12  34  56  78. 小端字节序 : 逆着排, 0x12345678 将被排序为 78  56  34  12.  为什么要分大小端?其实更多">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux高性能服务器编程 读书笔记(1)">
+<meta property="og:url" content="http://example.com/2025/02/10/[Linux%E9%AB%98%E6%80%A7%E8%83%BD%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%BC%96%E7%A8%8B]%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0(1)/index.html">
+<meta property="og:site_name" content="天目中云">
+<meta property="og:description" content="第五章  Linux网络编程基础API  字节序什么是大小端字节序?这里以32位机举例, 32位机CPU一次可以装载4字节,  那么这4个字节不同的排序方式就对应了不同的字节序 :   大端字节序 : 顺着排, 0x12345678 将被排序为 12  34  56  78. 小端字节序 : 逆着排, 0x12345678 将被排序为 78  56  34  12.  为什么要分大小端?其实更多">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-02-09T16:00:00.000Z">
+<meta property="article:modified_time" content="2025-02-10T12:26:29.093Z">
+<meta property="article:author" content="天目中云">
+<meta property="article:tag" content="高性能服务器编程">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>Linux高性能服务器编程 读书笔记(1) - 天目中云</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":"NhgfDy2CEByjwxuxPM1Le2t6-MdYXbMMI","app_key":"nvGMdqKfKbpkVnojLSbwmasv","server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>TianMu</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/03.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Linux高性能服务器编程 读书笔记(1)"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-02-10 00:00" pubdate>
+          2025年2月10日 凌晨
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.2k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          11 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Linux高性能服务器编程 读书笔记(1)</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <blockquote>
+<p><strong>第五章  Linux网络编程基础API</strong></p>
+</blockquote>
+<h2 id="字节序"><a href="#字节序" class="headerlink" title="字节序"></a>字节序</h2><h3 id="什么是大小端字节序"><a href="#什么是大小端字节序" class="headerlink" title="什么是大小端字节序?"></a>什么是大小端字节序?</h3><p>这里以32位机举例, 32位机CPU一次可以装载4字节,  那么这4个字节不同的排序方式就对应了不同的字节序 : </p>
+<ul>
+<li>大端字节序 : 顺着排, 0x12345678 将被排序为 12  34  56  78.</li>
+<li>小端字节序 : 逆着排, 0x12345678 将被排序为 78  56  34  12.</li>
+</ul>
+<h3 id="为什么要分大小端"><a href="#为什么要分大小端" class="headerlink" title="为什么要分大小端?"></a>为什么要分大小端?</h3><p>其实更多还是因为<strong>历史原因</strong>,  早期都是按照大端字节序来设计的, 因为顺着排更符合人类的阅读习惯, 早期网络协议设计都是按大端设计的, 并且网络协议一旦实施就不好改了, 所以直到现在网络传输的字节序都是大端字节序, 因此大端字节序又称为网络字节序.</p>
+<p>后来人们发现小端字节序更符合CPU的运算逻辑, 使用小段字节序编码可以让CPU运行更加高效, 因此之后的主机大都采用小端字节序, 因此小段字节序又称为主机字节序.</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> <span class="hljs-type">int</span> <span class="hljs-title function_">htonl</span><span class="hljs-params">(<span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> <span class="hljs-type">int</span> hostlong)</span>; <span class="hljs-comment">// host to network long </span><br></code></pre></td></tr></table></figure>
+
+<p>以上为long类型端口从主机字节序转为网络字节序的函数.</p>
+<hr>
+<h2 id="Socket"><a href="#Socket" class="headerlink" title="Socket"></a>Socket</h2><h3 id="shutdown关闭socket"><a href="#shutdown关闭socket" class="headerlink" title="shutdown关闭socket"></a>shutdown关闭socket</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">shutdown</span><span class="hljs-params">(<span class="hljs-type">int</span> sockfd, <span class="hljs-type">int</span> howto)</span></span>;<br></code></pre></td></tr></table></figure>
+
+<p>shoudown类似于进阶版的close, close是直接断开读写, shoudown可以分别关闭读端写端.</p>
+<p>howto为选项 : </p>
+<ul>
+<li>SHUT_RD : 只关闭写端.</li>
+<li>SHUT_WR : 只关闭读端.</li>
+<li>SHUT_RDWR : 双端关闭.</li>
+</ul>
+<p>应用场景 : 半双工实现, 客户端收到EOF可以直接关闭读端, 写端不关闭可以继续处理没有处理完的事务.</p>
+<p>其实就是读端和写端都会占用资源, close只能同时释放, showdown可以根据具体情况选择只读不写&#x2F;只写不读, 提前释放部分资源.</p>
+<h3 id="socket选项"><a href="#socket选项" class="headerlink" title="socket选项"></a>socket选项</h3><ul>
+<li><p>SO_REUSEADDR : 强制使用处于TIME_WAIT状态的连接占用的socket地址.</p>
+<ul>
+<li>TIME_WAIT作用 : TCP连接发送的数据可能滞后, 如果崩溃立即重启, 可能接收到旧数据包造成混乱.</li>
+</ul>
+<p>SO_REUSEADDR作用 : </p>
+<ol>
+<li>可以避免服务器崩溃后进入TIME_WAIT状态, 配合systemd可以实现快速重启服务.</li>
+<li>支持多个进程同时绑定同一个端口(仅限UDP), 用于视频影音等高并发用多个进程同时处理发送到同一个端口上的信息.</li>
+</ol>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">int</span> reuse = <span class="hljs-number">1</span>;  <span class="hljs-comment">// 表示启用设置</span><br>setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &amp;reuse, <span class="hljs-keyword">sizeof</span>(reuse));<br></code></pre></td></tr></table></figure>
+</li>
+<li><p>SO_RCVBUF&#x2F;SO_SNDBUF : 用于修改TCP发送和接收缓冲区的大小.</p>
+<p>缓冲区大小最小为256字节, 大小会按设置的大小的两倍计算.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-type">int</span> bufsize = <span class="hljs-number">2000</span>; <span class="hljs-comment">// 标定新的缓冲区大小</span><br><span class="hljs-built_in">setsockopt</span>(sockfd, SOL_SOCKET, SO_RCV, &amp;bufsize, <span class="hljs-built_in">sizeof</span>(bufsize))<br></code></pre></td></tr></table></figure></li>
+</ul>
+<hr>
+<h2 id="网络信息API"><a href="#网络信息API" class="headerlink" title="网络信息API"></a>网络信息API</h2><p>在现实生活中我们习惯<strong>用域名代替IP地址, 用服务名代替端口号</strong>, 使用网络信息API便可以<strong>实现&lt;域名+服务名&gt;到&lt;IP+port&gt;的双向转化</strong>, 便于我们socket等操作的进行. 主要是两大函数<code>getaddrinfo</code>和<code>getnameinfo</code>, 这两个函数<strong>线程安全并且支持各种地址族和协议类型</strong>, 可以使socket进行动态设置以实现<strong>动态实时处理与跨平台性</strong>.</p>
+<h3 id="getaddrinfo"><a href="#getaddrinfo" class="headerlink" title="getaddrinfo"></a>getaddrinfo</h3><p>这个函数可以通过主机名获得IP地址, 通过服务名获得端口号.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;netdb.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;sys/types.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;sys/socket.h&gt;</span></span><br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">getaddrinfo</span><span class="hljs-params">(<span class="hljs-type">const</span> <span class="hljs-type">char</span> *node,                   <span class="hljs-comment">// 主机名 / 字符串形式的IP地址</span></span></span><br><span class="hljs-params"><span class="hljs-function">                <span class="hljs-type">const</span> <span class="hljs-type">char</span> *service,				<span class="hljs-comment">// 服务名</span></span></span><br><span class="hljs-params"><span class="hljs-function">                <span class="hljs-type">const</span> <span class="hljs-keyword">struct</span> addrinfo *hints, 		<span class="hljs-comment">// 传入一些必要的信息</span></span></span><br><span class="hljs-params"><span class="hljs-function">                <span class="hljs-keyword">struct</span> addrinfo **res				<span class="hljs-comment">// 存储返回结果, 输出型参数</span></span></span><br><span class="hljs-params"><span class="hljs-function">)</span></span>;<br><br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">addrinfo</span> &#123;<br>    <span class="hljs-type">int</span>              ai_flags;        <span class="hljs-comment">// 地址信息标志</span><br>    <span class="hljs-type">int</span>              ai_family;       <span class="hljs-comment">// 地址族 (AF_INET, AF_INET6 等)</span><br>    <span class="hljs-type">int</span>              ai_socktype;     <span class="hljs-comment">// 套接字类型 (SOCK_STREAM, SOCK_DGRAM 等)</span><br>    <span class="hljs-type">int</span>              ai_protocol;     <span class="hljs-comment">// 协议类型 (IPPROTO_TCP, IPPROTO_UDP 等), 默认为0即可</span><br>    <span class="hljs-type">size_t</span>           ai_addrlen;      <span class="hljs-comment">// 地址长度</span><br>    <span class="hljs-keyword">struct</span> <span class="hljs-title class_">sockaddr</span> *ai_addr;         <span class="hljs-comment">// 指向套接字地址的指针</span><br>    <span class="hljs-type">char</span>            *ai_canonname;    <span class="hljs-comment">// 完整主机名</span><br>    <span class="hljs-keyword">struct</span> <span class="hljs-title class_">addrinfo</span> *ai_next;         <span class="hljs-comment">// 下一个地址信息链表</span><br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>我们可以利用获取的信息直接建立socket : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">struct</span> <span class="hljs-title class_">addrinfo</span> hints, *res;<br><span class="hljs-built_in">memset</span>(&amp;hints, <span class="hljs-number">0</span>, <span class="hljs-built_in">sizeof</span>(hints));<br>hints.ai_family = AF_UNSPEC;   <span class="hljs-comment">// 支持 IPv4 和 IPv6</span><br>hints.ai_socktype = SOCK_STREAM; <span class="hljs-comment">// TCP</span><br><br><span class="hljs-comment">// 获取目标主机的地址信息</span><br><span class="hljs-type">int</span> status = <span class="hljs-built_in">getaddrinfo</span>(<span class="hljs-string">&quot;www.example.com&quot;</span>, <span class="hljs-string">&quot;http&quot;</span>, &amp;hints, &amp;res);<br><span class="hljs-keyword">if</span> (status != <span class="hljs-number">0</span>) &#123;<br>    <span class="hljs-comment">// 错误处理</span><br>    <span class="hljs-keyword">return</span>;<br>&#125;<br><br><span class="hljs-comment">// 使用返回的地址信息创建套接字并进行连接</span><br><span class="hljs-type">int</span> sockfd = <span class="hljs-built_in">socket</span>(res-&gt;ai_family, res-&gt;ai_socktype, res-&gt;ai_protocol);<br><span class="hljs-keyword">if</span> (sockfd == <span class="hljs-number">-1</span>) &#123;<br>    <span class="hljs-comment">// 错误处理</span><br>    <span class="hljs-keyword">return</span>;<br>&#125;<br><br><span class="hljs-built_in">freeaddrinfo</span>(res);<br><span class="hljs-built_in">freeaddrinfo</span>(hints);  <span class="hljs-comment">// addrinfo类型需要释放内存</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="getnameinfo"><a href="#getnameinfo" class="headerlink" title="getnameinfo"></a>getnameinfo</h3><p>通过socket地址返回主机名&#x2F;服务名, 和getaddrinfo是相反的作用.</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">int</span> <span class="hljs-title function_">getnameinfo</span><span class="hljs-params">(<span class="hljs-type">const</span> <span class="hljs-keyword">struct</span> sockaddr *sa, <span class="hljs-type">socklen_t</span> salen, <span class="hljs-comment">// 目标网络地址结构体</span></span><br><span class="hljs-params">                <span class="hljs-type">char</span> *host, <span class="hljs-type">size_t</span> hostlen,					<span class="hljs-comment">// 返回的主机名, 输出型参数</span></span><br><span class="hljs-params">                <span class="hljs-type">char</span> *serv, <span class="hljs-type">size_t</span> servlen,					<span class="hljs-comment">// 返回的服务名/端口号, 输出型参数</span></span><br><span class="hljs-params">                <span class="hljs-type">int</span> flags									<span class="hljs-comment">// 确定函数行为</span></span><br><span class="hljs-params">)</span>;<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">struct</span> <span class="hljs-title class_">sockaddr_in</span> sa;<br>   <span class="hljs-type">char</span> host[NI_MAXHOST], service[NI_MAXSERV];<br>   <br>   <span class="hljs-comment">// 构造一个IPv4地址，假设是127.0.0.1，端口是80</span><br>   sa.sin_family = AF_INET;<br>   sa.sin_port = <span class="hljs-built_in">htons</span>(<span class="hljs-number">80</span>);<br>   <span class="hljs-built_in">inet_pton</span>(AF_INET, <span class="hljs-string">&quot;127.0.0.1&quot;</span>, &amp;(sa.sin_addr));<br><br>   <span class="hljs-comment">// 获取主机名和服务名</span><br>   <span class="hljs-type">int</span> result = <span class="hljs-built_in">getnameinfo</span>((<span class="hljs-keyword">struct</span> sockaddr*)&amp;sa, <span class="hljs-built_in">sizeof</span>(sa),<br>                            host, NI_MAXHOST, service, NI_MAXSERV, <span class="hljs-number">0</span>);<br>   <span class="hljs-keyword">if</span> (result == <span class="hljs-number">0</span>) &#123;<br>       <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;Host: %s\n&quot;</span>, host);<br>       <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;Service: %s\n&quot;</span>, service);<br>   &#125;<br></code></pre></td></tr></table></figure>
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E9%AB%98%E6%80%A7%E8%83%BD%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%BC%96%E7%A8%8B/" class="print-no-link">#高性能服务器编程</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Linux高性能服务器编程 读书笔记(1)</div>
+      <div>http://example.com/2025/02/10/[Linux高性能服务器编程]读书笔记(1)/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>天目中云</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年2月10日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/02/02/%E7%93%A6%E5%B0%94%E7%99%BB%E6%B9%96%E8%AF%BB%E4%B9%A6%E6%91%98%E5%BD%95(4)/" title="瓦尔登湖读书摘录(4)">
+                        <span class="hidden-mobile">瓦尔登湖读书摘录(4)</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"NhgfDy2CEByjwxuxPM1Le2t6-MdYXbMMI","appKey":"nvGMdqKfKbpkVnojLSbwmasv","path":"window.location.pathname","placeholder":null,"avatar":"retro","meta":["nick","mail","link"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":false,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":false},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
