@@ -246,6 +246,132 @@
     <article class="col-12 col-md-12 mx-auto index-info">
       <h2 class="index-header">
         
+        <a href="/2025/01/14/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE46%20%E5%8F%8B%E5%85%83%E9%9D%9E%E6%88%90%E5%91%98%E5%87%BD%E6%95%B0/" target="_self">
+          Effective C++ 条款46 友元非成员函数
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/01/14/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE46%20%E5%8F%8B%E5%85%83%E9%9D%9E%E6%88%90%E5%91%98%E5%87%BD%E6%95%B0/" target="_self">
+        <div>
+          条款46 : 需要类型转换时请为模板定义友元非成员函数 本条款是条款24的延申讨论, 在引入模板的前提下, 如果我们想实现某些隐式类型转换的操作, 会需要比以往多一些额外的操作, 让我们通过本条款来理解.  前提引入还记得条款24中的Rational吗, 这是一个有理数类, 内部包含分子和分母, 可以由int隐式转换而来, 当时条款24中讨论的核心是如何让Rational支持混合运算, 就像下面这
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2025-01-14 19:06" pubdate>
+              2025-01-14
+            </time>
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/Effective-C/">#Effective C++</a>
+            
+              <a href="/tags/%E6%A8%A1%E6%9D%BF/">#模板</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2025/01/13/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE45%20%E8%BF%90%E7%94%A8%E6%88%90%E5%91%98%E5%87%BD%E6%95%B0%E6%A8%A1%E6%9D%BF%E6%8E%A5%E5%8F%97%E6%89%80%E6%9C%89%E5%85%BC%E5%AE%B9%E7%B1%BB%E5%9E%8B/" target="_self">
+          Effective C++ 条款45 运用成员函数模板接受所有兼容类型
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/01/13/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE45%20%E8%BF%90%E7%94%A8%E6%88%90%E5%91%98%E5%87%BD%E6%95%B0%E6%A8%A1%E6%9D%BF%E6%8E%A5%E5%8F%97%E6%89%80%E6%9C%89%E5%85%BC%E5%AE%B9%E7%B1%BB%E5%9E%8B/" target="_self">
+        <div>
+          条款45 : 运用成员函数模板接受所有兼容类型 本条款中我们将会以智能指针为例, 介绍如何通过成员函数模板使一个模板类可以接受所有兼容类型.  我们先来构建一个简单的继承体系 :  123456class Top &#123; ... &#125;;class Middle: public Top &#123; ... &#125;;class Bottom: public Middle &#12
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2025-01-13 17:38" pubdate>
+              2025-01-13
+            </time>
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/Effective-C/">#Effective C++</a>
+            
+              <a href="/tags/%E6%A8%A1%E6%9D%BF/">#模板</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2025/01/12/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE44%20%E9%98%B2%E6%AD%A2%E4%BB%A3%E7%A0%81%E8%86%A8%E8%83%80/" target="_self">
+          Effective C++ 条款44 防止代码膨胀
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/01/12/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE44%20%E9%98%B2%E6%AD%A2%E4%BB%A3%E7%A0%81%E8%86%A8%E8%83%80/" target="_self">
+        <div>
+          条款44 : 将与参数无关的代码抽离templates 我们知道代码重复和过度的inline都可能导致代码膨胀, 而在模板中会发生比较隐晦的代码重复, 我们应当尽力去避免代码重复的情况发生, 而最核心的方法就是将与参数无关的代码抽离templates, 让我们通过本条款进行了解.  在本条款中我们将会了解 :   在模板中什么情况下会发生代码膨胀? 如何缓解这种代码膨胀? 在缓解代码膨胀后如何知道
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2025-01-12 17:50" pubdate>
+              2025-01-12
+            </time>
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/Effective-C/">#Effective C++</a>
+            
+              <a href="/tags/%E6%A8%A1%E6%9D%BF/">#模板</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
         <a href="/2025/01/07/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE43%20%E6%A8%A1%E6%9D%BF%E5%9F%BA%E7%B1%BB%E7%9A%84%E7%BB%A7%E6%89%BF/" target="_self">
           Effective C++ 条款43 模板基类的继承
         </a>
@@ -527,130 +653,6 @@
               <a href="/tags/Effective-C/">#Effective C++</a>
             
               <a href="/tags/%E7%BB%A7%E6%89%BF/">#继承</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h2 class="index-header">
-        
-        <a href="/2024/12/16/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE33%20%E7%BB%A7%E6%89%BF,%20%E9%87%8D%E8%BD%BD%E4%B8%8E%E4%BD%9C%E7%94%A8%E5%9F%9F/" target="_self">
-          Effective C++ 条款33 继承, 重载与作用域
-        </a>
-      </h2>
-
-      
-      <a class="index-excerpt index-excerpt__noimg" href="/2024/12/16/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE33%20%E7%BB%A7%E6%89%BF,%20%E9%87%8D%E8%BD%BD%E4%B8%8E%E4%BD%9C%E7%94%A8%E5%9F%9F/" target="_self">
-        <div>
-          条款33 : 避免遮掩继承而来的名称 本条款并非和继承有关, 而是在讨论由继承引发的作用域问题, 其有可能破坏条款32所确定的法则, 因此我们在其之后介绍本条款。  我们知道在不同作用域下如果有相同名称的事物, 无论其功能或类型, 都是局部优先的. 继承的父子类也是类似, 不管是不是虚函数, 亦或是纯虚函数都完全没有关系, 都遵守相同名称局部优先的原则, 我们来看看一下的代码 :   123456
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2024-12-16 15:40" pubdate>
-              2024-12-16
-            </time>
-          </div>
-        
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/Effective-C/">#Effective C++</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h2 class="index-header">
-        
-        <a href="/2024/12/12/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE32%20public%E7%BB%A7%E6%89%BF/" target="_self">
-          Effective C++ 条款32 public继承
-        </a>
-      </h2>
-
-      
-      <a class="index-excerpt index-excerpt__noimg" href="/2024/12/12/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE32%20public%E7%BB%A7%E6%89%BF/" target="_self">
-        <div>
-          条款32 : 确定你的public继承塑膜出 is-a 关系 从本条款开始我们将步入面向对象编程这一重要领域进行讨论, 首先我们将会围绕public继承, 分析public继承的意义与目的, 再举出两个错误的public继承典例.  public继承意味”is-a”(是一种)的关系这便是C++面向对象编程的最重要的一个规则, 请把这个规则牢牢记在心中吧, 相信很多人以及对这种认知有所耳闻, 我甚至
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2024-12-12 17:26" pubdate>
-              2024-12-12
-            </time>
-          </div>
-        
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/Effective-C/">#Effective C++</a>
-            
-              <a href="/tags/%E7%BB%A7%E6%89%BF/">#继承</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h2 class="index-header">
-        
-        <a href="/2024/12/11/%E7%93%A6%E5%B0%94%E7%99%BB%E6%B9%96%E8%AF%BB%E4%B9%A6%E6%91%98%E5%BD%95(3)/" target="_self">
-          瓦尔登湖读书摘录(3)
-        </a>
-      </h2>
-
-      
-      <a class="index-excerpt index-excerpt__noimg" href="/2024/12/11/%E7%93%A6%E5%B0%94%E7%99%BB%E6%B9%96%E8%AF%BB%E4%B9%A6%E6%91%98%E5%BD%95(3)/" target="_self">
-        <div>
-          只要紧紧跟随你的天赋, 它每时每刻都将让你看到全新的景色.  从事商业需要极具自信, 认真, 机警, 敢于冒险和不知疲倦的精神.  当了解某个人的真实性格以后, 我自认为是不可能去改变它的, 无论是让它变得更好还是更坏.  我既可以因为看戏而感动, 但我也可以对和我有重要关系的实际事件无动于衷.  我们活得太拥挤, 因袭彼此的生活方式, 相互之间磕磕绊绊, 我想我们因此失去了彼此之间的尊重. 对
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2024-12-11 21:24" pubdate>
-              2024-12-11
-            </time>
-          </div>
-        
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/%E9%98%85%E8%AF%BB/">#阅读</a>
-            
-              <a href="/tags/%E7%93%A6%E5%B0%94%E7%99%BB%E6%B9%96/">#瓦尔登湖</a>
             
           </div>
         
