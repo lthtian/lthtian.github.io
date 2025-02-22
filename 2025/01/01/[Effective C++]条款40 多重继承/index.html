@@ -28,15 +28,15 @@
 <meta property="og:site_name" content="天目中云">
 <meta property="og:description" content="条款40 : 明智而审慎地使用多重继承 相比于java选择单继承+接口类多继承的方式, C++选择了更加直接的方式, 其允许多重继承存在. 不可否认的是确实大多数情况下单继承都可以胜任, 但是同样不可否认的是多重继承也一定有其用武之地. 在本条款中, 我们将认识多重继承, 了解辅助其实现的虚继承机制, 并且知晓多重继承的主要应用场景.  多重继承的意思是继承一个以上的基类, 一般来说我们不希望这些">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="http://example.com/img/001.png">
-<meta property="og:image" content="http://example.com/img/002.png">
+<meta property="og:image" content="http://example.com/img/image/001.png">
+<meta property="og:image" content="http://example.com/img/image/002.png">
 <meta property="article:published_time" content="2025-01-01T11:55:12.000Z">
-<meta property="article:modified_time" content="2025-01-01T12:17:35.213Z">
+<meta property="article:modified_time" content="2025-02-22T12:04:17.228Z">
 <meta property="article:author" content="天目中云">
 <meta property="article:tag" content="继承">
 <meta property="article:tag" content="Effectiv C++">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="http://example.com/img/001.png">
+<meta name="twitter:image" content="http://example.com/img/image/001.png">
   
   
     <meta name="referrer" content="no-referrer-when-downgrade">
@@ -312,7 +312,7 @@
 <p>多重继承的意思是<strong>继承一个以上的基类</strong>, 一般来说<strong>我们不希望这些基类在继承体系中又有更高级的继承</strong>, 这样会带来菱形继承的问题, 并且为了解决这种问题, 我们还要祭出虚继承这一机制来克服, 接下来我们将会逐一简单介绍菱形继承和虚继承机制.</p>
 <hr>
 <h3 id="菱形继承"><a href="#菱形继承" class="headerlink" title="菱形继承"></a>菱形继承</h3><p>简而言之就是派生类继承的多个基类中, 含有共同的父类. 如下图所示 : </p>
-<p><img src="/../img/001.png" srcset="/img/loading.gif" lazyload></p>
+<p><img src="/../img/image/001.png" srcset="/img/loading.gif" lazyload></p>
 <p>如此这般, 假设<code>IOFile</code>中有成员, 那么<code>InputFile</code>和<code>OutputFile</code>中也会继承相应的成员, 那么File就继承到了两份相同的成员. 那么如何处理这种情况就是C++要解决的问题, 如何解决有两派观点 : </p>
 <ul>
 <li><p>File中就是有两份成员, 这是最直观的逻辑, 所以调用时都必须指定明确的基类.</p>
@@ -325,7 +325,7 @@
 <hr>
 <h3 id="虚继承"><a href="#虚继承" class="headerlink" title="虚继承"></a>虚继承</h3><p>简而言之就是对存在菱形继承的基类们在继承时前加virtual, 那么以后就不会出现继承两份的情况了, C++在底层会解决所有问题.</p>
 <p>图示如下 : </p>
-<p><img src="/../img/002.png" srcset="/img/loading.gif" lazyload></p>
+<p><img src="/../img/image/002.png" srcset="/img/loading.gif" lazyload></p>
 <p>代码如下 : </p>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">File</span> &#123; ... &#125;;<br><span class="hljs-keyword">class</span> <span class="hljs-title class_">InputFile</span>: <span class="hljs-keyword">virtual</span> <span class="hljs-keyword">public</span> File &#123; ... &#125;;<br><span class="hljs-keyword">class</span> <span class="hljs-title class_">OutputFile</span>: <span class="hljs-keyword">virtual</span> <span class="hljs-keyword">public</span> File &#123; ... &#125;;<br><span class="hljs-keyword">class</span> <span class="hljs-title class_">IOFile</span>: <span class="hljs-keyword">public</span> InputFile,<br>              <span class="hljs-keyword">public</span> OutputFile<br>&#123; ... &#125;;<br></code></pre></td></tr></table></figure>
 
