@@ -1,0 +1,818 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/head.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="天目中云">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="第13章 多进程编程  本章主要是讨论创建进程, 进程替换, 进程等待, 进程间通信, 最后一个占大头. 创建进程123#include＜sys&#x2F;types.h＞#include＜unistd.h＞pid_t fork(void);   这个只需要记住返回值的判断 :   &lt; 0 : fork失败.  &#x3D;&#x3D; 0 : 属于子进程.  &gt; 0 : 属于父进程.   子进程继承父进程的文件">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux高性能服务编程 读书笔记(7)">
+<meta property="og:url" content="http://example.com/2025/02/22/[Linux%E9%AB%98%E6%80%A7%E8%83%BD%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%BC%96%E7%A8%8B]%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0(7)/index.html">
+<meta property="og:site_name" content="天目中云">
+<meta property="og:description" content="第13章 多进程编程  本章主要是讨论创建进程, 进程替换, 进程等待, 进程间通信, 最后一个占大头. 创建进程123#include＜sys&#x2F;types.h＞#include＜unistd.h＞pid_t fork(void);   这个只需要记住返回值的判断 :   &lt; 0 : fork失败.  &#x3D;&#x3D; 0 : 属于子进程.  &gt; 0 : 属于父进程.   子进程继承父进程的文件">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-02-21T16:00:00.000Z">
+<meta property="article:modified_time" content="2025-02-22T02:13:42.652Z">
+<meta property="article:author" content="天目中云">
+<meta property="article:tag" content="Linux高性能服务编程">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>Linux高性能服务编程 读书笔记(7) - 天目中云</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":"NhgfDy2CEByjwxuxPM1Le2t6-MdYXbMMI","app_key":"nvGMdqKfKbpkVnojLSbwmasv","server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>TianMu</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/03.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Linux高性能服务编程 读书笔记(7)"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-02-22 00:00" pubdate>
+          2025年2月22日 凌晨
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.7k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          15 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Linux高性能服务编程 读书笔记(7)</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <blockquote>
+<p>第13章 多进程编程</p>
+</blockquote>
+<p>本章主要是讨论创建进程, 进程替换, 进程等待, 进程间通信, 最后一个占大头.</p>
+<h3 id="创建进程"><a href="#创建进程" class="headerlink" title="创建进程"></a>创建进程</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span>＜sys/types.h＞</span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span>＜unistd.h＞</span><br><span class="hljs-function"><span class="hljs-type">pid_t</span> <span class="hljs-title">fork</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span></span>; <br></code></pre></td></tr></table></figure>
+
+<p>这个只需要记住返回值的判断 : </p>
+<ul>
+<li><p><code>&lt; 0</code> : fork失败.</p>
+</li>
+<li><p><code>== 0 </code>: 属于子进程.</p>
+</li>
+<li><p><code>&gt; 0</code> : 属于父进程.</p>
+</li>
+</ul>
+<p>子进程继承父进程的文件描述符表, 但是父进程设置的信号回调都回取消.</p>
+<hr>
+<h3 id="进程替换"><a href="#进程替换" class="headerlink" title="进程替换"></a>进程替换</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span>＜unistd.h＞</span><br><span class="hljs-keyword">extern</span> <span class="hljs-type">char</span>**environ;<br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">execl</span><span class="hljs-params">(<span class="hljs-type">const</span> <span class="hljs-type">char</span>*path,<span class="hljs-type">const</span> <span class="hljs-type">char</span>*arg,...)</span></span>;<br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">execlp</span><span class="hljs-params">(<span class="hljs-type">const</span> <span class="hljs-type">char</span>*file,<span class="hljs-type">const</span> <span class="hljs-type">char</span>*arg,...)</span></span>;<br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">execle</span><span class="hljs-params">(<span class="hljs-type">const</span> <span class="hljs-type">char</span>*path,<span class="hljs-type">const</span> <span class="hljs-type">char</span>*arg,...,<span class="hljs-type">char</span>*<span class="hljs-type">const</span> envp[])</span></span>;<br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">execv</span><span class="hljs-params">(<span class="hljs-type">const</span> <span class="hljs-type">char</span>*path,<span class="hljs-type">char</span>*<span class="hljs-type">const</span> argv[])</span></span>;<br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">execvp</span><span class="hljs-params">(<span class="hljs-type">const</span> <span class="hljs-type">char</span>*file,<span class="hljs-type">char</span>*<span class="hljs-type">const</span> argv[])</span></span>;<br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">execve</span><span class="hljs-params">(<span class="hljs-type">const</span> <span class="hljs-type">char</span>*path,<span class="hljs-type">char</span>*<span class="hljs-type">const</span> argv[],<span class="hljs-type">char</span>*<span class="hljs-type">const</span> envp[])</span></span>;<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="进程等待"><a href="#进程等待" class="headerlink" title="进程等待"></a>进程等待</h3><ul>
+<li>子进程退出之后, 父进程读取其退出状态之前, 子进程都处于僵尸态, 这会占据内核资源, 需要调用wait释放子进程.</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span>＜sys/types.h＞</span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span>＜sys/wait.h＞</span><br><span class="hljs-function"><span class="hljs-type">pid_t</span> <span class="hljs-title">wait</span><span class="hljs-params">(<span class="hljs-type">int</span>*stat_loc)</span></span>;  <span class="hljs-comment">// 等待任一进程</span><br><span class="hljs-function"><span class="hljs-type">pid_t</span> <span class="hljs-title">waitpid</span><span class="hljs-params">(<span class="hljs-type">pid_t</span> pid,<span class="hljs-type">int</span>*stat_loc,<span class="hljs-type">int</span> options)</span></span>;  <span class="hljs-comment">// 等待指定进程</span><br></code></pre></td></tr></table></figure>
+
+<p>默认都是阻塞的, 但是waitpid如果options设置了WHOHANG, 就会变成非阻塞.</p>
+<p>当一个进程结束时, 会向父进程发送SIGCHLD信号, 我们可以捕获这个信号, 在信号回调函数中使用非阻塞waitpid.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">static</span> <span class="hljs-type">void</span> <span class="hljs-title">handle_child</span><span class="hljs-params">(<span class="hljs-type">int</span> sig)</span></span><br><span class="hljs-function"></span>&#123;<br>	<span class="hljs-type">pid_t</span> pid;<br>	<span class="hljs-type">int</span> stat;<br>	<span class="hljs-keyword">while</span>((pid=<span class="hljs-built_in">waitpid</span>(<span class="hljs-number">-1</span>,＆stat,WNOHANG))＞<span class="hljs-number">0</span>)<br>	&#123;<br>		<span class="hljs-comment">/*对结束的子进程进行善后处理*/</span><br>	&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="进程间通信"><a href="#进程间通信" class="headerlink" title="进程间通信"></a>进程间通信</h3><p>一种最经典的进程间通信就是管道, 这里不再详述.</p>
+<p>接下来详述三种无关联进程间的通信方式, 这里需要注意虽然是无关进程, 但都是同一主机下的进程, 是依靠主机单独在内核中开辟出一些内容物实现的.</p>
+<h3 id="信号量"><a href="#信号量" class="headerlink" title="信号量"></a>信号量</h3><p>我们首先要理解信号量是干什么的 : </p>
+<p>它主要用来<strong>控制对共享资源的访问</strong>,  与其说它是进程间的一种通信方式, 不如说它<strong>可以管控进程间对共享内存的访问</strong>, 其有一个信号量资源, 进程可以调用函数将信号量进行加减操作, 当信号量归0时, 会限制之后需要访问共享内存的进程(挂起), 可以理解为这是<strong>一个有计数功能的专门针对共享资源的高级锁</strong>.</p>
+<p>信号量的核心理念是对信号量进行处理, <strong>在设计共享资源的代码前后, 分别设置P操作和V操作</strong>,  P代表passeren(进入), 会减少信号量; V代表vrijgeven(退出), 会增加信号量. PV操作都有对应的函数可以触发. 你可以类比为P操作就是加锁, V操作就解锁.</p>
+<p>关于信号量的系统函数有两套 : </p>
+<ul>
+<li>System V 信号量 : 早期信号量, 设置复杂, 但是老牌系统都在使用, 只适合多线程环境.</li>
+<li>POSIX 信号量 : 比较简单易用, 适合多线程环境.</li>
+</ul>
+<p>我们先来学习System V信号量 : </p>
+<h4 id="semget"><a href="#semget" class="headerlink" title="semget"></a>semget</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span>＜sys/sem.h＞</span><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">semget</span><span class="hljs-params">(<span class="hljs-type">key_t</span> key,<span class="hljs-type">int</span> num_sems,<span class="hljs-type">int</span> sem_flags)</span></span>;<br></code></pre></td></tr></table></figure>
+
+<p>这个函数用来创建一个新的信号量集. </p>
+<ul>
+<li><p>key用来标识一个全局唯一的信号量集, 就是一个唯一关键字, 一般用ftok生成.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">key_t</span> <span class="hljs-title">ftok</span><span class="hljs-params">(<span class="hljs-type">const</span> <span class="hljs-type">char</span> *pathname, <span class="hljs-type">int</span> proj_id)</span></span>;<br></code></pre></td></tr></table></figure>
+</li>
+<li><p>num_sems是要设置的信号量的数目, 一般就一个. </p>
+</li>
+<li><p>最后一个一般0666, 设置访问权限.</p>
+</li>
+</ul>
+<h4 id="semctl"><a href="#semctl" class="headerlink" title="semctl"></a>semctl</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span>＜sys/sem.h＞</span><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">semctl</span><span class="hljs-params">(<span class="hljs-type">int</span> sem_id,<span class="hljs-type">int</span> sem_num,<span class="hljs-type">int</span> command,...)</span></span>;<br></code></pre></td></tr></table></figure>
+
+<p>这个函数是用来对建立的信号量集进行设置的函数, </p>
+<ul>
+<li>sem_id : semget的返回值</li>
+<li>sem_num : 信号量集中的索引, 设置为0代表选择信号集中的第一个.</li>
+<li>command : 用来设置进行什么操作, SETVAL代表设置信号集, 后面加要设置的值.</li>
+</ul>
+<p>由于刚建立默认的信号量为0, 无法使用, 必须通过这个函数设置信号量 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">define</span> MAX_CONCURRENT 1   <span class="hljs-comment">// 同一时刻只允许一个进程访问共享内存</span></span><br><span class="hljs-built_in">semctl</span>(sem_id, <span class="hljs-number">0</span>, SETVAL, MAX_CONCURRENT);<br></code></pre></td></tr></table></figure>
+
+<p>假如我们要共享的不是内存而是线程池, 那么这里就大有可为了, 可以根据当前线程池中线程的数量设置信号量, 可以对访问线程数进行限制.</p>
+<h4 id="semop"><a href="#semop" class="headerlink" title="semop"></a>semop</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">semop</span><span class="hljs-params">(<span class="hljs-type">int</span> sem_id,<span class="hljs-keyword">struct</span> sembuf*sem_ops,<span class="hljs-type">size_t</span> num_sem_ops)</span></span>;<br></code></pre></td></tr></table></figure>
+
+<p>这函数用来进行实际的pv操作, sembuf的结构需要细致了解一下 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">struct</span> <span class="hljs-title class_">sembuf</span>&#123;<br>	<span class="hljs-type">unsigned</span> <span class="hljs-type">short</span> <span class="hljs-type">int</span> sem_num;  <span class="hljs-comment">// 信号量的索引</span><br>    <span class="hljs-type">short</span> <span class="hljs-type">int</span> sem_op;			 <span class="hljs-comment">// 操作的数量</span><br>	<span class="hljs-type">short</span> <span class="hljs-type">int</span> sem_flg;		     <span class="hljs-comment">// 额外的属性</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>第一个参数还是如果为0默认选第一个.</li>
+<li>sem_op : p操作就是-1, v操作就是1.</li>
+<li>sem_flg : 一般推荐加上SEM_UNDO, 这个参数的作用是设置回滚操作, 也就是说p操作完, 如果在触发v操作前进程崩溃了, 也会将p操作改变的值恢复回去.</li>
+</ul>
+<p>一般这样配置 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// 定义信号量操作结构</span><br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">sembuf</span> p = &#123;<span class="hljs-number">0</span>, <span class="hljs-number">-1</span>, SEM_UNDO&#125;;  <span class="hljs-comment">// wait 操作</span><br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">sembuf</span> v = &#123;<span class="hljs-number">0</span>, <span class="hljs-number">1</span>, SEM_UNDO&#125;;   <span class="hljs-comment">// post 操作</span><br></code></pre></td></tr></table></figure>
+
+<h4 id="示例：System-V-信号量控制并发数量"><a href="#示例：System-V-信号量控制并发数量" class="headerlink" title="示例：System V 信号量控制并发数量"></a>示例：System V 信号量控制并发数量</h4><p>假设我们有一个资源池，最多允许 3 个进程并发访问，我们会将信号量的初始值设置为 3。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdlib.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;sys/ipc.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;sys/sem.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;unistd.h&gt;</span></span><br><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> MAX_CONCURRENT 3</span><br><br><span class="hljs-comment">// 定义信号量操作结构</span><br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">sembuf</span> p = &#123;<span class="hljs-number">0</span>, <span class="hljs-number">-1</span>, SEM_UNDO&#125;;  <span class="hljs-comment">// wait 操作</span><br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">sembuf</span> v = &#123;<span class="hljs-number">0</span>, <span class="hljs-number">1</span>, SEM_UNDO&#125;;   <span class="hljs-comment">// post 操作</span><br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-type">key_t</span> key = <span class="hljs-built_in">ftok</span>(<span class="hljs-string">&quot;semfile&quot;</span>, <span class="hljs-number">65</span>);   <span class="hljs-comment">// 创建 IPC 键</span><br>    <span class="hljs-type">int</span> sem_id = <span class="hljs-built_in">semget</span>(key, <span class="hljs-number">1</span>, IPC_CREAT | <span class="hljs-number">0666</span>);  <span class="hljs-comment">// 获取信号量</span><br><br>    <span class="hljs-comment">// 设置初始信号量值为 3，表示允许 3 个进程并发访问</span><br>    <span class="hljs-built_in">semctl</span>(sem_id, <span class="hljs-number">0</span>, SETVAL, MAX_CONCURRENT);<br><br>    <span class="hljs-comment">// 模拟进程访问资源</span><br>    <span class="hljs-keyword">if</span> (<span class="hljs-built_in">semop</span>(sem_id, &amp;p, <span class="hljs-number">1</span>) == <span class="hljs-number">-1</span>) &#123;  <span class="hljs-comment">// 尝试获取信号量</span><br>        <span class="hljs-built_in">perror</span>(<span class="hljs-string">&quot;semop p&quot;</span>);<br>        <span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);<br>    &#125;<br><br>    <span class="hljs-comment">// 访问共享资源</span><br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;Process %d is accessing shared resource.\n&quot;</span>, <span class="hljs-built_in">getpid</span>());<br>    <span class="hljs-built_in">sleep</span>(<span class="hljs-number">2</span>);  <span class="hljs-comment">// 模拟工作</span><br><br>    <span class="hljs-comment">// 释放信号量</span><br>    <span class="hljs-keyword">if</span> (<span class="hljs-built_in">semop</span>(sem_id, &amp;v, <span class="hljs-number">1</span>) == <span class="hljs-number">-1</span>) &#123;  <br>        <span class="hljs-built_in">perror</span>(<span class="hljs-string">&quot;semop v&quot;</span>);<br>        <span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);<br>    &#125;<br><br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;Process %d finished accessing shared resource.\n&quot;</span>, <span class="hljs-built_in">getpid</span>());<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="共享内存"><a href="#共享内存" class="headerlink" title="共享内存"></a>共享内存</h3><p>共享内存也是SystemV和POSIX各有一套函数, 这里使用POSIX的. </p>
+<p>简单来说就是向内核申请一块共享内存, 然后通过映射函数(mmap)将这块内存映射到进程的虚拟地址空间上, 使得进程操作这块内存可以像平常一样.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span>＜sys/mman.h＞</span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span>＜sys/stat.h＞</span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span>＜fcntl.h＞</span><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">shm_open</span><span class="hljs-params">(<span class="hljs-type">const</span> <span class="hljs-type">char</span>*name, <span class="hljs-type">int</span> oflag, <span class="hljs-type">mode_t</span> mode)</span></span>;<br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">shm_unlink</span><span class="hljs-params">(<span class="hljs-type">const</span> <span class="hljs-type">char</span>* name)</span></span>;<br></code></pre></td></tr></table></figure>
+
+<p>这个是用于申请创建共享内存的函数 : </p>
+<ul>
+<li>name : 名字自己起, 最好是”&#x2F;name”这种格式.</li>
+<li>oflag : 用于指定创建方式, O_RDONLY &#x2F; O_RDWR &#x2F; O_CREAT </li>
+<li>mode : 一般是0666</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">ftruncate</span><span class="hljs-params">(<span class="hljs-type">int</span> fd, <span class="hljs-type">off_t</span> length)</span></span>;<br></code></pre></td></tr></table></figure>
+
+<p>这个函数通常要搭配shm_open使用, 它用于设定文件大小为length.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span>＜sys/mman.h＞</span><br><span class="hljs-function"><span class="hljs-type">void</span>*<span class="hljs-title">mmap</span><span class="hljs-params">(<span class="hljs-type">void</span>*start,<span class="hljs-type">size_t</span> length,<span class="hljs-type">int</span> prot,<span class="hljs-type">int</span> flags,<span class="hljs-type">int</span> fd,<span class="hljs-type">off_t</span> offset)</span></span>;<br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">munmap</span><span class="hljs-params">(<span class="hljs-type">void</span>*start,<span class="hljs-type">size_t</span> length)</span></span>;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>start : 允许用户使用某个特定的地址作为这段内存的起始地址, 设置为NULL自动选择地址.</li>
+<li>length : 内存段的长度.</li>
+<li>port : 设置内存段的访问权限.</li>
+<li>flags : 控制内存段内容被修改后程序的行为.</li>
+<li>fd : 被映射文件对应的文件描述符, 这个通过shm_open生成.</li>
+<li>offset : 设置从文件的何处开始映射.</li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Linux%E9%AB%98%E6%80%A7%E8%83%BD%E6%9C%8D%E5%8A%A1%E7%BC%96%E7%A8%8B/" class="print-no-link">#Linux高性能服务编程</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Linux高性能服务编程 读书笔记(7)</div>
+      <div>http://example.com/2025/02/22/[Linux高性能服务器编程]读书笔记(7)/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>天目中云</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年2月22日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/02/22/%E8%A2%AB%E8%AE%A8%E5%8E%8C%E7%9A%84%E5%8B%87%E6%B0%94%20%E8%AF%BB%E4%B9%A6%E6%91%98%E5%BD%95(2)/" title="被讨厌的勇气 读书摘录(2)">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">被讨厌的勇气 读书摘录(2)</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/02/19/%5BLinux%E9%AB%98%E6%80%A7%E8%83%BD%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%BC%96%E7%A8%8B%5D%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0(6)/" title="Linux高性能服务器编程 读书笔记(6)">
+                        <span class="hidden-mobile">Linux高性能服务器编程 读书笔记(6)</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"NhgfDy2CEByjwxuxPM1Le2t6-MdYXbMMI","appKey":"nvGMdqKfKbpkVnojLSbwmasv","path":"window.location.pathname","placeholder":null,"avatar":"retro","meta":["nick","mail","link"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":false,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":false},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
