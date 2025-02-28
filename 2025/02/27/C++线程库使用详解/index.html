@@ -1,0 +1,802 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/head.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="天目中云">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="核心操作线程创建12345678&#x2F;&#x2F; 需要传入回调函数, 如果有参数紧跟在后面std::thread t1(print_hello, 1);  &#x2F;&#x2F; 当然lambda也可以当作回调函数传进去std::thread t([]() &#123;    std::cout &lt;&lt; &quot;Hello from lambda thread!&quot; &lt;&lt; std::endl;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C++线程库使用详解">
+<meta property="og:url" content="http://example.com/2025/02/27/C++%E7%BA%BF%E7%A8%8B%E5%BA%93%E4%BD%BF%E7%94%A8%E8%AF%A6%E8%A7%A3/index.html">
+<meta property="og:site_name" content="天目中云">
+<meta property="og:description" content="核心操作线程创建12345678&#x2F;&#x2F; 需要传入回调函数, 如果有参数紧跟在后面std::thread t1(print_hello, 1);  &#x2F;&#x2F; 当然lambda也可以当作回调函数传进去std::thread t([]() &#123;    std::cout &lt;&lt; &quot;Hello from lambda thread!&quot; &lt;&lt; std::endl;">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-02-27T10:56:00.000Z">
+<meta property="article:modified_time" content="2025-02-28T10:57:08.109Z">
+<meta property="article:author" content="天目中云">
+<meta property="article:tag" content="多线程">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>C++线程库使用详解 - 天目中云</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":"NhgfDy2CEByjwxuxPM1Le2t6-MdYXbMMI","app_key":"nvGMdqKfKbpkVnojLSbwmasv","server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>TianMu</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/03.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="C++线程库使用详解"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-02-27 18:56" pubdate>
+          2025年2月27日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.4k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          20 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">C++线程库使用详解</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h2 id="核心操作"><a href="#核心操作" class="headerlink" title="核心操作"></a>核心操作</h2><h3 id="线程创建"><a href="#线程创建" class="headerlink" title="线程创建"></a>线程创建</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// 需要传入回调函数, 如果有参数紧跟在后面</span><br><span class="hljs-function">std::thread <span class="hljs-title">t1</span><span class="hljs-params">(print_hello, <span class="hljs-number">1</span>)</span></span>;  <br><span class="hljs-comment">// 当然lambda也可以当作回调函数传进去</span><br><span class="hljs-function">std::thread <span class="hljs-title">t</span><span class="hljs-params">([]() &#123;</span></span><br><span class="hljs-params"><span class="hljs-function">    std::cout &lt;&lt; <span class="hljs-string">&quot;Hello from lambda thread!&quot;</span> &lt;&lt; std::endl;</span></span><br><span class="hljs-params"><span class="hljs-function">&#125;)</span></span>;<br><span class="hljs-comment">// 也可以创建时传入回调函数</span><br><span class="hljs-function">std::thread <span class="hljs-title">t</span><span class="hljs-params">(calculate_sum, <span class="hljs-number">3</span>, <span class="hljs-number">5</span>, print_result)</span></span>;<br></code></pre></td></tr></table></figure>
+
+<h3 id="线程等待"><a href="#线程等待" class="headerlink" title="线程等待"></a>线程等待</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cpp">t<span class="hljs-number">1.</span><span class="hljs-built_in">join</span>();<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><p>为什么需要线程等待?</p>
+<p>目的在于<strong>接收信息和同步</strong>.</p>
+<p> join中并没有实际和接收信息相关的操作, 信息交流是靠其他几种线程间通信的方式来实现的. 关键在于如果不用join, 将无法安全使用线程间通信得来的信息, 因为如果不等待子线程运行结束, 主线程和子线程并发运行, 主线程没有办法确定什么时候子线程会得到结果并发送过来, 简单来说就是无法实现同步.</p>
+</li>
+<li><p>可以通过joinable()函数来确定线程是否可join而未被分离.</p>
+</li>
+</ul>
+<h3 id="线程分离"><a href="#线程分离" class="headerlink" title="线程分离"></a>线程分离</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cpp">t<span class="hljs-number">1.</span><span class="hljs-built_in">detach</span>();<br></code></pre></td></tr></table></figure>
+
+<p>线程分离就是为了实现和线程等待相反的目的, 也就是不需要同步的情况, 当代码不需要和主线程互通有无的时候便可以调用detach, 让线程自己干自己的去.</p>
+<hr>
+<h2 id="线程间通信"><a href="#线程间通信" class="headerlink" title="线程间通信"></a>线程间通信</h2><p>这里线程间通信的定义其实很广泛, 可以细化为线程间权限申请, 数据交互, 函数调用等.</p>
+<h3 id="锁"><a href="#锁" class="headerlink" title="锁"></a>锁</h3><ul>
+<li>互斥锁</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs cpp">mutex mtx;<br>mtx.<span class="hljs-built_in">lock</span>();<br><span class="hljs-comment">//....</span><br>mtx.<span class="hljs-built_in">unlock</span>();<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>RAII风格的锁</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs cpp">mutex mtx;<br>&#123;<br>	<span class="hljs-function">lock_guard&lt;std::mutex&gt; <span class="hljs-title">lock</span><span class="hljs-params">(mtx)</span></span>; <span class="hljs-comment">// 离开作用域自动调用析构函数解锁</span><br> 	<span class="hljs-comment">// ... 使用lock_guard需要控制作用域   </span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="条件变量"><a href="#条件变量" class="headerlink" title="条件变量"></a>条件变量</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">typename</span> Predicate&gt;<br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">wait</span><span class="hljs-params">(std::unique_lock&lt;std::mutex&gt;&amp; lock, Predicate pred)</span></span>;<br></code></pre></td></tr></table></figure>
+
+<p>条件变量需要和互斥锁绑定, 并且需要条件撑腰, 在等待时是否原先持有的锁, 被唤醒时重新取回拥有的锁并进行之后的代码, 有两种方式判断条件 : </p>
+<ul>
+<li>直接套在while循环里, 只有符合条件才能离开循环, 这里循环不是意味着要频繁判断, wait本身是阻塞的, 而是为了避免虚假唤醒的情况, 可以理解为系统问题.</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs cpp">std::mutex mtx;                    <span class="hljs-comment">// 互斥量</span><br>std::condition_variable cv;         <span class="hljs-comment">// 条件变量</span><br><span class="hljs-comment">// ...</span><br><span class="hljs-function">std::unique_lock&lt;std::mutex&gt; <span class="hljs-title">lck</span><span class="hljs-params">(mtx)</span></span>;<br><span class="hljs-keyword">while</span> (!ready) &#123;               <span class="hljs-comment">// 使用while循环避免虚假唤醒</span><br>    cv.<span class="hljs-built_in">wait</span>(lck);               <span class="hljs-comment">// 等待通知</span><br>&#125;<br><span class="hljs-comment">// ... 另一个线程</span><br>cv.<span class="hljs-built_in">notify_all</span>(); <br>cv.<span class="hljs-built_in">notify_one</span>();<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><p>使用wait的第二个参数, 传入一个返回值为bool类型的回调函数, 官方称其为谓词.</p>
+<p>谓词只在第一次触发wait和被唤醒之后发生, 如果谓词返回值为true, 则继续后面的代码, 反之继续阻塞挂起.</p>
+</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs cpp">condition.<span class="hljs-built_in">wait</span>(lock, [<span class="hljs-keyword">this</span>] &#123;  <span class="hljs-comment">// 捕获this,使之可以使用成员函数和变量</span><br>    <span class="hljs-keyword">return</span> stop || !taskQueue.<span class="hljs-built_in">empty</span>();<br>&#125;);<br></code></pre></td></tr></table></figure>
+
+<p>其实底层就是对C风格互斥锁和条件变量的封装.</p>
+<h3 id="共享内存"><a href="#共享内存" class="headerlink" title="共享内存"></a>共享内存</h3><p>这是一个非常宽泛的概念, 我们知道一个进程的不同线程间数据块,堆都是共享的, 所以在其中申请的资源都是共享内存, 锁也是为了应对使用共享内存的情况而被设计的.</p>
+<h3 id="消息队列"><a href="#消息队列" class="headerlink" title="消息队列"></a>消息队列</h3><p>其实就是STL中的queue, 这个容器其实非常强大, 因为其是线程安全的, 例如我们就可以直接在生产者线程中将产物push进queue, 然后直接在消费者线程中从queue中取出, 这其中没有任何线程安全问题!</p>
+<h3 id="future和promise"><a href="#future和promise" class="headerlink" title="future和promise"></a>future和promise</h3><p>future可以得到未来从其他线程传来的一个结果. </p>
+<p>这里只介绍future在线程中的普通用法, 一般和promise共用.</p>
+<ul>
+<li>future : 未来, 用于表示在未来这里会获取一个结果.</li>
+<li>promise : 承诺, 可以和future关联, 承诺会设置future要获取的结果.</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs cpp">std::promise&lt;<span class="hljs-type">int</span>&gt; prom;  <br>std::future&lt;<span class="hljs-type">int</span>&gt; fut = prom.<span class="hljs-built_in">get_future</span>(); <span class="hljs-comment">// 将promise和future关联</span><br><br><span class="hljs-function">std::thread <span class="hljs-title">t</span><span class="hljs-params">([&amp;prom]() &#123; <span class="hljs-comment">// 捕获prom传入线程</span></span></span><br><span class="hljs-params"><span class="hljs-function">    <span class="hljs-type">int</span> result = <span class="hljs-number">42</span>; <span class="hljs-comment">// 模拟计算</span></span></span><br><span class="hljs-params"><span class="hljs-function">    prom.set_value(result); <span class="hljs-comment">// promise将结果传递给future</span></span></span><br><span class="hljs-params"><span class="hljs-function">&#125;)</span></span>;<br><br><span class="hljs-type">int</span> value = fut.<span class="hljs-built_in">get</span>(); <span class="hljs-comment">// 阻塞直到获取结果</span><br>t.<span class="hljs-built_in">join</span>();<br>std::cout &lt;&lt; <span class="hljs-string">&quot;Result: &quot;</span> &lt;&lt; value &lt;&lt; <span class="hljs-string">&quot;\n&quot;</span>;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><p>async  : <code>async</code> 是 <strong>asynchronous</strong> 的缩写，表示“异步”的意思. 不过异步这个意义很宽泛, 很多都可以被视为异步. 有些异步相对复杂, 比如异步I&#x2F;O, 有些有十分简单, 比如我们现在学的async.</p>
+<p>其实它的实际功效就是上面future + promise + thread的统合, 可以理解为<strong>和future强绑定的thread</strong>.</p>
+<p>可以向async中传入一个回调函数, async会直接在一个新线程中运行它, 会返回一个future对象, 新线程运行结束会将结果设置到future对象中.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">template</span>&lt; <span class="hljs-keyword">class</span> <span class="hljs-title class_">F</span>, <span class="hljs-keyword">class</span>... Args &gt;<br>std::future&lt;std::<span class="hljs-type">invoke_result_t</span>&lt;F, Args...&gt;&gt; <br>  <span class="hljs-built_in">async</span>(F&amp;&amp; f, Args&amp;&amp;... args);<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>f : 用于确定async的启动策略, 一般写<code>std::launch::async</code>, 代表强制任务在新线程中执行.</li>
+<li>args : 可变参数, 传入回调函数需要的参数.</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// 使用 std::async 启动一个异步任务</span><br>std::future&lt;<span class="hljs-type">int</span>&gt; fut = std::<span class="hljs-built_in">async</span>(std::launch::async, []() &#123;<br>    <span class="hljs-type">int</span> result = <span class="hljs-number">42</span>; <span class="hljs-comment">// 模拟计算</span><br>    <span class="hljs-keyword">return</span> result;   <span class="hljs-comment">// 返回结果</span><br>&#125;);<br><span class="hljs-comment">// 获取结果（会阻塞直到任务完成）</span><br><span class="hljs-type">int</span> value = fut.<span class="hljs-built_in">get</span>();<br>std::cout &lt;&lt; <span class="hljs-string">&quot;Result: &quot;</span> &lt;&lt; value &lt;&lt; <span class="hljs-string">&quot;\n&quot;</span>;<br></code></pre></td></tr></table></figure></li>
+</ul>
+<h3 id="共享内存-vs-消息队列-vs-future"><a href="#共享内存-vs-消息队列-vs-future" class="headerlink" title="共享内存 vs 消息队列 vs future"></a>共享内存 vs 消息队列 vs future</h3><p>这三个其实都可以做到线程间传递数据, 但是应用场景不同.</p>
+<ul>
+<li>共享内存 : 用于多数据, 需求复杂的情况, 需要互斥锁和条件变量维护.</li>
+<li>消息队列 : 适合生产者消费者模型, 简单易用, 线程安全, 但是需要排队, 可能需要条件变量配合.</li>
+<li>future : 只传递单数据, 简单易用, 并且线程安全不需要考虑额外内容.</li>
+</ul>
+<h3 id="atomic"><a href="#atomic" class="headerlink" title="atomic"></a>atomic</h3><p>原子操作本身和线程间通信没关系, 只是它本身就是为了服务多线程环境的一种语法, 可以减少线程间通信的发生, 取消部分资源对互斥锁的使用, 毕竟它是原子的, 根本不需要锁.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs cpp">std::atomic&lt;<span class="hljs-type">int</span>&gt; x&#123;<span class="hljs-number">0</span>&#125;;  <span class="hljs-comment">// 初始化原子变量</span><br>x.<span class="hljs-built_in">store</span>(<span class="hljs-number">10</span>);  <span class="hljs-comment">// 使用 store 进行赋值</span><br><span class="hljs-type">int</span> value = x.<span class="hljs-built_in">load</span>();  <span class="hljs-comment">// 返回原子变量 x 的值</span><br><span class="hljs-type">int</span> old1 = x.<span class="hljs-built_in">fetch_add</span>(<span class="hljs-number">1</span>);  <span class="hljs-comment">// 先返回 x 的值，然后将其加 1</span><br><span class="hljs-type">int</span> old2 = x.<span class="hljs-built_in">fetch_sub</span>(<span class="hljs-number">1</span>);  <span class="hljs-comment">// 先返回 x 的值，然后将其减 1</span><br><span class="hljs-type">int</span> old_value = x.<span class="hljs-built_in">exchange</span>(<span class="hljs-number">20</span>);  <span class="hljs-comment">// 将 x 的值设为 20，返回原来的值</span><br><span class="hljs-comment">// 如果当前值等于 expected，则将其替换为 desired，返回是否成功</span><br><span class="hljs-type">bool</span> success = x.<span class="hljs-built_in">compare_exchange_strong</span>(expected, desired); <br><span class="hljs-type">int</span> old3 = x.<span class="hljs-built_in">fetch_and</span>(<span class="hljs-number">0xFF</span>);  <span class="hljs-comment">// 与 0xFF 进行按位与操作</span><br><span class="hljs-type">int</span> old4 = x.<span class="hljs-built_in">fetch_or</span>(<span class="hljs-number">0xFF</span>);  <span class="hljs-comment">// 与 0xFF 进行按位或操作</span><br><span class="hljs-type">int</span> old5 = x.<span class="hljs-built_in">fetch_xor</span>(<span class="hljs-number">0xFF</span>);  <span class="hljs-comment">// 与 0xFF 进行按位异或操作</span><br></code></pre></td></tr></table></figure>
+
+<p>需要注意的atomic的模板类必须是普通类型, 还有一种情况是 : 在一个自定义类型中全是普通类型允许填入, 术语叫做POD.</p>
+<hr>
+<h2 id="this-thread"><a href="#this-thread" class="headerlink" title="this_thread"></a>this_thread</h2><p>这是 C++11 引入的一个命名空间，用来提供一些和当前线程相关的操作.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">sleep_for</span><span class="hljs-params">(<span class="hljs-type">const</span> std::chrono::duration&amp; d)</span></span>; <span class="hljs-comment">// 使当前线程挂起指定的时间</span><br>std::this_thread::<span class="hljs-built_in">sleep_for</span>(std::chrono::<span class="hljs-built_in">seconds</span>(<span class="hljs-number">2</span>));  <span class="hljs-comment">// 休眠2秒</span><br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">sleep_until</span><span class="hljs-params">(<span class="hljs-type">const</span> std::chrono::time_point&amp; t)</span></span>;  <span class="hljs-comment">// 使进程挂起到指定的时间</span><br><span class="hljs-keyword">auto</span> wakeup_time = std::chrono::system_clock::<span class="hljs-built_in">now</span>() + std::chrono::<span class="hljs-built_in">seconds</span>(<span class="hljs-number">3</span>);  <span class="hljs-comment">// 3秒后</span><br>std::this_thread::<span class="hljs-built_in">sleep_until</span>(wakeup_time);  <span class="hljs-comment">// 休眠直到指定时间</span><br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">yield</span><span class="hljs-params">()</span></span>; <span class="hljs-comment">// 一个请求, 表示当前线程愿意让出cpu的时间片, 假如线程间的优先度不同可以使用</span><br>std::this_thread::<span class="hljs-built_in">yield</span>();<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="thread的移动语义"><a href="#thread的移动语义" class="headerlink" title="thread的移动语义"></a>thread的移动语义</h2><p>线程对象不可复制, 因为线程本身就不好复制, 从底层来讲thread类的拷贝构造函数本身就是删除的.</p>
+<p>但是thread类可以被移动, 其实就相当于转移控制权, 可以使用move转换.</p>
+<p>假如我们想把多个线程存入一个vector中, 可以使用emplace_back在vector中直接构建, 也可以选择在外部构建然后用move移动进去.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function">std::thread <span class="hljs-title">t</span><span class="hljs-params">(task)</span></span>;  <span class="hljs-comment">// 创建一个线程对象 t</span><br>threads.<span class="hljs-built_in">push_back</span>(std::<span class="hljs-built_in">move</span>(t));<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="简易线程池"><a href="#简易线程池" class="headerlink" title="简易线程池"></a>简易线程池</h2><p>AI生成仅供学习 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iostream&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;thread&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;vector&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;queue&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;functional&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;mutex&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;condition_variable&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;atomic&gt;</span></span><br><br><span class="hljs-comment">// 线程池类</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">ThreadPool</span> &#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-built_in">ThreadPool</span>(<span class="hljs-type">size_t</span> numThreads) &#123;<br>        <span class="hljs-comment">// 启动指定数量的工作线程</span><br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">size_t</span> i = <span class="hljs-number">0</span>; i &lt; numThreads; ++i) &#123;<br>            workers.<span class="hljs-built_in">emplace_back</span>([<span class="hljs-keyword">this</span>] &#123;<br>                <span class="hljs-keyword">while</span> (<span class="hljs-literal">true</span>) &#123;<br>                    std::function&lt;<span class="hljs-built_in">void</span>()&gt; task;<br>                    &#123;<br>                        std::unique_lock&lt;std::mutex&gt; <span class="hljs-built_in">lock</span>(queueMutex);<br>                        condition.<span class="hljs-built_in">wait</span>(lock, [<span class="hljs-keyword">this</span>] &#123;<br>                            <span class="hljs-keyword">return</span> stop || !taskQueue.<span class="hljs-built_in">empty</span>();<br>                        &#125;); <span class="hljs-comment">// 直到return 返回 ture才能进行</span><br>                        <br>                        <span class="hljs-comment">// 如果线程池停止且任务队列为空，退出线程</span><br>                        <span class="hljs-keyword">if</span> (stop &amp;&amp; taskQueue.<span class="hljs-built_in">empty</span>()) &#123;<br>                            <span class="hljs-keyword">return</span>;<br>                        &#125;<br>						<span class="hljs-comment">// 取出队列不能拷贝, 要移动</span><br>                        task = std::<span class="hljs-built_in">move</span>(taskQueue.<span class="hljs-built_in">front</span>()); <br>                        taskQueue.<span class="hljs-built_in">pop</span>();<br>                    &#125;<br>                    <span class="hljs-comment">// 执行任务</span><br>                    <span class="hljs-built_in">task</span>();<br>                &#125;<br>            &#125;);<br>        &#125;<br>    &#125;<br><br>    <span class="hljs-comment">// 提交任务</span><br>    <span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">class</span> <span class="hljs-title class_">F</span>&gt;<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">enqueue</span><span class="hljs-params">(F&amp;&amp; f)</span> </span>&#123;<br>        &#123;<br>            <span class="hljs-function">std::unique_lock&lt;std::mutex&gt; <span class="hljs-title">lock</span><span class="hljs-params">(queueMutex)</span></span>;<br>            <span class="hljs-keyword">if</span> (stop) &#123;<br>                <span class="hljs-keyword">throw</span> std::<span class="hljs-built_in">runtime_error</span>(<span class="hljs-string">&quot;ThreadPool is stopped&quot;</span>);<br>            &#125;<br>            taskQueue.<span class="hljs-built_in">push</span>(std::forward&lt;F&gt;(f)); <span class="hljs-comment">// 完美转发到队列中</span><br>        &#125;<br>        condition.<span class="hljs-built_in">notify_one</span>(); <span class="hljs-comment">// 传入一个任务, 就激活等待中的一个线程</span><br>    &#125;<br><br>    <span class="hljs-comment">// 停止线程池</span><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">stopPool</span><span class="hljs-params">()</span> </span>&#123;<br>        &#123;<br>            <span class="hljs-function">std::unique_lock&lt;std::mutex&gt; <span class="hljs-title">lock</span><span class="hljs-params">(queueMutex)</span></span>;<br>            stop = <span class="hljs-literal">true</span>;<br>        &#125;<br>        condition.<span class="hljs-built_in">notify_all</span>();<br><br>        <span class="hljs-keyword">for</span> (std::thread&amp; worker : workers) &#123;<br>            worker.<span class="hljs-built_in">join</span>();<br>        &#125;<br>    &#125;<br><br>    ~<span class="hljs-built_in">ThreadPool</span>() &#123;<br>        <span class="hljs-keyword">if</span> (!stop) &#123;<br>            <span class="hljs-built_in">stopPool</span>();<br>        &#125;<br>    &#125;<br><br><span class="hljs-keyword">private</span>:<br>    std::vector&lt;std::thread&gt; workers;           <span class="hljs-comment">// 工作线程</span><br>    std::queue&lt;std::function&lt;<span class="hljs-type">void</span>()&gt;&gt; taskQueue;  <span class="hljs-comment">// 任务队列</span><br>    std::mutex queueMutex;                      <span class="hljs-comment">// 任务队列互斥锁</span><br>    std::condition_variable condition;          <span class="hljs-comment">// 条件变量</span><br>    std::atomic&lt;<span class="hljs-type">bool</span>&gt; stop&#123;<span class="hljs-literal">false</span>&#125;;              <span class="hljs-comment">// 是否停止线程池</span><br>&#125;;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-function">ThreadPool <span class="hljs-title">pool</span><span class="hljs-params">(<span class="hljs-number">4</span>)</span></span>;  <span class="hljs-comment">// 创建一个包含4个线程的线程池</span><br>    <span class="hljs-comment">// 提交几个任务给线程池执行</span><br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">10</span>; ++i) &#123;<br>        pool.<span class="hljs-built_in">enqueue</span>([i] &#123;<br>            std::cout &lt;&lt; <span class="hljs-string">&quot;Task &quot;</span> &lt;&lt; i &lt;&lt; <span class="hljs-string">&quot; is being executed by thread &quot;</span> <br>                      &lt;&lt; std::this_thread::<span class="hljs-built_in">get_id</span>() &lt;&lt; std::endl;<br>        &#125;);<br>    &#125;<br>    <span class="hljs-comment">// 停止线程池</span><br>    pool.<span class="hljs-built_in">stopPool</span>();<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/" class="print-no-link">#多线程</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>C++线程库使用详解</div>
+      <div>http://example.com/2025/02/27/C++线程库使用详解/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>天目中云</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年2月27日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/02/28/%5B%E7%AE%97%E6%B3%95%E5%A4%8D%E5%81%A5%5D%20%E4%B8%8D%E7%AD%89%E5%BC%8F%20%20%E5%90%8C%E4%BD%99%20+%20%E7%A0%B4%E6%8D%A2%E6%88%90%E9%93%BE/" title="算法复健 不等式 同余 + 破换成链">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">算法复健 不等式 同余 + 破换成链</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/02/25/%5B%E7%AE%97%E6%B3%95%E5%A4%8D%E5%81%A5%5D%20%E5%89%8D%E7%BC%80%E5%92%8C%20%20%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3%20%20%E5%90%88%E5%B9%B6%E5%8C%BA%E9%97%B4/" title="算法复健 前缀和|滑动窗口|合并区间">
+                        <span class="hidden-mobile">算法复健 前缀和|滑动窗口|合并区间</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"NhgfDy2CEByjwxuxPM1Le2t6-MdYXbMMI","appKey":"nvGMdqKfKbpkVnojLSbwmasv","path":"window.location.pathname","placeholder":null,"avatar":"retro","meta":["nick","mail","link"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":false,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":false},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
