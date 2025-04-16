@@ -246,13 +246,53 @@
     <article class="col-12 col-md-12 mx-auto index-info">
       <h2 class="index-header">
         
-        <a href="/2025/04/15/Muduo%E5%BA%93%E4%BB%A3%E7%A0%81%E5%89%96%E6%9E%90(2)/" target="_self">
+        <a href="/2025/04/16/Muduo%E5%BA%93%E4%BB%A3%E7%A0%81%E5%89%96%E6%9E%90(3)%20ThreadPool/" target="_self">
+          Muduo库代码剖析(3) ThreadPool
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/04/16/Muduo%E5%BA%93%E4%BB%A3%E7%A0%81%E5%89%96%E6%9E%90(3)%20ThreadPool/" target="_self">
+        <div>
+          ThreadPool相关  本章我们将把EventLoop和C++11的thread结合, 实现Thread &#x2F; EventLoopThread &#x2F; EventLoopThreadPool.  首先我们应当明晰将创建的三个类的意义何在 :   Thread : 这是对thread库的封装, 会增加对各种线程运行状态与数据的维护.  EventLoopThread : 将Thr
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2025-04-16 11:01" pubdate>
+              2025-04-16
+            </time>
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/Muduo/">#Muduo</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2025/04/15/Muduo%E5%BA%93%E4%BB%A3%E7%A0%81%E5%89%96%E6%9E%90(2)%20EventLoop/" target="_self">
           Muduo库代码剖析(2) EventLoop
         </a>
       </h2>
 
       
-      <a class="index-excerpt index-excerpt__noimg" href="/2025/04/15/Muduo%E5%BA%93%E4%BB%A3%E7%A0%81%E5%89%96%E6%9E%90(2)/" target="_self">
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/04/15/Muduo%E5%BA%93%E4%BB%A3%E7%A0%81%E5%89%96%E6%9E%90(2)%20EventLoop/" target="_self">
         <div>
           EventLoop 详解  EventLoop类似于Reactor模型中的反应堆(Reactor)和事件分发器(Demultiplex)的合并, 其目的在于高效的接收事件, 并正确分配给对应的事件处理器. EventLoop中有两类关键的子控件 : Channel 和 Poller.  Channel 即通道, 其负责对单个文件描述符的事件管理, 存储该文件描述符感兴趣的事件与对应回调函数, 该
         </div>
@@ -597,46 +637,6 @@
             <i class="iconfont icon-tags"></i>
             
               <a href="/tags/%E7%AE%97%E6%B3%95/">#算法</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h2 class="index-header">
-        
-        <a href="/2025/02/27/C++%E7%BA%BF%E7%A8%8B%E5%BA%93%E4%BD%BF%E7%94%A8%E8%AF%A6%E8%A7%A3/" target="_self">
-          C++线程库使用详解
-        </a>
-      </h2>
-
-      
-      <a class="index-excerpt index-excerpt__noimg" href="/2025/02/27/C++%E7%BA%BF%E7%A8%8B%E5%BA%93%E4%BD%BF%E7%94%A8%E8%AF%A6%E8%A7%A3/" target="_self">
-        <div>
-          核心操作线程创建12345678// 需要传入回调函数, 如果有参数紧跟在后面std::thread t1(print_hello, 1);  // 当然lambda也可以当作回调函数传进去std::thread t([]() &#123;    std::cout &lt;&lt; &quot;Hello from lambda thread!&quot; &lt;&lt; std::endl;
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2025-02-27 18:56" pubdate>
-              2025-02-27
-            </time>
-          </div>
-        
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/">#多线程</a>
             
           </div>
         

@@ -24,12 +24,12 @@
     <meta name="description" content="EventLoop 详解  EventLoop类似于Reactor模型中的反应堆(Reactor)和事件分发器(Demultiplex)的合并, 其目的在于高效的接收事件, 并正确分配给对应的事件处理器. EventLoop中有两类关键的子控件 : Channel 和 Poller.  Channel 即通道, 其负责对单个文件描述符的事件管理, 存储该文件描述符感兴趣的事件与对应回调函数, 该">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Muduo库代码剖析(2) EventLoop">
-<meta property="og:url" content="http://example.com/2025/04/15/Muduo%E5%BA%93%E4%BB%A3%E7%A0%81%E5%89%96%E6%9E%90(2)/index.html">
+<meta property="og:url" content="http://example.com/2025/04/15/Muduo%E5%BA%93%E4%BB%A3%E7%A0%81%E5%89%96%E6%9E%90(2)%20EventLoop/index.html">
 <meta property="og:site_name" content="天目中云">
 <meta property="og:description" content="EventLoop 详解  EventLoop类似于Reactor模型中的反应堆(Reactor)和事件分发器(Demultiplex)的合并, 其目的在于高效的接收事件, 并正确分配给对应的事件处理器. EventLoop中有两类关键的子控件 : Channel 和 Poller.  Channel 即通道, 其负责对单个文件描述符的事件管理, 存储该文件描述符感兴趣的事件与对应回调函数, 该">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2025-04-15T09:02:00.000Z">
-<meta property="article:modified_time" content="2025-04-15T09:04:13.733Z">
+<meta property="article:modified_time" content="2025-04-15T13:15:40.898Z">
 <meta property="article:author" content="天目中云">
 <meta property="article:tag" content="Muduo">
 <meta name="twitter:card" content="summary_large_image">
@@ -488,7 +488,7 @@
   <div class="license-box my-3">
     <div class="license-title">
       <div>Muduo库代码剖析(2) EventLoop</div>
-      <div>http://example.com/2025/04/15/Muduo库代码剖析(2)/</div>
+      <div>http://example.com/2025/04/15/Muduo库代码剖析(2) EventLoop/</div>
     </div>
     <div class="license-meta">
       
@@ -531,6 +531,12 @@
                 <div class="post-prevnext my-3">
                   <article class="post-prev col-6">
                     
+                    
+                      <a href="/2025/04/16/Muduo%E5%BA%93%E4%BB%A3%E7%A0%81%E5%89%96%E6%9E%90(3)%20ThreadPool/" title="Muduo库代码剖析(3) ThreadPool">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Muduo库代码剖析(3) ThreadPool</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
                     
                   </article>
                   <article class="post-next col-6">
