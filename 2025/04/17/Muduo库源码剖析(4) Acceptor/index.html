@@ -1,0 +1,735 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/head.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="天目中云">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="Socket + Acceptor 详解  本章我们将学习Socket类和Acceptor类, 首先应当明确其在Muduo库中的职责所在 :   Socket就是对原生socketAPI的封装, 供Acceptor使用.   Acceptor简单来说是用来处理新连接的建立的. 我们来认识一下Acceptor的调用流程 TcpServer中会维护一个Acceptor作为成员变量, 由TcpServ">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Muduo库源码剖析(4) Acceptor">
+<meta property="og:url" content="http://example.com/2025/04/17/Muduo%E5%BA%93%E6%BA%90%E7%A0%81%E5%89%96%E6%9E%90(4)%20Acceptor/index.html">
+<meta property="og:site_name" content="天目中云">
+<meta property="og:description" content="Socket + Acceptor 详解  本章我们将学习Socket类和Acceptor类, 首先应当明确其在Muduo库中的职责所在 :   Socket就是对原生socketAPI的封装, 供Acceptor使用.   Acceptor简单来说是用来处理新连接的建立的. 我们来认识一下Acceptor的调用流程 TcpServer中会维护一个Acceptor作为成员变量, 由TcpServ">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-04-17T02:13:00.000Z">
+<meta property="article:modified_time" content="2025-04-17T02:13:24.836Z">
+<meta property="article:author" content="天目中云">
+<meta property="article:tag" content="Muduo">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>Muduo库源码剖析(4) Acceptor - 天目中云</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":"NhgfDy2CEByjwxuxPM1Le2t6-MdYXbMMI","app_key":"nvGMdqKfKbpkVnojLSbwmasv","server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>TianMu</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/03.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Muduo库源码剖析(4) Acceptor"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-04-17 10:13" pubdate>
+          2025年4月17日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.1k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          10 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Muduo库源码剖析(4) Acceptor</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <blockquote>
+<p>Socket + Acceptor 详解</p>
+</blockquote>
+<p>本章我们将学习Socket类和Acceptor类, 首先应当明确其在Muduo库中的职责所在 : </p>
+<ul>
+<li><p>Socket就是对原生socketAPI的封装, 供Acceptor使用. </p>
+</li>
+<li><p>Acceptor简单来说是用来处理新连接的建立的. 我们来认识一下Acceptor的调用流程</p>
+<p>TcpServer中会维护一个Acceptor作为成员变量, 由TcpServer向Acceptor设置建立新连接的回调函数, Acceptor则内含一个Socket和一个Channel, 其利用Socket维护listensocketfd, 控制listen的时机, 也利用Channel让Poller帮自己监听listensocketfd上的读事件, 设置的读事件回调就会调用accept获取新连接的connfd, 然后利用得到的connfd去调用TcpServer传入的回调函数, 让TcpServer帮自己处理新连接事务.</p>
+</li>
+</ul>
+<h2 id="Socket"><a href="#Socket" class="headerlink" title="Socket"></a>Socket</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// Socket.h</span><br><span class="hljs-meta">#<span class="hljs-keyword">pragma</span> once</span><br><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;UnCopyable.h&quot;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;InetAddress.h&quot;</span></span><br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Socket</span> : UnCopyable<br>&#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-function"><span class="hljs-keyword">explicit</span> <span class="hljs-title">Socket</span><span class="hljs-params">(<span class="hljs-type">int</span> sockfd)</span> : _sockfd(sockfd) &#123;</span>&#125;<br>    ~<span class="hljs-built_in">Socket</span>();<br><br>    <span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">fd</span><span class="hljs-params">()</span> <span class="hljs-type">const</span> </span>&#123; <span class="hljs-keyword">return</span> _sockfd; &#125;<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">bindAddress</span><span class="hljs-params">(<span class="hljs-type">const</span> InetAddress &amp;localaddr)</span></span>;<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">listen</span><span class="hljs-params">()</span></span>;<br>    <span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">accept</span><span class="hljs-params">(InetAddress *peeraddr)</span></span>;<br><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">shutdownWrite</span><span class="hljs-params">()</span></span>;<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">setTcpNoDelay</span><span class="hljs-params">(<span class="hljs-type">bool</span> on)</span></span>;<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">setReuseAddr</span><span class="hljs-params">(<span class="hljs-type">bool</span> on)</span></span>;<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">setReusePort</span><span class="hljs-params">(<span class="hljs-type">bool</span> on)</span></span>;<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">setKeepAlive</span><span class="hljs-params">(<span class="hljs-type">bool</span> on)</span></span>;<br><br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-type">const</span> <span class="hljs-type">int</span> _sockfd;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// Socket.cpp</span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;Socket.h&quot;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;Logger.h&quot;</span></span><br><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;unistd.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;sys/types.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;sys/socket.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;strings.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;netinet/tcp.h&gt;</span></span><br><br>Socket::~<span class="hljs-built_in">Socket</span>()<br>&#123;<br>    ::<span class="hljs-built_in">close</span>(_sockfd);<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">Socket::bindAddress</span><span class="hljs-params">(<span class="hljs-type">const</span> InetAddress &amp;localaddr)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">if</span> (<span class="hljs-number">0</span> != ::<span class="hljs-built_in">bind</span>(_sockfd, (sockaddr *)localaddr.<span class="hljs-built_in">getSockAddr</span>(), <span class="hljs-built_in">sizeof</span>(sockaddr_in)))<br>    &#123;<br>        <span class="hljs-built_in">LOG_FATAL</span>(<span class="hljs-string">&quot;bind sockfd:%d fail \n&quot;</span>, _sockfd);<br>    &#125;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">Socket::listen</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">if</span> (<span class="hljs-number">0</span> != ::<span class="hljs-built_in">listen</span>(_sockfd, <span class="hljs-number">1024</span>))<br>    &#123;<br>        <span class="hljs-built_in">LOG_FATAL</span>(<span class="hljs-string">&quot;listen sockfd:%d fail \n&quot;</span>, _sockfd);<br>    &#125;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">Socket::accept</span><span class="hljs-params">(InetAddress *peeraddr)</span></span><br><span class="hljs-function"></span>&#123;<br>    sockaddr_in addr;<br>    <span class="hljs-built_in">bzero</span>(&amp;addr, <span class="hljs-keyword">sizeof</span> addr);<br>    <span class="hljs-function"><span class="hljs-type">socklen_t</span> <span class="hljs-title">len</span><span class="hljs-params">(<span class="hljs-keyword">sizeof</span> addr)</span></span>;<br>    <span class="hljs-comment">// accept4可以直接给接受到的sockfd设置选项(非阻塞)</span><br>    <span class="hljs-type">int</span> connfd = ::<span class="hljs-built_in">accept4</span>(_sockfd, (sockaddr *)&amp;addr, &amp;len, SOCK_CLOEXEC | SOCK_NONBLOCK);<br>    <span class="hljs-keyword">if</span> (connfd &gt;= <span class="hljs-number">0</span>)<br>    &#123;<br>        peeraddr-&gt;<span class="hljs-built_in">setSockAddr</span>(addr);<br>    &#125;<br>    <span class="hljs-keyword">return</span> connfd;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">Socket::shutdownWrite</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    ::<span class="hljs-built_in">shutdown</span>(_sockfd, SHUT_WR);<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">Socket::setTcpNoDelay</span><span class="hljs-params">(<span class="hljs-type">bool</span> on)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-type">int</span> op = on ? <span class="hljs-number">1</span> : <span class="hljs-number">0</span>;<br>    ::<span class="hljs-built_in">setsockopt</span>(_sockfd, IPPROTO_TCP, TCP_NODELAY, &amp;op, <span class="hljs-keyword">sizeof</span> op);<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">Socket::setReuseAddr</span><span class="hljs-params">(<span class="hljs-type">bool</span> on)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-type">int</span> op = on ? <span class="hljs-number">1</span> : <span class="hljs-number">0</span>;<br>    ::<span class="hljs-built_in">setsockopt</span>(_sockfd, SOL_SOCKET, SO_REUSEADDR, &amp;op, <span class="hljs-keyword">sizeof</span> op);<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">Socket::setReusePort</span><span class="hljs-params">(<span class="hljs-type">bool</span> on)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-type">int</span> op = on ? <span class="hljs-number">1</span> : <span class="hljs-number">0</span>;<br>    ::<span class="hljs-built_in">setsockopt</span>(_sockfd, SOL_SOCKET, SO_REUSEPORT, &amp;op, <span class="hljs-keyword">sizeof</span> op);<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">Socket::setKeepAlive</span><span class="hljs-params">(<span class="hljs-type">bool</span> on)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-type">int</span> op = on ? <span class="hljs-number">1</span> : <span class="hljs-number">0</span>;<br>    ::<span class="hljs-built_in">setsockopt</span>(_sockfd, SOL_SOCKET, SO_KEEPALIVE, &amp;op, <span class="hljs-keyword">sizeof</span> op);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>外部通过socket函数将listensocketfd传入Socket, 将其维护在Socket内, 便于简便的调用bind &#x2F; listen &#x2F; accept.</p>
+<h2 id="Acceptor"><a href="#Acceptor" class="headerlink" title="Acceptor"></a>Acceptor</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// Acceptor.h</span><br><span class="hljs-meta">#<span class="hljs-keyword">pragma</span> once</span><br><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;UnCopyable.h&quot;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;Channel.h&quot;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;Socket.h&quot;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;InetAddress.h&quot;</span></span><br><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;functional&gt;</span></span><br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">EventLoop</span>;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Acceptor</span> : UnCopyable<br>&#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-keyword">using</span> NewConnectionCallback = std::function&lt;<span class="hljs-built_in">void</span>(<span class="hljs-type">int</span> sockfd, <span class="hljs-type">const</span> InetAddress &amp;)&gt;;<br><br>    <span class="hljs-built_in">Acceptor</span>(EventLoop *loop, <span class="hljs-type">const</span> InetAddress &amp;listenAddr, <span class="hljs-type">bool</span> reuseport);<br>    ~<span class="hljs-built_in">Acceptor</span>();<br><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">setNewConnectionCallback</span><span class="hljs-params">(<span class="hljs-type">const</span> NewConnectionCallback &amp;cb)</span> </span>&#123; _newConnectionCallback = <span class="hljs-built_in">move</span>(cb); &#125;<br><br>    <span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">listenning</span><span class="hljs-params">()</span> <span class="hljs-type">const</span> </span>&#123; <span class="hljs-keyword">return</span> _listenning; &#125;<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">listen</span><span class="hljs-params">()</span></span>;<br><br><span class="hljs-keyword">private</span>:<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">handleRead</span><span class="hljs-params">()</span></span>;<br><br>    EventLoop *_loop;		<span class="hljs-comment">// 用来标注这个Acceptor属于的mainLoop</span><br>    Socket _acceptSocket;	<span class="hljs-comment">// 存储listensocketfd</span><br>    Channel _acceptChannel;	<span class="hljs-comment">// 对listensocketfd进行封装的Channel, 便于注册读事件</span><br>    NewConnectionCallback _newConnectionCallback;	<span class="hljs-comment">// TcpServer给其设置的新连接回调函数</span><br>    <span class="hljs-type">bool</span> _listenning;	<span class="hljs-comment">// 是否正在监听</span><br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// Acceptor.cpp</span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;Accept.h&quot;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;Logger.h&quot;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;sys/types.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;sys/socket.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;unistd.h&gt;</span></span><br><br><span class="hljs-function"><span class="hljs-type">static</span> <span class="hljs-type">int</span> <span class="hljs-title">createNonblocking</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-type">int</span> sockfd = <span class="hljs-built_in">socket</span>(AF_INET, SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, <span class="hljs-number">0</span>);<br>    <span class="hljs-keyword">if</span> (sockfd &lt; <span class="hljs-number">0</span>)<br>    &#123;<br>        <span class="hljs-built_in">LOG_FATAL</span>(<span class="hljs-string">&quot;%s:%s:%d listen socket create error:%d&quot;</span>, __FILE__, __FUNCTION__, __LINE__, errno);<br>    &#125;<br>    <span class="hljs-keyword">return</span> sockfd;<br>&#125;<br><br><span class="hljs-comment">// 创建socket, 封装进Channel, 往当前loop的poller中添加</span><br>Acceptor::<span class="hljs-built_in">Acceptor</span>(EventLoop *loop, <span class="hljs-type">const</span> InetAddress &amp;listenAddr, <span class="hljs-type">bool</span> reuseport)<br>    : _loop(loop), _acceptSocket(()), _acceptChannel(loop, _acceptSocket.<span class="hljs-built_in">fd</span>()), _listenning(<span class="hljs-literal">false</span>)<br>&#123;<br>    _acceptSocket.<span class="hljs-built_in">setReuseAddr</span>(<span class="hljs-literal">true</span>);<br>    <span class="hljs-keyword">if</span> (reuseport)<br>        _acceptSocket.<span class="hljs-built_in">setReusePort</span>(<span class="hljs-literal">true</span>);<br>    _acceptSocket.<span class="hljs-built_in">bindAddress</span>(listenAddr);<br><br>    <span class="hljs-comment">// 一旦有一个新用户的连接, 就需要执行回调, connfd -&gt; channel -&gt; subloop</span><br>    <span class="hljs-comment">// 具体回调由TcpServer给出</span><br>    _acceptChannel.<span class="hljs-built_in">setReadCallback</span>(std::<span class="hljs-built_in">bind</span>(&amp;Acceptor::handleRead, <span class="hljs-keyword">this</span>));<br>&#125;<br>Acceptor::~<span class="hljs-built_in">Acceptor</span>()<br>&#123;<br>    _acceptChannel.<span class="hljs-built_in">disableAll</span>();<br>    _acceptChannel.<span class="hljs-built_in">remove</span>();<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">Acceptor::listen</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    _listenning = <span class="hljs-literal">true</span>;<br>    _acceptSocket.<span class="hljs-built_in">listen</span>();<br>    _acceptChannel.<span class="hljs-built_in">enableReading</span>(); <span class="hljs-comment">// 把acceptChannel注册到poller中监听读事件</span><br>&#125;<br><br><span class="hljs-comment">// 在listenfd读事件触发时调用</span><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">Acceptor::handleRead</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    InetAddress peerAddr;<br>    <span class="hljs-type">int</span> connfd = _acceptSocket.<span class="hljs-built_in">accept</span>(&amp;peerAddr);<br>    <span class="hljs-keyword">if</span> (connfd &gt;= <span class="hljs-number">0</span>)<br>    &#123;<br>        <span class="hljs-comment">// 在TcpServer中具体是轮询找到subLoop, 唤醒该loop, 将该sockfd分发到其中</span><br>        <span class="hljs-keyword">if</span> (_newConnectionCallback)<br>            _newConnectionCallback(connfd, peerAddr);<br>        <span class="hljs-keyword">else</span><br>            ::<span class="hljs-built_in">close</span>(connfd);<br>    &#125;<br>    <span class="hljs-keyword">else</span><br>    &#123;<br>        <span class="hljs-built_in">LOG_ERROR</span>(<span class="hljs-string">&quot;%s:%s:%d accept error:%d&quot;</span>, __FILE__, __FUNCTION__, __LINE__, errno);<br>        <span class="hljs-keyword">if</span> (errno == EMFILE)<br>        &#123;<br>            <span class="hljs-built_in">LOG_ERROR</span>(<span class="hljs-string">&quot;%s:%s:%d sockfd reached limit!&quot;</span>, __FILE__, __FUNCTION__, __LINE__);<br>        &#125;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>createNonblocking : 我们可以看到这个函数在Accept构造函数中被调用, 也就是说在Acceptor构造时会调用该函数构造一个非阻塞的listensocketfd.</li>
+<li>构造函数 : 首先是调用createNonblocking构造出listensocketfd存入Socket, 随后将listensocketfd封装进Channel, 接下来设置Socket中fd的各种属性并bind, 最后将handleRead读事件回调注册进Channel.</li>
+<li>listen : 该函数控制何时开始监听listensocketfd并注册读事件, 一般由上层TcpServer控制.</li>
+<li>handleRead : listensocketfd封装的Channel将被放到mainLoop的Poller中监听读事件, 而触发的回调就是该函数, handleRead将调用accept获取新连接的connfd, 随后将其传给TcpServer设置的回调函数.</li>
+</ul>
+<p>为什么要调用TcpServer的新连接回调呢? 因为Acceptor的职责仅仅在于构造listensocketfd和对新连接及时做出反应并报告给TcpServer, TcpServer才是真正处理新连接的核心, 其拥有的资源远超过Acceptor(例如线程池), 有了这些资源才能真正处理新连接.</p>
+<p>by 天目中云</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Muduo/" class="print-no-link">#Muduo</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Muduo库源码剖析(4) Acceptor</div>
+      <div>http://example.com/2025/04/17/Muduo库源码剖析(4) Acceptor/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>天目中云</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年4月17日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/04/16/Muduo%E5%BA%93%E4%BB%A3%E7%A0%81%E5%89%96%E6%9E%90(3)%20ThreadPool/" title="Muduo库代码剖析(3) ThreadPool">
+                        <span class="hidden-mobile">Muduo库代码剖析(3) ThreadPool</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"NhgfDy2CEByjwxuxPM1Le2t6-MdYXbMMI","appKey":"nvGMdqKfKbpkVnojLSbwmasv","path":"window.location.pathname","placeholder":null,"avatar":"retro","meta":["nick","mail","link"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":false,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":false},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
