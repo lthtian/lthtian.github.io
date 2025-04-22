@@ -1,0 +1,832 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/head.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="天目中云">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="Buffer 和 TcpConnection 详解  本章我们将学习Buffer类和其上级类TcpConnection, 先了解两个类的职能 :   Buffer 和通常的缓冲区认知类似, 目的在于提升传入传出的效率, 就是在read中可以提前把数据从内核接收缓冲区中读出, 便于对端再向内核接收缓冲区输入. 在write中可以提前把要写入的数据存进缓冲区, 等待内核发送缓冲区空余.  TcpCo">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Muduo库源码剖析(5) TcpConnection">
+<meta property="og:url" content="http://example.com/2025/04/21/Muduo%E5%BA%93%E6%BA%90%E7%A0%81%E5%89%96%E6%9E%90(5)%20TcpConnection/index.html">
+<meta property="og:site_name" content="天目中云">
+<meta property="og:description" content="Buffer 和 TcpConnection 详解  本章我们将学习Buffer类和其上级类TcpConnection, 先了解两个类的职能 :   Buffer 和通常的缓冲区认知类似, 目的在于提升传入传出的效率, 就是在read中可以提前把数据从内核接收缓冲区中读出, 便于对端再向内核接收缓冲区输入. 在write中可以提前把要写入的数据存进缓冲区, 等待内核发送缓冲区空余.  TcpCo">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-04-21T03:12:00.000Z">
+<meta property="article:modified_time" content="2025-04-22T03:17:47.620Z">
+<meta property="article:author" content="天目中云">
+<meta property="article:tag" content="Muduo">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>Muduo库源码剖析(5) TcpConnection - 天目中云</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":"NhgfDy2CEByjwxuxPM1Le2t6-MdYXbMMI","app_key":"nvGMdqKfKbpkVnojLSbwmasv","server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>TianMu</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/03.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Muduo库源码剖析(5) TcpConnection"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-04-21 11:12" pubdate>
+          2025年4月21日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          4.1k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          35 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Muduo库源码剖析(5) TcpConnection</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <blockquote>
+<p>Buffer 和 TcpConnection 详解</p>
+</blockquote>
+<p>本章我们将学习Buffer类和其上级类TcpConnection, 先了解两个类的职能 : </p>
+<ul>
+<li><p>Buffer</p>
+<p>和通常的缓冲区认知类似, 目的在于提升传入传出的效率, 就是在read中可以提前把数据从内核接收缓冲区中读出, 便于对端再向内核接收缓冲区输入. 在write中可以提前把要写入的数据存进缓冲区, 等待内核发送缓冲区空余.</p>
+</li>
+<li><p>TcpConnection</p>
+<p>专门用来维护每条与客户端的连接的类, 也就是对Acceptor中得到的connfd进行封装, 包括其对应的Socket和Channel类. 并且连接也代表了<strong>有连接的建立与断开, 数据的传入与传出等</strong>活动, 这些活动中, 一部分需要<strong>上级设置的回调函数</strong>来处理(例如连接建立断开, 数据传入, 都需要网络库调用者设置), 一部分需要TcpConnection<strong>利用自己手头的资源自行处理</strong>(例如数据传出, 需要调用自己的send函数). 既然与数据的传入传出有关, 其内部也内置Buffer类来优化传入传出的效率.</p>
+</li>
+</ul>
+<h2 id="Buffer"><a href="#Buffer" class="headerlink" title="Buffer"></a>Buffer</h2><p>先看源码 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// Buffer.h</span><br><span class="hljs-meta">#<span class="hljs-keyword">pragma</span> once</span><br><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;vector&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;string&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;sys/uio.h&gt;</span></span><br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Buffer</span><br>&#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-type">static</span> <span class="hljs-type">const</span> <span class="hljs-type">size_t</span> kCheapPrepend = <span class="hljs-number">8</span>;<br>    <span class="hljs-type">static</span> <span class="hljs-type">const</span> <span class="hljs-type">size_t</span> kInitialSize = <span class="hljs-number">1024</span>;<br><br>    <span class="hljs-function"><span class="hljs-keyword">explicit</span> <span class="hljs-title">Buffer</span><span class="hljs-params">(<span class="hljs-type">size_t</span> initialSize = kInitialSize)</span></span><br><span class="hljs-function">        : _buffer(kCheapPrepend + initialSize), _readerIndex(kCheapPrepend), _writerIndex(kCheapPrepend)</span><br><span class="hljs-function">    &#123;</span><br>    &#125;<br><br>    <span class="hljs-function"><span class="hljs-type">size_t</span> <span class="hljs-title">readableBytes</span><span class="hljs-params">()</span> <span class="hljs-type">const</span> </span>&#123; <span class="hljs-keyword">return</span> _writerIndex - _readerIndex; &#125;<br>    <span class="hljs-function"><span class="hljs-type">size_t</span> <span class="hljs-title">writableBytes</span><span class="hljs-params">()</span> <span class="hljs-type">const</span> </span>&#123; <span class="hljs-keyword">return</span> _buffer.<span class="hljs-built_in">size</span>() - _writerIndex; &#125;<br>    <span class="hljs-function"><span class="hljs-type">size_t</span> <span class="hljs-title">prependableBytes</span><span class="hljs-params">()</span> <span class="hljs-type">const</span> </span>&#123; <span class="hljs-keyword">return</span> _readerIndex; &#125;<br>    <span class="hljs-comment">// 返回缓冲区中可读区域的起始地址</span><br>    <span class="hljs-function"><span class="hljs-type">const</span> <span class="hljs-type">char</span> *<span class="hljs-title">peek</span><span class="hljs-params">()</span> <span class="hljs-type">const</span> </span>&#123; <span class="hljs-keyword">return</span> <span class="hljs-built_in">begin</span>() + _readerIndex; &#125;<br><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">retrieve</span><span class="hljs-params">(<span class="hljs-type">size_t</span> len)</span></span><br><span class="hljs-function">    </span>&#123;<br>        <span class="hljs-keyword">if</span> (len &lt; <span class="hljs-built_in">readableBytes</span>())<br>            _readerIndex += len; <span class="hljs-comment">// 只读取了可读缓冲区的一部分</span><br>        <span class="hljs-keyword">else</span><br>            <span class="hljs-built_in">retrieveAll</span>();<br>    &#125;<br><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">retrieveAll</span><span class="hljs-params">()</span></span><br><span class="hljs-function">    </span>&#123;<br>        _readerIndex = _writerIndex = kCheapPrepend; <span class="hljs-comment">// 全读了, 复位</span><br>    &#125;<br>    <span class="hljs-comment">// Buffer -&gt; string</span><br>    <span class="hljs-function">std::string <span class="hljs-title">retrieveAllAsString</span><span class="hljs-params">()</span> </span>&#123; <span class="hljs-keyword">return</span> <span class="hljs-built_in">retrieveAsString</span>(<span class="hljs-built_in">readableBytes</span>()); &#125;<br><br>    <span class="hljs-function">std::string <span class="hljs-title">retrieveAsString</span><span class="hljs-params">(<span class="hljs-type">size_t</span> len)</span></span><br><span class="hljs-function">    </span>&#123;<br>        <span class="hljs-function">std::string <span class="hljs-title">res</span><span class="hljs-params">(peek(), len)</span></span>;<br>        <span class="hljs-built_in">retrieve</span>(len);<br>        <span class="hljs-keyword">return</span> res;<br>    &#125;<br><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">ensureWriteableBytes</span><span class="hljs-params">(<span class="hljs-type">size_t</span> len)</span></span><br><span class="hljs-function">    </span>&#123;<br>        <span class="hljs-keyword">if</span> (<span class="hljs-built_in">writableBytes</span>() &lt; len)<br>            <span class="hljs-built_in">makeSpace</span>(len);<br>    &#125;<br><br>    <span class="hljs-comment">// 向缓冲区中追加数据[data, data + len]</span><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">append</span><span class="hljs-params">(<span class="hljs-type">const</span> <span class="hljs-type">char</span> *data, <span class="hljs-type">size_t</span> len)</span></span><br><span class="hljs-function">    </span>&#123;<br>        <span class="hljs-built_in">ensureWriteableBytes</span>(len);<br>        std::<span class="hljs-built_in">copy</span>(data, data + len, <span class="hljs-built_in">beginWrite</span>());<br>        _writerIndex += len;<br>    &#125;<br><br>    <span class="hljs-function"><span class="hljs-type">char</span> *<span class="hljs-title">beginWrite</span><span class="hljs-params">()</span> </span>&#123; <span class="hljs-keyword">return</span> <span class="hljs-built_in">begin</span>() + _writerIndex; &#125;<br>    <span class="hljs-function"><span class="hljs-type">const</span> <span class="hljs-type">char</span> *<span class="hljs-title">beginWrite</span><span class="hljs-params">()</span> <span class="hljs-type">const</span> </span>&#123; <span class="hljs-keyword">return</span> <span class="hljs-built_in">begin</span>() + _writerIndex; &#125;<br><br>    <span class="hljs-comment">// 从fd上读取数据, Poller工作在LT模式</span><br>    <span class="hljs-comment">// Buffer缓冲区是有大小的, 但从fd上读数据时却不知道tcp数据最终的大小</span><br>    <span class="hljs-function"><span class="hljs-type">ssize_t</span> <span class="hljs-title">readFd</span><span class="hljs-params">(<span class="hljs-type">int</span> fd, <span class="hljs-type">int</span> *saveErrno)</span></span>;<br>    <span class="hljs-function"><span class="hljs-type">ssize_t</span> <span class="hljs-title">writeFd</span><span class="hljs-params">(<span class="hljs-type">int</span> fd, <span class="hljs-type">int</span> *saveErrno)</span></span>;<br><br><span class="hljs-keyword">private</span>:<br>    <span class="hljs-function"><span class="hljs-type">char</span> *<span class="hljs-title">begin</span><span class="hljs-params">()</span> </span>&#123; <span class="hljs-keyword">return</span> &amp;*_buffer.<span class="hljs-built_in">begin</span>(); &#125;<br>    <span class="hljs-function"><span class="hljs-type">const</span> <span class="hljs-type">char</span> *<span class="hljs-title">begin</span><span class="hljs-params">()</span> <span class="hljs-type">const</span> </span>&#123; <span class="hljs-keyword">return</span> &amp;*_buffer.<span class="hljs-built_in">begin</span>(); &#125;<br><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">makeSpace</span><span class="hljs-params">(<span class="hljs-type">size_t</span> len)</span></span><br><span class="hljs-function">    </span>&#123;<br>        <span class="hljs-comment">// 后面真正可写的 + 前面读出来空余的 &lt; 要求的大小</span><br>        <span class="hljs-keyword">if</span> (<span class="hljs-built_in">writableBytes</span>() + _readerIndex &lt; len + kCheapPrepend)<br>            _buffer.<span class="hljs-built_in">resize</span>(_writerIndex + len);<br>        <span class="hljs-keyword">else</span> <span class="hljs-comment">// 如果够, 把后面未读的移到前面, 给后面空出来</span><br>        &#123;<br>            <span class="hljs-type">size_t</span> readable = <span class="hljs-built_in">readableBytes</span>();<br>            std::<span class="hljs-built_in">copy</span>(<span class="hljs-built_in">begin</span>() + _readerIndex, <span class="hljs-built_in">begin</span>() + _writerIndex, <span class="hljs-built_in">begin</span>() + kCheapPrepend);<br>            _readerIndex = kCheapPrepend;<br>            _writerIndex = kCheapPrepend + readable;<br>        &#125;<br>    &#125;<br><br>    std::vector&lt;<span class="hljs-type">char</span>&gt; _buffer;<br>    <span class="hljs-type">size_t</span> _readerIndex;<br>    <span class="hljs-type">size_t</span> _writerIndex;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// Buffer.cpp</span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;Buffer.h&quot;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;unistd.h&gt;</span></span><br><br><span class="hljs-function"><span class="hljs-type">ssize_t</span> <span class="hljs-title">Buffer::readFd</span><span class="hljs-params">(<span class="hljs-type">int</span> fd, <span class="hljs-type">int</span> *saveErrno)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-type">char</span> extrabuf[<span class="hljs-number">65536</span>] = &#123;<span class="hljs-number">0</span>&#125;; <span class="hljs-comment">// 栈上的内存空间 64k</span><br>    <span class="hljs-keyword">struct</span> <span class="hljs-title class_">iovec</span> vec[<span class="hljs-number">2</span>];<br>    <span class="hljs-type">const</span> <span class="hljs-type">size_t</span> writable = <span class="hljs-built_in">writableBytes</span>();<br>    vec[<span class="hljs-number">0</span>].iov_base = <span class="hljs-built_in">begin</span>() + _writerIndex;<br>    vec[<span class="hljs-number">0</span>].iov_len = writable;<br>    vec[<span class="hljs-number">1</span>].iov_base = extrabuf;<br>    vec[<span class="hljs-number">1</span>].iov_len = <span class="hljs-keyword">sizeof</span> extrabuf;<br><br>    <span class="hljs-type">const</span> <span class="hljs-type">int</span> iovcnt = (writable &lt; <span class="hljs-keyword">sizeof</span> extrabuf) ? <span class="hljs-number">2</span> : <span class="hljs-number">1</span>;<br>    <span class="hljs-comment">// 在非连续的区块中依次写入同一个fd传入的信息</span><br>    <span class="hljs-type">const</span> <span class="hljs-type">ssize_t</span> n = ::<span class="hljs-built_in">readv</span>(fd, vec, iovcnt);<br>    <span class="hljs-keyword">if</span> (n &lt; <span class="hljs-number">0</span>)<br>        *saveErrno = errno;<br>    <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (n &lt;= writable) <span class="hljs-comment">// 已经够了不需要扩容</span><br>    &#123;<br>        _writerIndex += n;<br>    &#125;<br>    <span class="hljs-keyword">else</span> <span class="hljs-comment">// extrabuf中也写入了数据, 需要扩容加进去</span><br>    &#123;<br>        _writerIndex = _buffer.<span class="hljs-built_in">size</span>();<br>        <span class="hljs-built_in">append</span>(extrabuf, n - writable);<br>    &#125;<br>    <span class="hljs-keyword">return</span> n;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">ssize_t</span> <span class="hljs-title">Buffer::writeFd</span><span class="hljs-params">(<span class="hljs-type">int</span> fd, <span class="hljs-type">int</span> *saveErrno)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-type">int</span> n = ::<span class="hljs-built_in">write</span>(fd, <span class="hljs-built_in">peek</span>(), <span class="hljs-built_in">readableBytes</span>());<br>    <span class="hljs-keyword">if</span> (n &lt; <span class="hljs-number">0</span>)<br>    &#123;<br>        *saveErrno = errno;<br>    &#125;<br>    <span class="hljs-keyword">return</span> n;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>先看成员变量 : </p>
+<ul>
+<li><p>_buffer : 用vector存储数据, 便于扩容.</p>
+</li>
+<li><p>_readerIndex &#x2F; _writerIndex : </p>
+<p>这两个参数标定了可读区域和可写区域的大小. 想要理解这两个参数, 需要理解Buffer中对_buffer的划分 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs cpp">|&lt;---- prependable ----&gt;|&lt;---- readable ----&gt;|&lt;---- writable ----&gt;|<br>|-----------------------|--------------------|--------------------|<br>^                        ^                    ^                     <br><span class="hljs-built_in">begin</span>()           _readerIndex          _writerIndex         <br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>prependable : 前置空余区域, 当我们发送消息时, 如果向要加一些报头之类的信息, 可以便于向其中填入, 在Muduo库中作用不大.</li>
+<li>readable : 已经有数据存入的部分, 如果当前要读出, 则这部分是可读部分, 如果当前要写入, 则这部分是已填充完毕的区域.</li>
+<li>writeable : 还没有数据的部分, 如果当前要读入, 则这部分是空余空间, 如果当前要写入, 则这部分是可以继续写入的部分.</li>
+</ul>
+<p>我们可以看出Buffer既可以处理read也可以处理write, 其对应的readable和writeable区域也有不同的作用. 在TcpConnection就封装了两个Buffer, _inputBuffer和 _outputBuffer, 共同处理了缓冲任务.</p>
+</li>
+</ul>
+<p>再看成员函数 :</p>
+<ul>
+<li><p>readable&#x2F;writable&#x2F;prependableBytes : 返回对应区域的字节数大小.</p>
+</li>
+<li><p>begin : 返回_buffer的首元素地址.</p>
+</li>
+<li><p>peek :  返回缓冲区中可读区域的起始地址.</p>
+</li>
+<li><p>makespace :</p>
+<p>扩容函数, 确保_buffer有参数len的大小使write成功, 如果可写的空间不够就扩容, 够用就经过调整把前面的空余和后面的空余合并一块放在后面.</p>
+</li>
+<li><p>retrieve &#x2F; retrieveAll :</p>
+</li>
+</ul>
+<p>​	这个函数一般会在下面的retrieveAsString中使用, 或是调用readfd&#x2F;writefd后使用, 用来进行两个Index的置位.</p>
+<ul>
+<li><p>retrieveAsString &#x2F; retrieveAllAsString : </p>
+<p><strong>从_buffer中读出数据的函数</strong>, 这个函数会将可读区域中len长度的数据当作string读出来, 并在调用retrieve后返回, 通常被客户用来从Buffer中直接读出接收到的数据.</p>
+</li>
+<li><p>ensureWriteableBytes : 对makeSpace的调用.</p>
+</li>
+<li><p>append :</p>
+<p><strong>从_buffer中追加数据的函数</strong>, 向缓冲区中追加数据[data, data + len], 空间不够时会调用ensureWriteableBytes.</p>
+</li>
+<li><p>readFd : </p>
+<p>核心函数, 目的是<strong>高效从一个fd上读取传来的数据到 _buffer 中</strong>, 其高效在于使用到了readv函数, 这个函数不细讲, 不知道可以去查, 简单来说就是就是其实现了<strong>在非连续的区块中依次写入同一个fd传入的信息</strong>, 函数中划分了两块区域, 一块是 _buffer的可写区域, 一块是我们在栈上开辟的64K临时空间, readv可以实现先向可写区域中写, 可写区域写满了再读入我们开辟的临时空间, 读完后加入临时空间有读入, 我们再用append加进去就行, 这样实现了灵活应对读入不同大小的情况.</p>
+</li>
+<li><p>writeFd : </p>
+<p>这个就比较简单了, 因为网络输出缓冲区就一个, 就不需要考虑writev的使用, 直接调用write从Buffer中将有数据的部分发送出去即可.</p>
+</li>
+</ul>
+<h2 id="TcpConnection"><a href="#TcpConnection" class="headerlink" title="TcpConnection"></a>TcpConnection</h2><blockquote>
+<p>专门用来维护每条与客户端的连接的类, 也就是对Acceptor中得到的connfd进行封装, 包括其对应的Socket和Channel类. 并且连接也代表了<strong>有连接的建立与断开, 数据的传入与传出等</strong>活动, 这些活动中, 一部分需要<strong>上级设置的回调函数</strong>来处理(例如连接建立断开, 数据传入, 都需要网络库调用者设置), 一部分需要TcpConnection<strong>利用自己手头的资源自行处理</strong>(例如数据传出, 需要调用自己的send函数). 既然与数据的传入传出有关, 其内部也内置Buffer类来优化传入传出的效率.</p>
+</blockquote>
+<p>通过上文我们的对TcpConnection的描述, 我们可以将其分为以下几个功能模块 : </p>
+<ul>
+<li>构造 &#x2F; 析构函数</li>
+<li>TcpServer对TcpConnection设置连接建立回调, 断开回调, 消息回调等, 正式开启&#x2F;关闭连接.</li>
+<li>TcpConnection对自己负责的connfd相关联的Channel类设置读&#x2F;写&#x2F;关闭&#x2F;错误回调.</li>
+<li>用户发送信息所调用的send函数, 手动关闭连接所调用的shutdown函数.</li>
+</ul>
+<p>让我们先分析头文件 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">pragma</span> once</span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;UnCopyable.h&quot;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;InetAddress.h&quot;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;Callbacks.h&quot;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;Buffer.h&quot;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;Timestamp.h&quot;</span></span><br><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;memory&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;string&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;atomic&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;string&gt;</span></span><br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Channel</span>;<br><span class="hljs-keyword">class</span> <span class="hljs-title class_">EventLoop</span>;<br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Socket</span>;<br><br><span class="hljs-comment">// TcpServer -&gt; Acceptor -&gt; 新连接 -&gt; accept得到connfd -&gt; 打包回调到TcpConnection</span><br><span class="hljs-comment">// -&gt; 回调设置给Channel -&gt; Poller -&gt; Channel的回调操作</span><br><br><span class="hljs-comment">// 各种回调函数 : 用户 -&gt; TcpServer -&gt; TcpConnection -&gt; Channel</span><br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">TcpConnection</span> : UnCopyable, <span class="hljs-keyword">public</span> std::enable_shared_from_this&lt;TcpConnection&gt;<br>&#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-built_in">TcpConnection</span>(EventLoop *loop, <span class="hljs-type">const</span> std::string name, <span class="hljs-type">int</span> sockfd, <span class="hljs-type">const</span> InetAddress &amp;LocalAddr, <span class="hljs-type">const</span> InetAddress &amp;peerAddr);<br>    ~<span class="hljs-built_in">TcpConnection</span>();<br><br>    <span class="hljs-function">EventLoop *<span class="hljs-title">getLoop</span><span class="hljs-params">()</span> <span class="hljs-type">const</span> </span>&#123; <span class="hljs-keyword">return</span> _loop; &#125;<br>    <span class="hljs-function"><span class="hljs-type">const</span> std::string &amp;<span class="hljs-title">name</span><span class="hljs-params">()</span> <span class="hljs-type">const</span> </span>&#123; <span class="hljs-keyword">return</span> _name; &#125;<br>    <span class="hljs-function"><span class="hljs-type">const</span> InetAddress &amp;<span class="hljs-title">localAddress</span><span class="hljs-params">()</span> <span class="hljs-type">const</span> </span>&#123; <span class="hljs-keyword">return</span> _localAddr; &#125;<br>    <span class="hljs-function"><span class="hljs-type">const</span> InetAddress &amp;<span class="hljs-title">peerAddress</span><span class="hljs-params">()</span> <span class="hljs-type">const</span> </span>&#123; <span class="hljs-keyword">return</span> _peerAddr; &#125;<br><br>    <span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">connected</span><span class="hljs-params">()</span> <span class="hljs-type">const</span> </span>&#123; <span class="hljs-keyword">return</span> _state == kConnected; &#125;<br><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">setConnectionCallback</span><span class="hljs-params">(<span class="hljs-type">const</span> ConnectionCallback &amp;cb)</span> </span>&#123; _connectionCallback = cb; &#125;<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">setMessageCallback</span><span class="hljs-params">(<span class="hljs-type">const</span> MessageCallback &amp;cb)</span> </span>&#123; _messageCallback = cb; &#125;<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">setWriteCompleteCallback</span><span class="hljs-params">(<span class="hljs-type">const</span> WriteCompleteCallback &amp;cb)</span> </span>&#123; _writeCompleteCallback = cb; &#125;<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">setHighWaterMarkCallback</span><span class="hljs-params">(<span class="hljs-type">const</span> HighWaterMarkCallback &amp;cb)</span> </span>&#123; _highWaterMarkCallback = cb; &#125;<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">setCloseCallback</span><span class="hljs-params">(<span class="hljs-type">const</span> CloseCallback &amp;cb)</span> </span>&#123; _closeCallback = cb; &#125;<br><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">connectEstablished</span><span class="hljs-params">()</span></span>; <span class="hljs-comment">// 连接建立</span><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">connectDestoryed</span><span class="hljs-params">()</span></span>;   <span class="hljs-comment">// 连接销毁</span><br><br>    <span class="hljs-comment">// 发送数据</span><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">send</span><span class="hljs-params">(std::string buf)</span></span>;<br>    <span class="hljs-comment">// 关闭Tcp连接</span><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">shutdown</span><span class="hljs-params">()</span></span>;<br><br><span class="hljs-keyword">private</span>:<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">handleRead</span><span class="hljs-params">(Timestamp receiveTime)</span></span>;<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">handleWrite</span><span class="hljs-params">()</span></span>;<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">handleClose</span><span class="hljs-params">()</span></span>;<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">handleError</span><span class="hljs-params">()</span></span>;<br><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">sendInLoop</span><span class="hljs-params">(<span class="hljs-type">const</span> <span class="hljs-type">void</span> *message, <span class="hljs-type">size_t</span> len)</span></span>;<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">shutdownInLoop</span><span class="hljs-params">()</span></span>;<br><br>    <span class="hljs-keyword">enum</span> <span class="hljs-title class_">StateE</span><br>    &#123;<br>        kDisconnected,<br>        kConnecting,<br>        kConnected,<br>        kDisconnecting<br>    &#125;;<br><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">setState</span><span class="hljs-params">(StateE state)</span> </span>&#123; _state = state; &#125;<br><br>    EventLoop *_loop; <span class="hljs-comment">// 这里只会是subLoop</span><br>    <span class="hljs-type">const</span> std::string _name;<br>    std::atomic_int _state;<br>    <span class="hljs-type">bool</span> _reading;<br>    <span class="hljs-comment">// 管理的_socket / _channel</span><br>    std::unique_ptr&lt;Socket&gt; _socket;<br>    std::unique_ptr&lt;Channel&gt; _channel;<br><br>    <span class="hljs-type">const</span> InetAddress _localAddr; <span class="hljs-comment">// 主机addr</span><br>    <span class="hljs-type">const</span> InetAddress _peerAddr;  <span class="hljs-comment">// 对端客户addr</span><br>    <span class="hljs-comment">// 回调</span><br>    ConnectionCallback _connectionCallback;<br>    MessageCallback _messageCallback;<br>    WriteCompleteCallback _writeCompleteCallback;<br>    HighWaterMarkCallback _highWaterMarkCallback;<br>    CloseCallback _closeCallback;<br>    <span class="hljs-type">size_t</span> _highWaterMark;<br>    <span class="hljs-comment">// 缓冲区</span><br>    Buffer _inputBuffer;<br>    Buffer _outputBuffer;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>这里先介绍一下公开继承enable_shared_from_this的作用 : </p>
+<p>其可以让继承其的类的成员函数可以调用shared_from_this()函数, 作用是返回当前类对象的智能指针封装, 也就是把this指针包到智能指针中再传出来, 所以使用他的原因主要是TcpConnection对象可能随使销毁, 传出的this指针随时可能失效, 但如果我们本身传出的就是智能指针, 就可以有效防止提前销毁.</p>
+<p>了解一下成员变量 : </p>
+<ul>
+<li>_loop : 这里保存自己所在subLoop的指针, 是为了将需要调用的函数加入到事件循环中.</li>
+<li>_state : 用来记录一个连接的各种状态, 状态同一时间只能有一种, 所以是atomic类型.</li>
+<li>_socket &#x2F; _channel : 将Acceptor接收到的connfd封装为Socket和Channel.</li>
+<li>…Callback : 各种有关于连接的事件回调.</li>
+<li>_inputBuffer &#x2F; _outputBuffer : 分别处理TcpConnection的消息接受和发送.</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;TcpConnection.h&quot;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;Logger.h&quot;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;Socket.h&quot;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;Channel.h&quot;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;EventLoop.h&quot;</span></span><br><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;memory&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;unistd.h&gt;</span></span><br><br><span class="hljs-comment">// 为什么用static可防止名字冲突</span><br><span class="hljs-function"><span class="hljs-type">static</span> EventLoop *<span class="hljs-title">CheckLoopNotNull</span><span class="hljs-params">(EventLoop *loop)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">if</span> (loop == <span class="hljs-literal">nullptr</span>)<br>        <span class="hljs-built_in">LOG_FATAL</span>(<span class="hljs-string">&quot;%s:%s:%d mainLoop is null!&quot;</span>, __FILE__, __FUNCTION__, __LINE__);<br>    <span class="hljs-keyword">return</span> loop;<br>&#125;<br><br>TcpConnection::<span class="hljs-built_in">TcpConnection</span>(EventLoop *loop, <span class="hljs-type">const</span> std::string name, <span class="hljs-type">int</span> sockfd, <span class="hljs-type">const</span> InetAddress &amp;localAddr, <span class="hljs-type">const</span> InetAddress &amp;peerAddr)<br>    : _loop(<span class="hljs-built_in">CheckLoopNotNull</span>(loop)), _name(name), _state(kConnecting), _reading(<span class="hljs-literal">true</span>), _socket(<span class="hljs-keyword">new</span> <span class="hljs-built_in">Socket</span>(sockfd)), _channel(<span class="hljs-keyword">new</span> <span class="hljs-built_in">Channel</span>(loop, sockfd)), _localAddr(localAddr), _peerAddr(peerAddr), _highWaterMark(<span class="hljs-number">64</span> * <span class="hljs-number">1024</span> * <span class="hljs-number">1024</span>) <span class="hljs-comment">// 64MB</span><br>&#123;<br>    <span class="hljs-comment">// 把回调设置进channel, TcpConnection有一套自己的回调函数</span><br>    _channel-&gt;<span class="hljs-built_in">setReadCallback</span>(std::<span class="hljs-built_in">bind</span>(&amp;TcpConnection::handleRead, <span class="hljs-keyword">this</span>, std::placeholders::_1));<br>    _channel-&gt;<span class="hljs-built_in">setWriteCallback</span>(std::<span class="hljs-built_in">bind</span>(&amp;TcpConnection::handleWrite, <span class="hljs-keyword">this</span>));<br>    _channel-&gt;<span class="hljs-built_in">setCloseCallback</span>(std::<span class="hljs-built_in">bind</span>(&amp;TcpConnection::handleClose, <span class="hljs-keyword">this</span>));<br>    _channel-&gt;<span class="hljs-built_in">setErrorCallback</span>(std::<span class="hljs-built_in">bind</span>(&amp;TcpConnection::handleError, <span class="hljs-keyword">this</span>));<br><br>    <span class="hljs-built_in">LOG_INFO</span>(<span class="hljs-string">&quot;TcpConnection::ctor[%s] at fd=%d\n&quot;</span>, _name.<span class="hljs-built_in">c_str</span>(), sockfd);<br>    _socket-&gt;<span class="hljs-built_in">setKeepAlive</span>(<span class="hljs-literal">true</span>);<br>&#125;<br><br>TcpConnection::~<span class="hljs-built_in">TcpConnection</span>()<br>&#123;<br>    <span class="hljs-built_in">LOG_INFO</span>(<span class="hljs-string">&quot;Tcpconnection::dtor[%s] at fd=%d state=%d \n&quot;</span>, _name.<span class="hljs-built_in">c_str</span>(), _channel-&gt;<span class="hljs-built_in">fd</span>(), (<span class="hljs-type">int</span>)_state);<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">TcpConnection::handleRead</span><span class="hljs-params">(Timestamp receiveTime)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-type">int</span> savedErrno = <span class="hljs-number">0</span>;<br>    <span class="hljs-type">ssize_t</span> n = _inputBuffer.<span class="hljs-built_in">readFd</span>(_channel-&gt;<span class="hljs-built_in">fd</span>(), &amp;savedErrno);<br>    <span class="hljs-keyword">if</span> (n &gt; <span class="hljs-number">0</span>)<br>    &#123;<br>        <span class="hljs-comment">// 有可读事件发生, 调用用户传入的回调操作</span><br>        _messageCallback(<span class="hljs-built_in">shared_from_this</span>(), &amp;_inputBuffer, receiveTime);<br>    &#125;<br>    <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (n == <span class="hljs-number">0</span>)<br>    &#123;<br>        <span class="hljs-built_in">handleClose</span>();<br>    &#125;<br>    <span class="hljs-keyword">else</span><br>    &#123;<br>        errno = savedErrno;<br>        <span class="hljs-built_in">LOG_ERROR</span>(<span class="hljs-string">&quot;TcpConnection::handleRead&quot;</span>);<br>        <span class="hljs-built_in">handleError</span>();<br>    &#125;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">TcpConnection::handleWrite</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">if</span> (_channel-&gt;<span class="hljs-built_in">isWriting</span>())<br>    &#123;<br>        <span class="hljs-type">int</span> savedErrno = <span class="hljs-number">0</span>;<br>        <span class="hljs-type">ssize_t</span> n = _outputBuffer.<span class="hljs-built_in">writeFd</span>(_channel-&gt;<span class="hljs-built_in">fd</span>(), &amp;savedErrno);<br>        <span class="hljs-keyword">if</span> (n &gt; <span class="hljs-number">0</span>)<br>        &#123;<br>            _outputBuffer.<span class="hljs-built_in">retrieve</span>(n);<br>            <span class="hljs-keyword">if</span> (_outputBuffer.<span class="hljs-built_in">readableBytes</span>() == <span class="hljs-number">0</span>) <span class="hljs-comment">// 已经发送完成</span><br>            &#123;<br>                _channel-&gt;<span class="hljs-built_in">disableWriting</span>();<br>                <span class="hljs-keyword">if</span> (_writeCompleteCallback)<br>                &#123;<br>                    _loop-&gt;<span class="hljs-built_in">queueInLoop</span>(std::<span class="hljs-built_in">bind</span>(_writeCompleteCallback, <span class="hljs-built_in">shared_from_this</span>()));<br>                &#125;<br>                <span class="hljs-keyword">if</span> (_state == kDisconnecting)<br>                &#123;<br>                    <span class="hljs-built_in">shutdownInLoop</span>();<br>                &#125;<br>            &#125;<br>        &#125;<br>        <span class="hljs-keyword">else</span><br>            <span class="hljs-built_in">LOG_ERROR</span>(<span class="hljs-string">&quot;TcpConnection::handleWrite&quot;</span>);<br>    &#125;<br>    <span class="hljs-keyword">else</span><br>        <span class="hljs-built_in">LOG_ERROR</span>(<span class="hljs-string">&quot;TcpConnection fd=%d is down, no more writing&quot;</span>, _channel-&gt;<span class="hljs-built_in">fd</span>());<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">TcpConnection::handleClose</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-built_in">LOG_INFO</span>(<span class="hljs-string">&quot;fd=%d state=%d \n&quot;</span>, _channel-&gt;<span class="hljs-built_in">fd</span>(), (<span class="hljs-type">int</span>)_state);<br>    <span class="hljs-built_in">setState</span>(kDisconnected);<br>    _channel-&gt;<span class="hljs-built_in">disableAll</span>();<br><br>    <span class="hljs-comment">// 获取当前的Connention对象</span><br>    <span class="hljs-function">TcpConnectionPtr <span class="hljs-title">connPtr</span><span class="hljs-params">(shared_from_this())</span></span>;<br>    _connectionCallback(connPtr);<br>    _closeCallback(connPtr); <span class="hljs-comment">// 关闭连接, 执行TcpServer::removeConnection</span><br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">TcpConnection::handleError</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-type">int</span> op;<br>    <span class="hljs-type">socklen_t</span> optlen = <span class="hljs-keyword">sizeof</span> op;<br>    <span class="hljs-type">int</span> err = <span class="hljs-number">0</span>;<br>    <span class="hljs-keyword">if</span> (::<span class="hljs-built_in">getsockopt</span>(_channel-&gt;<span class="hljs-built_in">fd</span>(), SOL_SOCKET, SO_ERROR, &amp;op, &amp;optlen) &lt; <span class="hljs-number">0</span>)<br>    &#123;<br>        err = errno;<br>    &#125;<br>    <span class="hljs-keyword">else</span><br>        err = op;<br><br>    <span class="hljs-built_in">LOG_ERROR</span>(<span class="hljs-string">&quot;TcpConnection::handleErrno name:%s - SO_ERROR:%d \n&quot;</span>, _name.<span class="hljs-built_in">c_str</span>(), err);<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">TcpConnection::connectEstablished</span><span class="hljs-params">()</span> <span class="hljs-comment">// 连接建立</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-built_in">setState</span>(kConnected);<br>    <span class="hljs-comment">// 把自己的指针传给负责的channel, 让其知晓自己的存在状态</span><br>    <span class="hljs-comment">// 防止上层TcpConnection析构后下层channel依旧运行</span><br>    <span class="hljs-comment">// 根本原因是TcpConnection要给到用户手里, 不确定何时析构</span><br>    _channel-&gt;<span class="hljs-built_in">tie</span>(<span class="hljs-built_in">shared_from_this</span>());<br>    _channel-&gt;<span class="hljs-built_in">enableReading</span>(); <span class="hljs-comment">// 注册Channel读事件</span><br><br>    <span class="hljs-comment">// 新连接已经建立, 执行连接建立回调</span><br>    _connectionCallback(<span class="hljs-built_in">shared_from_this</span>());<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">TcpConnection::connectDestoryed</span><span class="hljs-params">()</span> <span class="hljs-comment">// 连接销毁</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">if</span> (_state == kConnected)<br>    &#123;<br>        <span class="hljs-built_in">setState</span>(kDisconnected);<br>        _channel-&gt;<span class="hljs-built_in">disableAll</span>();<br>        _connectionCallback(<span class="hljs-built_in">shared_from_this</span>());<br>    &#125;<br>    _channel-&gt;<span class="hljs-built_in">remove</span>();<br>&#125;<br><br><span class="hljs-comment">// 发送数据</span><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">TcpConnection::send</span><span class="hljs-params">(<span class="hljs-type">const</span> std::string buf)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">if</span> (_state == kConnected)<br>    &#123;<br>        <span class="hljs-keyword">if</span> (_loop-&gt;<span class="hljs-built_in">isInLoopThread</span>())<br>        &#123;<br>            <span class="hljs-built_in">sendInLoop</span>(buf.<span class="hljs-built_in">c_str</span>(), buf.<span class="hljs-built_in">size</span>());<br>        &#125;<br>        <span class="hljs-keyword">else</span><br>        &#123;<br>            _loop-&gt;<span class="hljs-built_in">runInLoop</span>(std::<span class="hljs-built_in">bind</span>(&amp;TcpConnection::sendInLoop, <span class="hljs-keyword">this</span>, buf.<span class="hljs-built_in">c_str</span>(), buf.<span class="hljs-built_in">size</span>()));<br>        &#125;<br>    &#125;<br>&#125;<br><br><span class="hljs-comment">// 发送数据时, 应用写的快, 而内核发送数据慢, 需要把待发送的数据写入缓冲区并设置水位回调</span><br><span class="hljs-comment">// 该函数实现对写事件的缓冲</span><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">TcpConnection::sendInLoop</span><span class="hljs-params">(<span class="hljs-type">const</span> <span class="hljs-type">void</span> *data, <span class="hljs-type">size_t</span> len)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-type">ssize_t</span> nwrite = <span class="hljs-number">0</span>;<br>    <span class="hljs-type">size_t</span> remaining = len;<br>    <span class="hljs-type">bool</span> faultError = <span class="hljs-literal">false</span>;<br>    <span class="hljs-comment">// 之前调用过shutdown</span><br>    <span class="hljs-keyword">if</span> (_state == kDisconnected)<br>    &#123;<br>        <span class="hljs-built_in">LOG_ERROR</span>(<span class="hljs-string">&quot;disconnected, give up writing!&quot;</span>);<br>        <span class="hljs-keyword">return</span>;<br>    &#125;<br>    <span class="hljs-comment">// _channel第一次开始写数据, 并且缓冲区没有待发送数据</span><br>    <span class="hljs-keyword">if</span> (!_channel-&gt;<span class="hljs-built_in">isWriting</span>() &amp;&amp; _outputBuffer.<span class="hljs-built_in">readableBytes</span>() == <span class="hljs-number">0</span>)<br>    &#123;<br>        nwrite = ::<span class="hljs-built_in">write</span>(_channel-&gt;<span class="hljs-built_in">fd</span>(), data, len);<br>        <span class="hljs-keyword">if</span> (nwrite &gt;= <span class="hljs-number">0</span>)<br>        &#123;<br>            remaining = len - nwrite;<br>            <span class="hljs-comment">// 如果已经直接发送完了, 不需要缓冲, 如果有设置写入完成回调就触发</span><br>            <span class="hljs-keyword">if</span> (remaining == <span class="hljs-number">0</span> &amp;&amp; _writeCompleteCallback)<br>                _loop-&gt;<span class="hljs-built_in">queueInLoop</span>(std::<span class="hljs-built_in">bind</span>(_writeCompleteCallback, <span class="hljs-built_in">shared_from_this</span>()));<br>        &#125;<br>        <span class="hljs-keyword">else</span> <span class="hljs-comment">// nwrote &lt; 0</span><br>        &#123;<br>            nwrite = <span class="hljs-number">0</span>;<br>            <span class="hljs-keyword">if</span> (errno != EWOULDBLOCK)<br>            &#123;<br>                <span class="hljs-built_in">LOG_ERROR</span>(<span class="hljs-string">&quot;TcpConnection::sendInLoop&quot;</span>);<br>                <span class="hljs-keyword">if</span> (errno == EPIPE || errno == ECONNRESET)<br>                    faultError = <span class="hljs-literal">true</span>;<br>            &#125;<br>        &#125;<br>    &#125;<br>    <span class="hljs-comment">// 一次write并没有一次发送出去, 需要保存到缓冲区</span><br>    <span class="hljs-comment">// 要给channel设置epollout事件, poller发现tcp发送缓冲区有空间</span><br>    <span class="hljs-comment">// 调用writeCallback -&gt; handleWrite, 把发送缓冲区的数据全部发送完成</span><br>    <span class="hljs-keyword">if</span> (!faultError &amp;&amp; remaining &gt; <span class="hljs-number">0</span>)<br>    &#123;<br>        <span class="hljs-comment">// 目前发送缓冲区剩余的待发送数据长度</span><br>        <span class="hljs-type">size_t</span> oldlen = _outputBuffer.<span class="hljs-built_in">readableBytes</span>();<br>        <span class="hljs-keyword">if</span> (oldlen + remaining &gt;= _highWaterMark &amp;&amp; oldlen &lt; _highWaterMark &amp;&amp; _highWaterMark)<br>            _loop-&gt;<span class="hljs-built_in">queueInLoop</span>(std::<span class="hljs-built_in">bind</span>(_highWaterMarkCallback, <span class="hljs-built_in">shared_from_this</span>(), oldlen + remaining));<br>        _outputBuffer.<span class="hljs-built_in">append</span>((<span class="hljs-type">char</span> *)data + nwrite, remaining);<br>        <span class="hljs-keyword">if</span> (!_channel-&gt;<span class="hljs-built_in">isWriting</span>())<br>        &#123;<br>            _channel-&gt;<span class="hljs-built_in">enableWriting</span>(); <span class="hljs-comment">// 注册channel的写事件, 否则poller不会给channel通知EPOLLOUT,</span><br>        &#125;<br>    &#125;<br>&#125;<br><br><span class="hljs-comment">// 关闭Tcp连接</span><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">TcpConnection::shutdown</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">if</span> (_state == kConnected)<br>    &#123;<br>        <span class="hljs-built_in">setState</span>(kDisconnecting);<br>        _loop-&gt;<span class="hljs-built_in">runInLoop</span>(std::<span class="hljs-built_in">bind</span>(&amp;TcpConnection::shutdownInLoop, <span class="hljs-keyword">this</span>));<br>    &#125;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">TcpConnection::shutdownInLoop</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">if</span> (!_channel-&gt;<span class="hljs-built_in">isWriting</span>()) <span class="hljs-comment">// 说明发送缓冲区已经全部发送完成</span><br>    &#123;<br>        _socket-&gt;<span class="hljs-built_in">shutdownWrite</span>(); <span class="hljs-comment">// 关闭写端</span><br>        <span class="hljs-comment">// 之后poller会通知channel触发_closeCallback, 会触发TcpConnection中的handleClose</span><br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>配合源文件来分析成员函数 : </p>
+<ul>
+<li><p>构造函数 :</p>
+<p>掌握一个不为空的loop指针, 利用传进的connfd构造_socket和 _channel. 随后设置 _channel的读写关闭错误回调, 就像Acceptor对 listensocketfd 设置读事件回调一样, 普通连接connfd四种事件都要关注, 所以我们四种事件都设置回调, 而回调函数分别是下面的handleRead&#x2F;Write&#x2F;Colse&#x2F;Error.</p>
+</li>
+<li><p>handleRead :</p>
+<p>当connfd的读事件触发时, 会触发该函数, 向 _inputBuffer中读入数据, 然后调用TcpServer设置的消息回调函数, 这个回调函数中一般会调用retrieveAsString从 _inputBuffer中读出数据然后进行客户希望的处理.</p>
+</li>
+<li><p>handleWrite : </p>
+<p>当connfd的读事件触发时, 说明对端可写, 从_outputBuffer中读出所有或部分向对端写入, 如果全写了, 就取消对 _channel的写事件关心然后调用写完回调(如果有的话); 如果没写完就不做处理.</p>
+</li>
+<li><p>handleClose :</p>
+<p>当我们关闭connfd的写端时, 就会默认触发EPOLLHUP事件, 进而调用该函数, 取消_channel对所有事件的关心, 然后调用连接建立&#x2F;断开回调.</p>
+</li>
+<li><p>connectEstablished : </p>
+<p>这个函数用来开启_channel读事件的关注, 也就是说在这之后就可以读connfd上传来的信息了. 至于为什么单独分出一个函数处理, 原因是在TcpConntion对象在TcpServer中创建后不能直接开启读事件, 还要进行回调函数的设置和数据处理, 在这些准备工作都做完后才可以真正开启读事件.</p>
+</li>
+<li><p>connectDestoryed : </p>
+<p>这个函数用于在最后销毁连接并移除_channel, 属于销毁链路的最后一环, 由TcpServer在合适时机调用, 我们可以在后面的shutdownInLoop中有更深的认识.</p>
+</li>
+<li><p>send : </p>
+<p>这个函数是提供给用户调用的, 所以调用时不一定在当前线程, 所以需要判断是否换线程.</p>
+</li>
+<li><p>sendInLoop : </p>
+<p>前面handleWrite函数是在写事件触发时从_outputBuffer中读取数据, 那么这个函数就是直接发送或将要发送的数据写入 _outputBuffer.</p>
+<p>首先如果_channel第一次开始写数据, 并且缓冲区没有待发送数据, 就直接先写一部分, 最后如果还是没写完, 说明对端接收缓冲区已经满了, 就追加到 _outputBuffer中, 再关注读事件, 那么当对端接收缓冲区可写时就会调用handleWrite从 _outputBuffer中读取数据.</p>
+</li>
+<li><p>shutdown : </p>
+<p>这个函数也是提供给用户调用的, 需要判断换线程.</p>
+</li>
+<li><p>shutdownInLoop : </p>
+<p>这里操作很简单, 关闭connfd写端就行, 主要是了解其中的连锁反应 : </p>
+<p>关闭写端 -&gt; 触发EPOLLHUP -&gt; _channel调用handleClose -&gt; handleClose调用TcpServer设置的回调函数 -&gt; TcpServer设置的回调函数再调用TcpConnection中的connectDestoryed.</p>
+<p>这样一看这个过程非常繁琐, 其主要是为了让TcpServer可以及时对关闭的连接进行反应并修改内部资源.</p>
+</li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Muduo/" class="print-no-link">#Muduo</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Muduo库源码剖析(5) TcpConnection</div>
+      <div>http://example.com/2025/04/21/Muduo库源码剖析(5) TcpConnection/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>天目中云</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年4月21日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/04/17/Muduo%E5%BA%93%E6%BA%90%E7%A0%81%E5%89%96%E6%9E%90(4)%20Acceptor/" title="Muduo库源码剖析(4) Acceptor">
+                        <span class="hidden-mobile">Muduo库源码剖析(4) Acceptor</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"NhgfDy2CEByjwxuxPM1Le2t6-MdYXbMMI","appKey":"nvGMdqKfKbpkVnojLSbwmasv","path":"window.location.pathname","placeholder":null,"avatar":"retro","meta":["nick","mail","link"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":false,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":false},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
