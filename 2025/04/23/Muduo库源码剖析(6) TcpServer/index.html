@@ -1,0 +1,748 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/head.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="天目中云">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="TcpServer类详解  TcpServer将会作为Muduo库对外开放的核心类, 其提供接口开启服务器并设置设置回调函数与线程数量. 我们可以先预测一下TcpServer将要实现的功能 :   构造Acceptor并控制listen决定开始监听的时机. 构造EventLoopThreadPool并开辟设置的线程数量. 处理Acceptor监听到的每个connfd, 构建对应的TcpConne">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Muduo库源码剖析(6) TcpServer">
+<meta property="og:url" content="http://example.com/2025/04/23/Muduo%E5%BA%93%E6%BA%90%E7%A0%81%E5%89%96%E6%9E%90(6)%20TcpServer/index.html">
+<meta property="og:site_name" content="天目中云">
+<meta property="og:description" content="TcpServer类详解  TcpServer将会作为Muduo库对外开放的核心类, 其提供接口开启服务器并设置设置回调函数与线程数量. 我们可以先预测一下TcpServer将要实现的功能 :   构造Acceptor并控制listen决定开始监听的时机. 构造EventLoopThreadPool并开辟设置的线程数量. 处理Acceptor监听到的每个connfd, 构建对应的TcpConne">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-04-23T01:22:00.000Z">
+<meta property="article:modified_time" content="2025-04-23T01:22:48.544Z">
+<meta property="article:author" content="天目中云">
+<meta property="article:tag" content="Muduo">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>Muduo库源码剖析(6) TcpServer - 天目中云</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":"NhgfDy2CEByjwxuxPM1Le2t6-MdYXbMMI","app_key":"nvGMdqKfKbpkVnojLSbwmasv","server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>TianMu</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/03.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Muduo库源码剖析(6) TcpServer"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-04-23 09:22" pubdate>
+          2025年4月23日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.2k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          11 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Muduo库源码剖析(6) TcpServer</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <blockquote>
+<p>TcpServer类详解</p>
+</blockquote>
+<p>TcpServer将会作为Muduo库对外开放的核心类, 其提供接口开启服务器并设置设置回调函数与线程数量.</p>
+<p>我们可以先预测一下TcpServer将要实现的功能 : </p>
+<ul>
+<li>构造Acceptor并控制listen决定开始监听的时机.</li>
+<li>构造EventLoopThreadPool并开辟设置的线程数量.</li>
+<li>处理Acceptor监听到的每个connfd, 构建对应的TcpConnection, 并把该连接保存下来.</li>
+<li>对外提供开始监听, 设置回调, 设置线程数量等接口.</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// TcpServer.h</span><br><span class="hljs-meta">#<span class="hljs-keyword">pragma</span> once</span><br><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;EventLoop.h&quot;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;EventLoopThreadPool.h&quot;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;Accept.h&quot;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;InetAddress.h&quot;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;UnCopyable.h&quot;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;Callbacks.h&quot;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;TcpConnection.h&quot;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;Buffer.h&quot;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;Logger.h&quot;</span></span><br><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;atomic&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;unordered_map&gt;</span></span><br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">TcpServer</span> : UnCopyable<br>&#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-keyword">using</span> ThreadInitCallback = std::function&lt;<span class="hljs-built_in">void</span>(EventLoop *)&gt;;<br><br>    <span class="hljs-keyword">enum</span> <span class="hljs-title class_">Option</span> <span class="hljs-comment">// 表明对端口是否可重用</span><br>    &#123;<br>        kNoReusePort,<br>        kReusePort,<br>    &#125;;<br><br>    <span class="hljs-built_in">TcpServer</span>(EventLoop *loop, <span class="hljs-type">const</span> InetAddress &amp;listenAddr, <span class="hljs-type">const</span> std::string name, Option option = kNoReusePort);<br>    ~<span class="hljs-built_in">TcpServer</span>();<br><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">setThreadInitcallback</span><span class="hljs-params">(<span class="hljs-type">const</span> ThreadInitCallback &amp;cb)</span> </span>&#123; _threadInitCallback = cb; &#125;<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">setConnectionCallback</span><span class="hljs-params">(<span class="hljs-type">const</span> ConnectionCallback &amp;cb)</span> </span>&#123; _connectionCallback = cb; &#125;<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">setMessageCallback</span><span class="hljs-params">(<span class="hljs-type">const</span> MessageCallback &amp;cb)</span> </span>&#123; _messageCallback = cb; &#125;<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">setWriteCommpleteCallback</span><span class="hljs-params">(<span class="hljs-type">const</span> WriteCompleteCallback &amp;cb)</span> </span>&#123; _writeCompleteCallback = cb; &#125;<br><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">setThreadNum</span><span class="hljs-params">(<span class="hljs-type">int</span> numThreads)</span> </span>&#123; _threadPool-&gt;<span class="hljs-built_in">setThreadNum</span>(numThreads); &#125;<br><br>    <span class="hljs-comment">// 开启服务器监听</span><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">start</span><span class="hljs-params">()</span></span>;<br><br><span class="hljs-keyword">private</span>:<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">newConnection</span><span class="hljs-params">(<span class="hljs-type">int</span> sockfd, <span class="hljs-type">const</span> InetAddress &amp;peerAddr)</span></span>;<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">removeConnection</span><span class="hljs-params">(<span class="hljs-type">const</span> TcpConnectionPtr &amp;conn)</span></span>;<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">removeConnectionInLoop</span><span class="hljs-params">(<span class="hljs-type">const</span> TcpConnectionPtr &amp;conn)</span></span>;<br><br>    <span class="hljs-keyword">using</span> ConnectionMap = std::unordered_map&lt;std::string, TcpConnectionPtr&gt;;<br><br>    EventLoop *_mainloop;<br>    <span class="hljs-type">const</span> std::string _ipPort;<br>    <span class="hljs-type">const</span> std::string _name;<br><br>    std::unique_ptr&lt;Acceptor&gt; _acceptor;<br>    std::shared_ptr&lt;EventLoopThreadPool&gt; _threadPool; <span class="hljs-comment">// one loop per thread</span><br><br>    ConnectionCallback _connectionCallback;<br>    MessageCallback _messageCallback;<br>    WriteCompleteCallback _writeCompleteCallback;<br><br>    ThreadInitCallback _threadInitCallback;<br><br>    std::atomic_int _started;<br><br>    <span class="hljs-type">int</span> _nextConnId;<br>    ConnectionMap _connections;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>我们先来看成员变量 : </p>
+<ul>
+<li>_mainloop : 这个mainloop是由用户传入的, 用户会决定何时调用<code>loop.loop();</code>来开启循环.</li>
+<li>_acceptor : 维护listensocketfd对新连接进行监听.</li>
+<li>_threadPool : 维护线程池提供subloop的指针, 在建立TcpConnection时为其轮询挑提供subloop.</li>
+<li>各类回调函数 : 这里主要是用户提供给TcpConnection建立时设置的各种回调.</li>
+<li>_connections : 维护所有建立的连接.</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// TcpServer.cpp</span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;TcpServer.h&quot;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;Logger.h&quot;</span></span><br><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;strings.h&gt;</span></span><br><br><span class="hljs-function"><span class="hljs-type">static</span> EventLoop *<span class="hljs-title">CheckLoopNotNull</span><span class="hljs-params">(EventLoop *loop)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">if</span> (loop == <span class="hljs-literal">nullptr</span>)<br>        <span class="hljs-built_in">LOG_FATAL</span>(<span class="hljs-string">&quot;%s:%s:%d mainLoop is null!&quot;</span>, __FILE__, __FUNCTION__, __LINE__);<br>    <span class="hljs-keyword">return</span> loop;<br>&#125;<br><br>TcpServer::<span class="hljs-built_in">TcpServer</span>(EventLoop *loop, <span class="hljs-type">const</span> InetAddress &amp;listenAddr, <span class="hljs-type">const</span> std::string name, Option option)<br>    : _mainloop(<span class="hljs-built_in">CheckLoopNotNull</span>(loop))<br>    , _ipPort(listenAddr.<span class="hljs-built_in">toIpPort</span>())<br>    , _name(name)<br>    , _acceptor(<span class="hljs-keyword">new</span> <span class="hljs-built_in">Acceptor</span>(loop, listenAddr, option == kReusePort))<br>    , _threadPool(<span class="hljs-keyword">new</span> <span class="hljs-built_in">EventLoopThreadPool</span>(loop, name))<br>    , _connectionCallback()<br>    , _messageCallback()<br>    , _nextConnId(<span class="hljs-number">1</span>)<br>    , _started(<span class="hljs-number">0</span>)<br>&#123;<br>    <span class="hljs-comment">// 当有新用户连接时, 会执行newConnection</span><br>    _acceptor-&gt;<span class="hljs-built_in">setNewConnectionCallback</span>(std::<span class="hljs-built_in">bind</span>(&amp;TcpServer::newConnection, <span class="hljs-keyword">this</span>,<br>          std::placeholders::_1, std::placeholders::_2));<br>&#125;<br><br>TcpServer::~<span class="hljs-built_in">TcpServer</span>()<br>&#123;<br>    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">auto</span> &amp;item : _connections)<br>    &#123;<br>        <span class="hljs-function">TcpConnectionPtr <span class="hljs-title">conn</span><span class="hljs-params">(item.second)</span></span>; <span class="hljs-comment">// 局部强智能指针对象会自动释放</span><br>        item.second.<span class="hljs-built_in">reset</span>();                <span class="hljs-comment">// 原map中放弃对强指针的使用</span><br><br>        conn-&gt;<span class="hljs-built_in">getLoop</span>()-&gt;<span class="hljs-built_in">runInLoop</span>(std::<span class="hljs-built_in">bind</span>(&amp;TcpConnection::connectDestoryed, conn));<br>    &#125;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">TcpServer::start</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">if</span> (_started++ == <span class="hljs-number">0</span>) <span class="hljs-comment">// 防止被重复启动多次</span><br>    &#123;<br>        _threadPool-&gt;<span class="hljs-built_in">start</span>(_threadInitCallback);<br>        _mainloop-&gt;<span class="hljs-built_in">runInLoop</span>(std::<span class="hljs-built_in">bind</span>(&amp;Acceptor::listen, _acceptor.<span class="hljs-built_in">get</span>()));<br>    &#125;<br>&#125;<br><br><span class="hljs-comment">// 在TcpServer中具体是轮询找到subLoop, 唤醒该loop</span><br><span class="hljs-comment">// 把sockfd封装成channel加入到subLoop中</span><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">TcpServer::newConnection</span><span class="hljs-params">(<span class="hljs-type">int</span> sockfd, <span class="hljs-type">const</span> InetAddress &amp;peerAddr)</span></span><br><span class="hljs-function"></span>&#123;<br>    EventLoop *subLoop = _threadPool-&gt;<span class="hljs-built_in">getNextLoop</span>();<br>    <span class="hljs-type">char</span> buf[<span class="hljs-number">64</span>] = &#123;<span class="hljs-number">0</span>&#125;;<br>    <span class="hljs-built_in">snprintf</span>(buf, <span class="hljs-keyword">sizeof</span> buf, <span class="hljs-string">&quot;-%s#%d&quot;</span>, _ipPort.<span class="hljs-built_in">c_str</span>(), _nextConnId);<br>    ++_nextConnId;<br>    std::string connName = _name + buf;<br>    <span class="hljs-built_in">LOG_INFO</span>(<span class="hljs-string">&quot;TcpServer::newConnection [%s] - new connection [%s] from %s \n&quot;</span>,<br>             _name.<span class="hljs-built_in">c_str</span>(), connName.<span class="hljs-built_in">c_str</span>(), peerAddr.<span class="hljs-built_in">toIpPort</span>().<span class="hljs-built_in">c_str</span>());<br>    <span class="hljs-comment">// 通过sockfd直接获取绑定的ip+port</span><br>    sockaddr_in local;<br>    <span class="hljs-built_in">bzero</span>(&amp;local, <span class="hljs-keyword">sizeof</span> local);<br>    <span class="hljs-type">socklen_t</span> addrlen = <span class="hljs-keyword">sizeof</span> local;<br>    <span class="hljs-keyword">if</span> (<span class="hljs-built_in">getsockname</span>(sockfd, (sockaddr *)&amp;local, &amp;addrlen) &lt; <span class="hljs-number">0</span>)<br>        <span class="hljs-built_in">LOG_ERROR</span>(<span class="hljs-string">&quot;sockets::getLocalAddr&quot;</span>);<br><br>    <span class="hljs-function">InetAddress <span class="hljs-title">localAddr</span><span class="hljs-params">(local)</span></span>;<br><br>    <span class="hljs-comment">// 根据连接成功的sockfd, 创建TcpConnection连接对象</span><br>    <span class="hljs-function">TcpConnectionPtr <span class="hljs-title">conn</span><span class="hljs-params">(<span class="hljs-keyword">new</span> TcpConnection(subLoop, connName, sockfd, localAddr, peerAddr))</span></span>;<br>    <span class="hljs-comment">// 存储连接名字与对应连接的映射</span><br>    _connections[connName] = conn;<br>    <span class="hljs-comment">// 下面的回调都是用户设置给TcpServer的</span><br>    conn-&gt;<span class="hljs-built_in">setConnectionCallback</span>(_connectionCallback);<br>    conn-&gt;<span class="hljs-built_in">setMessageCallback</span>(_messageCallback);<br>    conn-&gt;<span class="hljs-built_in">setWriteCompleteCallback</span>(_writeCompleteCallback);<br>    <span class="hljs-comment">// 设置了如何关闭连接的回调</span><br>    conn-&gt;<span class="hljs-built_in">setCloseCallback</span>(std::<span class="hljs-built_in">bind</span>(&amp;TcpServer::removeConnection, <span class="hljs-keyword">this</span>, std::placeholders::_1));<br>    <span class="hljs-comment">// 直接调用TcpConnection::connectEstablished</span><br>    <span class="hljs-comment">// 代表连接建立成功</span><br>    subLoop-&gt;<span class="hljs-built_in">runInLoop</span>(std::<span class="hljs-built_in">bind</span>(&amp;TcpConnection::connectEstablished, conn));<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">TcpServer::removeConnection</span><span class="hljs-params">(<span class="hljs-type">const</span> TcpConnectionPtr &amp;conn)</span></span><br><span class="hljs-function"></span>&#123;<br>    _mainloop-&gt;<span class="hljs-built_in">runInLoop</span>(std::<span class="hljs-built_in">bind</span>(&amp;TcpServer::removeConnectionInLoop, <span class="hljs-keyword">this</span>, conn));<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">TcpServer::removeConnectionInLoop</span><span class="hljs-params">(<span class="hljs-type">const</span> TcpConnectionPtr &amp;conn)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-built_in">LOG_INFO</span>(<span class="hljs-string">&quot;TcpServer::removeConnectionInLoop [%s] - connection %s\n&quot;</span>,<br>             _name.<span class="hljs-built_in">c_str</span>(), conn-&gt;<span class="hljs-built_in">name</span>().<span class="hljs-built_in">c_str</span>());<br><br>    _connections.<span class="hljs-built_in">erase</span>(conn-&gt;<span class="hljs-built_in">name</span>());<br>    EventLoop *subloop = conn-&gt;<span class="hljs-built_in">getLoop</span>();<br>    subloop-&gt;<span class="hljs-built_in">queueInLoop</span>(std::<span class="hljs-built_in">bind</span>(&amp;TcpConnection::connectDestoryed, conn));<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>通过源文件来分析成员函数 : </p>
+<ul>
+<li><p>构造函数 : </p>
+<p>接收loop, ip端口, 服务器名, 利用接收到的loop和ip端口直接构造_acceptor, 利用接收到的loop和name直接构造ThreadPool. 这里为 _acceptor中设置了其新连接建立回调函数, 这个函数会在listensocketfd读事件触发时被调用, 回调函数newConnection是TcpServer的核心函数, 我们将会再后面着重讲解.</p>
+</li>
+<li><p>析构函数 : </p>
+<p>这里就是遍历_connections对每个连接进行销毁, 将每个智能指针做完局部变量取出再让原map放弃对该指针的使用, 这样调用对应的connectDestoryed后就会离开作用域自动析构.</p>
+</li>
+<li><p>start : </p>
+<p>调用_threadPool的start, 让其构造出多个线程备用. 调用 _acceptor的listen, 开启对listensocketf的监听.</p>
+</li>
+<li><p>newConnection :</p>
+<p>核心函数, 在_acceptor接收到新连接后调用, 其从 _threadPool中轮询取出一个工作线程, 再将自身的地址取出, 并以此构造出对应的TcpConnection, 然后将用户设置的回调函数再设置到TcpConnection中, 一切设置完毕后, 调用connectEstablished注册其内部 _channel中的读事件以真正开启对socket读事件的监听.</p>
+</li>
+<li><p>removeConnection &#x2F; removeConnectionInLoop : </p>
+<p>先将该连接从_connections中移除,再去调用connectDestoryed.</p>
+</li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Muduo/" class="print-no-link">#Muduo</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Muduo库源码剖析(6) TcpServer</div>
+      <div>http://example.com/2025/04/23/Muduo库源码剖析(6) TcpServer/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>天目中云</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年4月23日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/04/21/Muduo%E5%BA%93%E6%BA%90%E7%A0%81%E5%89%96%E6%9E%90(5)%20TcpConnection/" title="Muduo库源码剖析(5) TcpConnection">
+                        <span class="hidden-mobile">Muduo库源码剖析(5) TcpConnection</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"NhgfDy2CEByjwxuxPM1Le2t6-MdYXbMMI","appKey":"nvGMdqKfKbpkVnojLSbwmasv","path":"window.location.pathname","placeholder":null,"avatar":"retro","meta":["nick","mail","link"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":false,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":false},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
