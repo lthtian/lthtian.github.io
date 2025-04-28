@@ -1,0 +1,777 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/head.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="天目中云">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="MyString最普通的String模仿, 没有追加功能函数 :  1234567891011121314151617181920212223242526272829303132333435363738394041424344454647484950515253545556575859606162636465666768697071727374757677787980818283848586878">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C++语法细节复习(1)">
+<meta property="og:url" content="http://example.com/2025/04/28/C++%E8%AF%AD%E6%B3%95%E7%BB%86%E8%8A%82%E5%A4%8D%E4%B9%A0(1)/index.html">
+<meta property="og:site_name" content="天目中云">
+<meta property="og:description" content="MyString最普通的String模仿, 没有追加功能函数 :  1234567891011121314151617181920212223242526272829303132333435363738394041424344454647484950515253545556575859606162636465666768697071727374757677787980818283848586878">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-04-28T12:30:00.000Z">
+<meta property="article:modified_time" content="2025-04-28T13:00:11.819Z">
+<meta property="article:author" content="天目中云">
+<meta property="article:tag" content="string">
+<meta property="article:tag" content="移动语义">
+<meta property="article:tag" content="优化">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>C++语法细节复习(1) - 天目中云</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":"NhgfDy2CEByjwxuxPM1Le2t6-MdYXbMMI","app_key":"nvGMdqKfKbpkVnojLSbwmasv","server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>TianMu</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/03.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="C++语法细节复习(1)"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-04-28 20:30" pubdate>
+          2025年4月28日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.3k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          12 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">C++语法细节复习(1)</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h2 id="MyString"><a href="#MyString" class="headerlink" title="MyString"></a>MyString</h2><p>最普通的String模仿, 没有追加功能函数 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iostream&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;cstring&gt;</span></span><br><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">MyString</span><br>&#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-built_in">MyString</span>(<span class="hljs-type">const</span> <span class="hljs-type">char</span> *str = <span class="hljs-literal">nullptr</span>)<br>    &#123;<br>        <span class="hljs-keyword">if</span> (!str)<br>        &#123;<br>            mptr = <span class="hljs-keyword">new</span> <span class="hljs-type">char</span>[<span class="hljs-number">1</span>];<br>            *mptr = <span class="hljs-string">&#x27;\0&#x27;</span>;<br>        &#125;<br>        <span class="hljs-keyword">else</span><br>        &#123;<br>            mptr = <span class="hljs-keyword">new</span> <span class="hljs-type">char</span>[<span class="hljs-built_in">strlen</span>(str) + <span class="hljs-number">1</span>];<br>            <span class="hljs-built_in">memcpy</span>(mptr, str, <span class="hljs-built_in">strlen</span>(str) + <span class="hljs-number">1</span>);<br>        &#125;<br>    &#125;<br><br>    ~<span class="hljs-built_in">MyString</span>()<br>    &#123;<br>        <span class="hljs-keyword">if</span> (!mptr)<br>            <span class="hljs-keyword">delete</span>[] mptr;<br>    &#125;<br><br>    <span class="hljs-built_in">MyString</span>(<span class="hljs-type">const</span> MyString &amp;cp)<br>    &#123;<br>        cout &lt;&lt; <span class="hljs-string">&quot;触发左值拷贝&quot;</span> &lt;&lt; endl;<br>        mptr = <span class="hljs-keyword">new</span> <span class="hljs-type">char</span>[<span class="hljs-built_in">strlen</span>(cp.mptr) + <span class="hljs-number">1</span>];<br>        <span class="hljs-built_in">memcpy</span>(mptr, cp.mptr, <span class="hljs-built_in">strlen</span>(cp.mptr) + <span class="hljs-number">1</span>);<br>    &#125;<br><br>    <span class="hljs-built_in">MyString</span>(MyString &amp;&amp;cp)<br>    &#123;<br>        cout &lt;&lt; <span class="hljs-string">&quot;触发右值拷贝&quot;</span> &lt;&lt; endl;<br>        mptr = cp.mptr;<br>        cp.mptr = <span class="hljs-literal">nullptr</span>;<br>    &#125;<br><br>    MyString &amp;<span class="hljs-keyword">operator</span>=(<span class="hljs-type">const</span> MyString &amp;cp)<br>    &#123;<br>        cout &lt;&lt; <span class="hljs-string">&quot;触发左值赋值重载&quot;</span> &lt;&lt; endl;<br>        <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span> == &amp;cp)<br>            <span class="hljs-keyword">return</span> *<span class="hljs-keyword">this</span>;<br><br>        <span class="hljs-keyword">delete</span>[] mptr;<br><br>        mptr = <span class="hljs-keyword">new</span> <span class="hljs-type">char</span>[<span class="hljs-built_in">strlen</span>(cp.mptr) + <span class="hljs-number">1</span>];<br>        <span class="hljs-built_in">memcpy</span>(mptr, cp.mptr, <span class="hljs-built_in">strlen</span>(cp.mptr) + <span class="hljs-number">1</span>);<br>        <span class="hljs-keyword">return</span> *<span class="hljs-keyword">this</span>;<br>    &#125;<br><br>    MyString &amp;<span class="hljs-keyword">operator</span>=(MyString &amp;&amp;cp)<br>    &#123;<br>        cout &lt;&lt; <span class="hljs-string">&quot;触发右值赋值重载&quot;</span> &lt;&lt; endl;<br>        <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span> == &amp;cp)<br>            <span class="hljs-keyword">return</span> *<span class="hljs-keyword">this</span>;<br><br>        <span class="hljs-keyword">delete</span>[] mptr;<br><br>        mptr = cp.mptr;<br>        cp.mptr = <span class="hljs-literal">nullptr</span>;<br>        <span class="hljs-keyword">return</span> *<span class="hljs-keyword">this</span>;<br>    &#125;<br><br>    <span class="hljs-function"><span class="hljs-type">char</span> *&amp;<span class="hljs-title">getPtr</span><span class="hljs-params">()</span> </span>&#123; <span class="hljs-keyword">return</span> mptr; &#125;<br>    <span class="hljs-function"><span class="hljs-type">char</span> *<span class="hljs-title">getPtr</span><span class="hljs-params">()</span> <span class="hljs-type">const</span> </span>&#123; <span class="hljs-keyword">return</span> mptr; &#125;<br><br><span class="hljs-keyword">private</span>:<br>    <span class="hljs-type">char</span> *mptr;<br>&#125;;<br><br>MyString <span class="hljs-keyword">operator</span>+(<span class="hljs-type">const</span> MyString &amp;first, <span class="hljs-type">const</span> MyString &amp;second)<br>&#123;<br>    MyString tmp;<br>    tmp.<span class="hljs-built_in">getPtr</span>() = <span class="hljs-keyword">new</span> <span class="hljs-type">char</span>[<span class="hljs-built_in">strlen</span>(first.<span class="hljs-built_in">getPtr</span>()) + <span class="hljs-built_in">strlen</span>(second.<span class="hljs-built_in">getPtr</span>()) + <span class="hljs-number">1</span>];<br>    <span class="hljs-built_in">strcpy</span>(tmp.<span class="hljs-built_in">getPtr</span>(), first.<span class="hljs-built_in">getPtr</span>());<br>    <span class="hljs-built_in">strcat</span>(tmp.<span class="hljs-built_in">getPtr</span>(), second.<span class="hljs-built_in">getPtr</span>());<br>    <span class="hljs-keyword">return</span> tmp;<br>&#125;<br><br>ostream &amp;<span class="hljs-keyword">operator</span>&lt;&lt;(ostream &amp;out, <span class="hljs-type">const</span> MyString &amp;str)<br>&#123;<br>    out &lt;&lt; str.<span class="hljs-built_in">getPtr</span>();<br>    <span class="hljs-keyword">return</span> out;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-function">MyString <span class="hljs-title">str</span><span class="hljs-params">(<span class="hljs-string">&quot;hello&quot;</span>)</span></span>;<br>    <span class="hljs-function">MyString <span class="hljs-title">str2</span><span class="hljs-params">(<span class="hljs-string">&quot; world!&quot;</span>)</span></span>;<br>    str = <span class="hljs-built_in">move</span>(str2);<br>    <span class="hljs-function">MyString <span class="hljs-title">str3</span><span class="hljs-params">(MyString(<span class="hljs-string">&quot;222&quot;</span>))</span></span>;<br>    MyString str4 = <span class="hljs-built_in">MyString</span>(<span class="hljs-string">&quot;111&quot;</span>);<br>    cout &lt;&lt; str4 &lt;&lt; endl;<br>    cout &lt;&lt; str &lt;&lt; endl;<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="右值引用"><a href="#右值引用" class="headerlink" title="右值引用"></a>右值引用</h2><ul>
+<li>左值 : 有内存, 有名字 |  右值 : 没内存, 没名字</li>
+<li>int&amp;&amp; d &#x3D; 20; <ul>
+<li>一个右值引用变量本身是一个左值, 只不过引用了一个右值而已.</li>
+<li>20是右值, d是左值, 也是右值引用变量.</li>
+</ul>
+</li>
+</ul>
+<h2 id="引用折叠-完美转发"><a href="#引用折叠-完美转发" class="headerlink" title="引用折叠 &#x2F; 完美转发"></a>引用折叠 &#x2F; 完美转发</h2><p>我们先引入一个例子 : vector的push_back, 其可以有两个版本, 分别对应接收左值和右值.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">push_back</span><span class="hljs-params">(<span class="hljs-type">const</span> T&amp; val)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">if</span>(<span class="hljs-built_in">full</span>()) <span class="hljs-built_in">expand</span>();<br>    <br>    _allocator.<span class="hljs-built_in">construct</span>(_last, val);<br>    _last++;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">push_back</span><span class="hljs-params">(T&amp;&amp; val)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">if</span>(<span class="hljs-built_in">full</span>()) <span class="hljs-built_in">expand</span>();<br>    <br>    _allocator.<span class="hljs-built_in">construct</span>(_last, std::<span class="hljs-built_in">move</span>(val));<br>    _last++;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>其区别在于, 因为右值在使用时会降级为左值, 所以在右值版本必须通过move保证传递的依然是个左值. 而引用折叠 + 完美转发可以帮助我们合并这两个版本.</p>
+<h3 id="引用折叠"><a href="#引用折叠" class="headerlink" title="引用折叠"></a>引用折叠</h3><ul>
+<li><p>&amp; + &amp; &#x3D; &amp;</p>
+</li>
+<li><p>&amp; + &amp;&amp; &#x3D; &amp;</p>
+</li>
+<li><p>&amp;&amp; + &amp;&amp; &#x3D; &amp;&amp;</p>
+</li>
+</ul>
+<h3 id="完美转发"><a href="#完美转发" class="headerlink" title="完美转发"></a>完美转发</h3><ul>
+<li>forward<T>() : 使用这个函数可以保证右值不会降级.</li>
+</ul>
+<h3 id="函数模板类型推导-引用折叠-完美转发-实现左右值版本合并"><a href="#函数模板类型推导-引用折叠-完美转发-实现左右值版本合并" class="headerlink" title="函数模板类型推导 + 引用折叠 + 完美转发 实现左右值版本合并"></a>函数模板类型推导 + 引用折叠 + 完美转发 实现左右值版本合并</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> Ty&gt;</span><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">push_back</span><span class="hljs-params">(Ty&amp;&amp; val)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">if</span>(<span class="hljs-built_in">full</span>()) <span class="hljs-built_in">expand</span>();<br>    <br>    _allocator.<span class="hljs-built_in">construct</span>(_last, std::forward&lt;Ty&gt;(val);<br>    _last++;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>这个版本等同于我们以上两个版本, 这里的逻辑是 : </p>
+<ul>
+<li>使用函数模板开启类型推导, 不再按照定死的类型判断, 也就是可以使用引用折叠了.</li>
+<li>如果传入左值, T&amp;  &amp;&amp; -&gt; T&amp;.</li>
+<li>如果传入右值, T&amp;&amp; &amp;&amp; -&gt; T&amp;&amp;.</li>
+<li>forward将val按照原来的类型完美转发出去, 不改变其左右值类型.</li>
+</ul>
+<p>于是我们通过 <strong>函数模板类型推导 + 引用折叠 + 完美转发</strong> 实现了代码简化, 让其可以同时处理左右值情况, 这种操作适用于希望同时接受左右值同时对左右值没有操作上的区别的函数, 你可以认为这就是<strong>引用折叠和完美转发最主要的作用</strong>了.</p>
+<p>当然完美转发的用途更加广泛一些, 比如 : </p>
+<ul>
+<li><p>在工厂函数中根据不同类型转发不同的参数.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> T, <span class="hljs-keyword">typename</span>... Args&gt;</span><br><span class="hljs-function">T* <span class="hljs-title">create</span><span class="hljs-params">(Args&amp;&amp;... args)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">T</span>(std::forward&lt;Args&gt;(args)...);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>create就在分析完T的类型后向T的构造函数中完美转发参数包, 也就是说, 他可以为任何类型在堆上开辟空间, 只用参数和其构造函数匹配.</p>
+</li>
+<li><p>原地构造, 最经典的就是vector的emplace_back.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span>... Args&gt;</span><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">emplace_back</span><span class="hljs-params">(Args&amp;&amp;... args)</span> </span>&#123;<br>    <span class="hljs-built_in">construct_at</span>(<span class="hljs-built_in">end</span>(), std::forward&lt;Args&gt;(args)...);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>在以前push_back只可以传入对应类型的对象, 这样还要进行拷贝再填入到开辟的空间中, 而有了完美转发, 就可以直接在开辟的空间上用传入的参数直接调用对应类型的构造函数, 这样更加快速.</p>
+</li>
+</ul>
+<h2 id="对象优化的原则"><a href="#对象优化的原则" class="headerlink" title="对象优化的原则"></a>对象优化的原则</h2><ul>
+<li><p>函数参数传递过程中, 对象优先传引用传参, 不要传值传参.</p>
+</li>
+<li><p>当函数返回对象时, 返回临时对象效率最优, 而非先定义局部对象然后返回局部对象.</p>
+<ul>
+<li>返回临时对象会直接在main函数栈帧上构建该对象, 不受这个函数影响. 如果是后者还要将原本构建的局部对象拷贝构造到main函数的栈帧上, 离开函数作用域还要调用局部对象的析构, 也就是说会多两个函数调用.</li>
+</ul>
+</li>
+<li><p>当函数返回对象时, 优先按初始化方式接收, 而非初始化完了再赋值.</p>
+<ul>
+<li>因为这个返回的对象肯定是右值, 所以可以直接拿来用来构建, 都省去了再拷贝操作. 不过如果有了移动语义, 右值进行拷贝或赋值重载的消耗很小, 其实也可以忽略不计.</li>
+<li>在C++17中有RVO机制, 要求强制返回值优化, 也就说上面的行为在C++17以前可能算是编译器优化, 但在C++17以后就算是语言特性了.</li>
+</ul>
+</li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/string/" class="print-no-link">#string</a>
+      
+        <a href="/tags/%E7%A7%BB%E5%8A%A8%E8%AF%AD%E4%B9%89/" class="print-no-link">#移动语义</a>
+      
+        <a href="/tags/%E4%BC%98%E5%8C%96/" class="print-no-link">#优化</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>C++语法细节复习(1)</div>
+      <div>http://example.com/2025/04/28/C++语法细节复习(1)/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>天目中云</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年4月28日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/04/27/Rpc%E5%88%86%E5%B8%83%E5%BC%8F%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E6%A1%86%E6%9E%B6(1)/" title="Rpc分布式网络通信框架(1)">
+                        <span class="hidden-mobile">Rpc分布式网络通信框架(1)</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"NhgfDy2CEByjwxuxPM1Le2t6-MdYXbMMI","appKey":"nvGMdqKfKbpkVnojLSbwmasv","path":"window.location.pathname","placeholder":null,"avatar":"retro","meta":["nick","mail","link"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":false,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":false},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
