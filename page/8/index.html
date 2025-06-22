@@ -246,6 +246,46 @@
     <article class="col-12 col-md-12 mx-auto index-info">
       <h2 class="index-header">
         
+        <a href="/2024/11/30/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE8%20%E6%9E%90%E6%9E%84%E5%87%BD%E6%95%B0%E7%9A%84%E5%BC%82%E5%B8%B8%E7%AE%A1%E7%90%86/" target="_self">
+          Effective C++ 条款8 析构函数的异常管理
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2024/11/30/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE8%20%E6%9E%90%E6%9E%84%E5%87%BD%E6%95%B0%E7%9A%84%E5%BC%82%E5%B8%B8%E7%AE%A1%E7%90%86/" target="_self">
+        <div>
+          条款08 : 别让异常逃离析构函数 日常编程中，常见异常通常由以下原因引发：  资源管理不当（如内存泄漏, 文件操作, 连接或断开连接失败）。 边界和合法性检查不足（如数组越界、除以零）。 并发编程问题（如死锁、数据竞争）。 类型不匹配或错误的操作。   本条款主要讨论的是析构函数的异常管理, 为什么会不希望异常逃离析构函数, 因为析构函数是一个必须执行且有可能失败的函数, 因为内存泄漏, 文件操
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2024-11-30 22:06" pubdate>
+              2024-11-30
+            </time>
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/Effective-C/">#Effective C++</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
         <a href="/2024/11/30/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE7%20virtual%E6%9E%90%E6%9E%84%E5%87%BD%E6%95%B0/" target="_self">
           Effective C++ 条款7 virtual析构函数
         </a>
@@ -433,48 +473,6 @@
             <i class="iconfont icon-tags"></i>
             
               <a href="/tags/Effective-C/">#Effective C++</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h2 class="index-header">
-        
-        <a href="/2024/05/06/C++%E8%AF%AD%E6%B3%95%E7%BB%86%E8%8A%82%E5%A4%8D%E4%B9%A0(2)/" target="_self">
-          C++语法细节复习(2)
-        </a>
-      </h2>
-
-      
-      <a class="index-excerpt index-excerpt__noimg" href="/2024/05/06/C++%E8%AF%AD%E6%B3%95%E7%BB%86%E8%8A%82%E5%A4%8D%E4%B9%A0(2)/" target="_self">
-        <div>
-          智能指针其本质是利用栈上对象出作用域自动析构的特性自动释放堆上的内存. weak_ptr &#x2F; shared_ptr weak_ptr : 弱智能指针, 观察者, 不影响引用计数, 作用在于观察一个指针, 并在关键时刻可以通过提升得到使用权.  shared_ptr : 强智能指针, 拥有者, 影响引用计数, 确实拥有并可以使用指针.  weak_ptr.lock() : 检测观察对象的引
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2024-05-06 11:00" pubdate>
-              2024-05-06
-            </time>
-          </div>
-        
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/shared-ptr/">#shared_ptr</a>
-            
-              <a href="/tags/functional/">#functional</a>
             
           </div>
         

@@ -366,6 +366,46 @@
     <article class="col-12 col-md-12 mx-auto index-info">
       <h2 class="index-header">
         
+        <a href="/2025/05/06/C++%E8%AF%AD%E6%B3%95%E7%BB%86%E8%8A%82%E5%A4%8D%E4%B9%A0(2)/" target="_self">
+          C++语法细节复习(2)
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/05/06/C++%E8%AF%AD%E6%B3%95%E7%BB%86%E8%8A%82%E5%A4%8D%E4%B9%A0(2)/" target="_self">
+        <div>
+          智能指针其本质是利用栈上对象出作用域自动析构的特性自动释放堆上的内存. weak_ptr &#x2F; shared_ptr weak_ptr : 弱智能指针, 观察者, 不影响引用计数, 作用在于观察一个指针, 并在关键时刻可以通过提升得到使用权.  shared_ptr : 强智能指针, 拥有者, 影响引用计数, 确实拥有并可以使用指针.  weak_ptr.lock() : 检测观察对象的引
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2025-05-06 17:00" pubdate>
+              2025-05-06
+            </time>
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/shared-ptr/">#shared_ptr</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
         <a href="/2025/04/28/C++%E8%AF%AD%E6%B3%95%E7%BB%86%E8%8A%82%E5%A4%8D%E4%B9%A0(1)/" target="_self">
           C++语法细节复习(1)
         </a>
@@ -588,46 +628,6 @@
             <i class="iconfont icon-date"></i>
             <time datetime="2025-04-16 11:01" pubdate>
               2025-04-16
-            </time>
-          </div>
-        
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/Muduo/">#Muduo</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h2 class="index-header">
-        
-        <a href="/2025/04/15/Muduo%E5%BA%93%E4%BB%A3%E7%A0%81%E5%89%96%E6%9E%90(2)%20EventLoop/" target="_self">
-          Muduo库代码剖析(2) EventLoop
-        </a>
-      </h2>
-
-      
-      <a class="index-excerpt index-excerpt__noimg" href="/2025/04/15/Muduo%E5%BA%93%E4%BB%A3%E7%A0%81%E5%89%96%E6%9E%90(2)%20EventLoop/" target="_self">
-        <div>
-          EventLoop 详解  EventLoop类似于Reactor模型中的反应堆(Reactor)和事件分发器(Demultiplex)的合并, 其目的在于高效的接收事件, 并正确分配给对应的事件处理器. EventLoop中有两类关键的子控件 : Channel 和 Poller.  Channel 即通道, 其负责对单个文件描述符的事件管理, 存储该文件描述符感兴趣的事件与对应回调函数, 该
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2025-04-15 17:02" pubdate>
-              2025-04-15
             </time>
           </div>
         
