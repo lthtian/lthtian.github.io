@@ -1,0 +1,773 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/head.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="天目中云">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="本章介绍部分Qt中用于音视频解码的api  本章我们将会在qtcreator中写一段代码实现对一个mp4文件的解码, 所谓解码就是把其中存储的每个视频帧和音频帧取出, 本章先不做展示界面, 只是先读取这些帧的数据. 环境准备 qtcreator 安装ffmpeg  在.pro文件中加入相关依赖 :  12INCLUDEPATH +&#x3D; &#x2F;usr&#x2F;includeLIBS +&#x3D; -lavformat">
+<meta property="og:type" content="article">
+<meta property="og:title" content="FFmpeg音视频学习(2) QtAPI">
+<meta property="og:url" content="http://example.com/2025/06/28/FFmpeg%E9%9F%B3%E8%A7%86%E9%A2%91%E5%AD%A6%E4%B9%A0(2)%20QtAPI/index.html">
+<meta property="og:site_name" content="天目中云">
+<meta property="og:description" content="本章介绍部分Qt中用于音视频解码的api  本章我们将会在qtcreator中写一段代码实现对一个mp4文件的解码, 所谓解码就是把其中存储的每个视频帧和音频帧取出, 本章先不做展示界面, 只是先读取这些帧的数据. 环境准备 qtcreator 安装ffmpeg  在.pro文件中加入相关依赖 :  12INCLUDEPATH +&#x3D; &#x2F;usr&#x2F;includeLIBS +&#x3D; -lavformat">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-06-28T11:00:00.000Z">
+<meta property="article:modified_time" content="2025-06-29T11:27:15.505Z">
+<meta property="article:author" content="天目中云">
+<meta property="article:tag" content="ffmpeg">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>FFmpeg音视频学习(2) QtAPI - 天目中云</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":"NhgfDy2CEByjwxuxPM1Le2t6-MdYXbMMI","app_key":"nvGMdqKfKbpkVnojLSbwmasv","server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>TianMu</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/03.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="FFmpeg音视频学习(2) QtAPI"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-06-28 19:00" pubdate>
+          2025年6月28日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.5k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          13 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">FFmpeg音视频学习(2) QtAPI</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <blockquote>
+<p>本章介绍部分Qt中用于音视频解码的api</p>
+</blockquote>
+<p>本章我们将会在qtcreator中写一段代码实现对一个mp4文件的解码, 所谓解码就是把其中存储的每个视频帧和音频帧取出, 本章先不做展示界面, 只是先读取这些帧的数据.</p>
+<h3 id="环境准备"><a href="#环境准备" class="headerlink" title="环境准备"></a>环境准备</h3><ul>
+<li>qtcreator</li>
+<li>安装ffmpeg</li>
+</ul>
+<p>在.pro文件中加入相关依赖 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs cpp">INCLUDEPATH += /usr/include<br>LIBS += -lavformat -lavcodec -lavutil -lswresample -lswscale<br></code></pre></td></tr></table></figure>
+
+<p>接下来添加相应头文件就可以进行ffmpeg的使用了.</p>
+<h3 id="基础API学习"><a href="#基础API学习" class="headerlink" title="基础API学习"></a>基础API学习</h3><p>先放出整段代码, 我们一句一句分析 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// main.cpp</span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;mainwindow.h&quot;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iostream&gt;</span></span><br><br><span class="hljs-keyword">extern</span> <span class="hljs-string">&quot;C&quot;</span> &#123;<br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;libavformat/avformat.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;libavcodec/avcodec.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;libavutil/frame.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;libavutil/avutil.h&gt;</span></span><br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-type">const</span> <span class="hljs-type">char</span>* filename = <span class="hljs-string">&quot;/home/lth/learn/ffmpegLearning/fflearn/9.mp4&quot;</span>; <span class="hljs-comment">// 替换为你的视频路径</span><br>    AVFormatContext* fmt_ctx = <span class="hljs-literal">nullptr</span>;<br><br>    <span class="hljs-comment">// 打开文件</span><br>    <span class="hljs-keyword">if</span> (<span class="hljs-built_in">avformat_open_input</span>(&amp;fmt_ctx, filename, <span class="hljs-literal">nullptr</span>, <span class="hljs-literal">nullptr</span>) &lt; <span class="hljs-number">0</span>) &#123;<br>        std::cerr &lt;&lt; <span class="hljs-string">&quot;无法打开文件&quot;</span> &lt;&lt; std::endl;<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>;<br>    &#125;<br><br>    <span class="hljs-comment">// 读取流信息</span><br>    <span class="hljs-keyword">if</span> (<span class="hljs-built_in">avformat_find_stream_info</span>(fmt_ctx, <span class="hljs-literal">nullptr</span>) &lt; <span class="hljs-number">0</span>) &#123;<br>        std::cerr &lt;&lt; <span class="hljs-string">&quot;无法找到流信息&quot;</span> &lt;&lt; std::endl;<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>;<br>    &#125;<br><br>    <span class="hljs-comment">// 查找视频流和音频流</span><br>    <span class="hljs-type">int</span> video_stream_index = <span class="hljs-built_in">av_find_best_stream</span>(fmt_ctx, AVMEDIA_TYPE_VIDEO, <span class="hljs-number">-1</span>, <span class="hljs-number">-1</span>, <span class="hljs-literal">nullptr</span>, <span class="hljs-number">0</span>);<br>    <span class="hljs-type">int</span> audio_stream_index = <span class="hljs-built_in">av_find_best_stream</span>(fmt_ctx, AVMEDIA_TYPE_AUDIO, <span class="hljs-number">-1</span>, <span class="hljs-number">-1</span>, <span class="hljs-literal">nullptr</span>, <span class="hljs-number">0</span>);<br><br>    AVCodecParameters* video_codecpar = fmt_ctx-&gt;streams[video_stream_index]-&gt;codecpar;<br>    <span class="hljs-type">const</span> AVCodec* video_codec = <span class="hljs-built_in">avcodec_find_decoder</span>(video_codecpar-&gt;codec_id);<br>    AVCodecContext* video_ctx = <span class="hljs-built_in">avcodec_alloc_context3</span>(video_codec);<br>    <span class="hljs-built_in">avcodec_parameters_to_context</span>(video_ctx, video_codecpar);<br>    <span class="hljs-built_in">avcodec_open2</span>(video_ctx, video_codec, <span class="hljs-literal">nullptr</span>);<br><br>    AVCodecParameters* audio_codecpar = fmt_ctx-&gt;streams[audio_stream_index]-&gt;codecpar;<br>    <span class="hljs-type">const</span> AVCodec* audio_codec = <span class="hljs-built_in">avcodec_find_decoder</span>(audio_codecpar-&gt;codec_id);<br>    AVCodecContext* audio_ctx = <span class="hljs-built_in">avcodec_alloc_context3</span>(audio_codec);<br>    <span class="hljs-built_in">avcodec_parameters_to_context</span>(audio_ctx, audio_codecpar);<br>    <span class="hljs-built_in">avcodec_open2</span>(audio_ctx, audio_codec, <span class="hljs-literal">nullptr</span>);<br><br>    AVPacket* pkt = <span class="hljs-built_in">av_packet_alloc</span>();<br>    AVFrame* frame = <span class="hljs-built_in">av_frame_alloc</span>();<br><br>    <span class="hljs-keyword">while</span> (<span class="hljs-built_in">av_read_frame</span>(fmt_ctx, pkt) &gt;= <span class="hljs-number">0</span>) &#123;<br>        AVCodecContext* ctx = <span class="hljs-literal">nullptr</span>;<br>        <span class="hljs-keyword">if</span> (pkt-&gt;stream_index == video_stream_index) &#123;<br>            ctx = video_ctx;<br>        &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (pkt-&gt;stream_index == audio_stream_index) &#123;<br>            ctx = audio_ctx;<br>        &#125; <span class="hljs-keyword">else</span> &#123;<br>            <span class="hljs-built_in">av_packet_unref</span>(pkt);<br>            <span class="hljs-keyword">continue</span>;<br>        &#125;<br><br>        <span class="hljs-built_in">avcodec_send_packet</span>(ctx, pkt);<br>        <span class="hljs-keyword">while</span> (<span class="hljs-built_in">avcodec_receive_frame</span>(ctx, frame) == <span class="hljs-number">0</span>) &#123;<br>            <span class="hljs-keyword">if</span> (ctx == video_ctx) &#123;<br>                std::cout &lt;&lt; <span class="hljs-string">&quot;[Video] PTS=&quot;</span> &lt;&lt; frame-&gt;pts<br>                          &lt;&lt; <span class="hljs-string">&quot; size=&quot;</span> &lt;&lt; frame-&gt;width &lt;&lt; <span class="hljs-string">&quot;x&quot;</span> &lt;&lt; frame-&gt;height &lt;&lt; std::endl;<br>            &#125; <span class="hljs-keyword">else</span> &#123;<br>                std::cout &lt;&lt; <span class="hljs-string">&quot;[Audio] PTS=&quot;</span> &lt;&lt; frame-&gt;pts<br>                          &lt;&lt; <span class="hljs-string">&quot; nb_samples=&quot;</span> &lt;&lt; frame-&gt;nb_samples<br>                          &lt;&lt; <span class="hljs-string">&quot; channels=&quot;</span> &lt;&lt; frame-&gt;channels &lt;&lt; std::endl;<br>            &#125;<br>            <span class="hljs-built_in">av_frame_unref</span>(frame);<br>        &#125;<br><br>        <span class="hljs-built_in">av_packet_unref</span>(pkt);<br>    &#125;<br><br>    <span class="hljs-built_in">av_frame_free</span>(&amp;frame);<br>    <span class="hljs-built_in">av_packet_free</span>(&amp;pkt);<br>    <span class="hljs-built_in">avcodec_free_context</span>(&amp;video_ctx);<br>    <span class="hljs-built_in">avcodec_free_context</span>(&amp;audio_ctx);<br>    <span class="hljs-built_in">avformat_close_input</span>(&amp;fmt_ctx);<br><br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><strong>[打开文件和流查找]</strong></p>
+<ul>
+<li><p>首先明确你要解码的文件路径, 我这里直接用的绝对路径, 用相对路径需要看一下起始路径怎么设置.</p>
+</li>
+<li><p><code>AVFormatContext* fmt_ctx = nullptr;</code></p>
+<p>这个是我们进行音视频处理的核心句柄, 其会链接本次解码相关的所有资源, 我们接下来就会用其打开我们要解码的文件.</p>
+</li>
+<li><pre><code class="cpp">avformat_open_input(&amp;fmt_ctx, filename, nullptr, nullptr)
+<figure class="highlight autohotkey"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs autohotkey"><br>  第一个核心函数, 传入句柄与路径, 就可以打开对应文件. 打开失败会返回&lt;<span class="hljs-number">0</span>.<br><br>- ```cpp<br>  avformat_find_stream_info(fmt_ctx, nullptr)<br></code></pre></td></tr></table></figure>
+
+第二个核心函数, 从文件中找到各种流, 并把所有流信息存入核心句柄, 也是失败返回&lt;0;
+</code></pre>
+</li>
+<li><pre><code class="c++">int video_stream_index = av_find_best_stream(fmt_ctx, AVMEDIA_TYPE_VIDEO, -1, -1, nullptr, 0);
+int audio_stream_index = av_find_best_stream(fmt_ctx, AVMEDIA_TYPE_AUDIO, -1, -1, nullptr, 0);
+<figure class="highlight prolog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs prolog"><br>  一个文件中可以有很多流, 这里的函数就是帮我们找到最合适的视频流和音频流, 并给出对应流的下标.<br><br>  - 在fmt_ctx中会有一个数组指针数组streams, 每个元素都会指向一个流, 这里的下标就是数组指针的下标.<br><br>**[解码前准备]**<br><br>- <span class="hljs-string">``</span><span class="hljs-string">`cpp</span><br><span class="hljs-string">  AVCodecParameters* video_codecpar = fmt_ctx-&gt;streams[video_stream_index]-&gt;codecpar;</span><br></code></pre></td></tr></table></figure>
+
+根据上文我们可以知道`fmt_ctx-&gt;streams[video_stream_index]`就是最佳视频流, 这个一步就是从这个最佳视频流中取出其**编码器参数**, 并存入video_codecpar对象中.
+</code></pre>
+</li>
+<li><pre><code class="cpp">const AVCodec* video_codec = avcodec_find_decoder(video_codecpar-&gt;codec_id);
+<figure class="highlight autohotkey"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs autohotkey"><br>  有了编码器参数, 我们就可以**从库中找到对应的解码器**了.<br><br>- ```cpp<br>  AVCodecContext* video_ctx = avcodec_alloc_context3(video_codec)<span class="hljs-comment">;</span><br></code></pre></td></tr></table></figure>
+
+这里`video_ctx`官方叫做解码器上下文, 说人话就是一个对应我们目标解码器的句柄, 其代表了最佳视频流的解码器.
+</code></pre>
+</li>
+<li><pre><code class="cpp">avcodec_parameters_to_context(video_ctx, video_codecpar);
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs markdown"><br>  把我们先前的编码器参数存入video<span class="hljs-emphasis">_ctx中, 便于之后开启正式的解码.</span><br><span class="hljs-emphasis"></span><br><span class="hljs-emphasis">- `avcodec_</span>open2(audio<span class="hljs-emphasis">_ctx, audio_</span>codec, nullptr);`<br><br>​	传入我们的解码器句柄和解码器, 这个函数会开始准备对于对应包的解码, 如果有多线程就会开辟线程池准备多线程解码.<br><br><span class="hljs-strong">**[解码过程]**</span><br><br><span class="hljs-bullet">-</span> 在解释下面的过程前, 我们要先认识些概念 : <br><span class="hljs-bullet">  -</span> 包 : 是从流中压缩出来的数据块, 可以从其中解码出帧. 也就是<span class="hljs-code">`流 -&gt; 包 -&gt; 帧`</span>.<br><span class="hljs-bullet">  -</span> 存在<span class="hljs-strong">**一包多帧**</span>(比如音频帧), 也存在<span class="hljs-strong">**一帧多包**</span>(比如高质量视频帧). <br><br><span class="hljs-bullet">-</span> <span class="hljs-code">```cpp</span><br><span class="hljs-code">  AVPacket* pkt = av_packet_alloc();</span><br><span class="hljs-code">  AVFrame* frame = av_frame_alloc();</span><br></code></pre></td></tr></table></figure>
+
+提前准备出包对象和帧对象.
+</code></pre>
+</li>
+<li><pre><code class="cpp">while (av_read_frame(fmt_ctx, pkt) &gt;= 0)
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs rust"><br>  这里会循环向pkt中存入按顺序读出的包, 这些包可以属于不同流, 并且相邻包的时间相近.<br><br>- ```cpp<br>  AVCodecContext* ctx = nullptr;<br>  <span class="hljs-keyword">if</span> (pkt<span class="hljs-punctuation">-&gt;</span>stream_index == video_stream_index) &#123;<br>      ctx = video_ctx;<br>  &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (pkt<span class="hljs-punctuation">-&gt;</span>stream_index == audio_stream_index) &#123;<br>      ctx = audio_ctx;<br>  &#125; <span class="hljs-keyword">else</span> &#123;<br>      <span class="hljs-title function_ invoke__">av_packet_unref</span>(pkt);<br>      <span class="hljs-keyword">continue</span>;<br>  &#125;<br></code></pre></td></tr></table></figure>
+
+这里是对包的筛选,  每个包都可以读出其归属的流, 如果属于我们需求的两条最佳流, 就分配其对应最佳流的解码器句柄, 如果不属于就弃掉继续读.
+</code></pre>
+</li>
+<li><pre><code class="cpp">avcodec_send_packet(ctx, pkt);
+<figure class="highlight autohotkey"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs autohotkey"><br>  这个函数就是将包根据解码器句柄传入其对应的解码器中.<br><br>- ```cpp<br>  while (avcodec_receive_frame(ctx, frame) == <span class="hljs-number">0</span>)<br></code></pre></td></tr></table></figure>
+
+会在这里循环接收我们对于上一句传入包的结果, 也就是帧, 其会将解码出的内容填入我们传入的frame.
+
+需要注意的是, 只要这里是0, 就代表填充了一个完整帧, 可以对帧进行处理, 在一包多帧的情况下就可以循环到所有帧都处理完毕. 而在一帧多包的情况下, 不会返回0, 也就是说不会进行帧处理, 直到接收到的包可以合成一个完整帧.
+</code></pre>
+</li>
+<li><p>关于帧frame, 我们只在这里打印其基础参数, 实际我们可以进行更深入的处理使其作为图像和音频表示出来, 这些之后再详解.</p>
+</li>
+</ul>
+<p>至此我们实现了用ffmpeg解码视频文件, 实现了”文件 -&gt; 流 -&gt; 包 -&gt; 帧”的过程.</p>
+<p>by 天目中云</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/ffmpeg/" class="print-no-link">#ffmpeg</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>FFmpeg音视频学习(2) QtAPI</div>
+      <div>http://example.com/2025/06/28/FFmpeg音视频学习(2) QtAPI/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>天目中云</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年6月28日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/06/27/FFmpeg%E9%9F%B3%E8%A7%86%E9%A2%91%E5%AD%A6%E4%B9%A0(1)%20%E7%90%86%E8%AE%BA%E5%87%86%E5%A4%87/" title="FFmpeg音视频学习(1) 理论准备">
+                        <span class="hidden-mobile">FFmpeg音视频学习(1) 理论准备</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"NhgfDy2CEByjwxuxPM1Le2t6-MdYXbMMI","appKey":"nvGMdqKfKbpkVnojLSbwmasv","path":"window.location.pathname","placeholder":null,"avatar":"retro","meta":["nick","mail","link"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":false,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":false},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
