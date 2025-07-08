@@ -1,0 +1,839 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/head.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="天目中云">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="协程是可以理解为一个可以被暂停(挂起)和唤醒的函数, 系统会帮助你保存协程函数中的局部变量. 协程 vs 线程协程和线程几乎没有任何联系, 它们是相互独立的.   对于执行时间比较短的任务, 不建议用线程来处理, 线程的创建, 调度, 销毁都是会占用资源的. 线程适合那些长时间的任务, 比如轮循或监控. 线程是一个实际的需要操作系统进行调度的对象, 而协程只是函数外加一些在底层跳来跳去的指令.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C++ 协程学习笔记">
+<meta property="og:url" content="http://example.com/2025/07/07/C++%E5%8D%8F%E7%A8%8B%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/index.html">
+<meta property="og:site_name" content="天目中云">
+<meta property="og:description" content="协程是可以理解为一个可以被暂停(挂起)和唤醒的函数, 系统会帮助你保存协程函数中的局部变量. 协程 vs 线程协程和线程几乎没有任何联系, 它们是相互独立的.   对于执行时间比较短的任务, 不建议用线程来处理, 线程的创建, 调度, 销毁都是会占用资源的. 线程适合那些长时间的任务, 比如轮循或监控. 线程是一个实际的需要操作系统进行调度的对象, 而协程只是函数外加一些在底层跳来跳去的指令.">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-07-07T11:00:00.000Z">
+<meta property="article:modified_time" content="2025-07-08T12:06:43.546Z">
+<meta property="article:author" content="天目中云">
+<meta property="article:tag" content="协程">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>C++ 协程学习笔记 - 天目中云</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":"NhgfDy2CEByjwxuxPM1Le2t6-MdYXbMMI","app_key":"nvGMdqKfKbpkVnojLSbwmasv","server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>TianMu</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/03.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="C++ 协程学习笔记"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-07-07 19:00" pubdate>
+          2025年7月7日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          4.1k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          35 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">C++ 协程学习笔记</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>协程是可以理解为一个可以被暂停(挂起)和唤醒的函数, 系统会帮助你保存协程函数中的局部变量.</p>
+<h2 id="协程-vs-线程"><a href="#协程-vs-线程" class="headerlink" title="协程 vs 线程"></a>协程 vs 线程</h2><p>协程和线程几乎没有任何联系, 它们是相互独立的. </p>
+<ul>
+<li>对于执行时间比较短的任务, 不建议用线程来处理, 线程的创建, 调度, 销毁都是会占用资源的.</li>
+<li>线程适合那些长时间的任务, 比如轮循或监控.</li>
+<li>线程是一个实际的需要操作系统进行调度的对象, 而协程只是函数外加一些在底层跳来跳去的指令.</li>
+</ul>
+<h2 id="C-协程特性"><a href="#C-协程特性" class="headerlink" title="C++协程特性"></a>C++协程特性</h2><ul>
+<li><p><strong>无栈</strong></p>
+<p>首先要理解每个函数建立都会申请自己的栈帧, 栈帧中存储的是自己当前的局部变量, 当函数调用return后属于该函数的栈帧也会随之销毁, 在栈中有比较明确的后进先出的顺序, 这和函数调用的方式也是一致的. 而协程也可以被视为一个函数, 但是有暂停和唤醒的功能, C++的协程是无栈的, 其实是说协程函数没有自己的栈帧, 取而代之的是其会在堆上申请一片区域代替栈帧的作用, 替自己记录局部变量及协程信息, 在堆上也契合其要暂停唤醒的功能.</p>
+</li>
+</ul>
+<h2 id="C-20协程使用"><a href="#C-20协程使用" class="headerlink" title="C++20协程使用"></a>C++20协程使用</h2><p>现在开始我们将会开始以关键字<code>co_await</code>为中心, 实现一个最简易的协程调用.</p>
+<p>先认识一下<code>co_await</code> :  </p>
+<p>这是在协程函数中进行协程挂起的关键字, 其后方要加上可挂起类(Awaitable)来辅助协程的挂起和恢复, 形如<code>co_wait Awaitable;</code> , 可挂起类后面细讲, 只要知道协程函数执行到co_await处就会进行暂停返回调用方(也不一定非得是调用方)就行了.</p>
+<h3 id="两个核心类"><a href="#两个核心类" class="headerlink" title="两个核心类"></a>两个核心类</h3><p>首先我们要明确实现协程需要两个核心类, 这两个类C++20协程中有明确规定要符合一定的规范 : </p>
+<ul>
+<li><p><strong>返回对象类</strong> : 构建返回对象类的原因有两点.</p>
+<ul>
+<li><p>协程作为函数, 调用方可能需要协程函数返回一些结果, 因此可以存在返回对象类中.</p>
+</li>
+<li><p>协程的效果是可以被暂停和唤醒, 暂停是协程函数内部执行的, 但唤醒需要调用方执行, 因此返回对象类还要有可以恢复协程运行的功能.</p>
+</li>
+<li><p><strong>编写规范</strong> : 形如下 </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// 返回对象类</span><br><span class="hljs-comment">// 持有整个协程的句柄, 在协程被挂起时其被交给调用方, 用其可再次唤醒协程</span><br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">CoRet</span><br>&#123;<br>    <span class="hljs-keyword">struct</span> <span class="hljs-title class_">promise_type</span><br>    &#123;<br>        <span class="hljs-comment">// 控制协程开始和结束时是否暂停的函数</span><br>        <span class="hljs-function">suspend_never <span class="hljs-title">initial_suspend</span><span class="hljs-params">()</span> </span>&#123; <span class="hljs-keyword">return</span> &#123;&#125;; &#125;<br>        <span class="hljs-function">suspend_never <span class="hljs-title">final_suspend</span><span class="hljs-params">()</span> <span class="hljs-keyword">noexcept</span> </span>&#123; <span class="hljs-keyword">return</span> &#123;&#125;; &#125;<br>        <span class="hljs-comment">// 控制发生异常时的调用</span><br>        <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">unhandled_exception</span><span class="hljs-params">()</span> </span>&#123;&#125;<br>        <span class="hljs-comment">// 控制协程最后返回得到的对象</span><br>        <span class="hljs-function">CoRet <span class="hljs-title">get_return_object</span><span class="hljs-params">()</span></span><br><span class="hljs-function">        </span>&#123;<br>            <span class="hljs-keyword">return</span> &#123;coroutine_handle&lt;promise_type&gt;::<span class="hljs-built_in">from_promise</span>(*<span class="hljs-keyword">this</span>)&#125;;<br>        &#125;<br>    &#125;;<br>    coroutine_handle&lt;promise_type&gt; _h;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>类名怎么起都行, 但是内部一定要有名为<code>promise_type</code>的结构体, 其中必须编写所示的四个函数, 功能都有标注, 要注意的是promise_type对象是可以实际被协程句柄调用到的, 也就是说我们可以在其中存自定义句段存储数据. </li>
+<li>前两个函数的返回值可以改, 返回<code>suspend_never</code>代表不暂停, 返回<code>suspend_always</code>代表暂停.</li>
+<li>最后一个函数可以返回当前类对象的指针, 可以让调用方获取返回类对象.</li>
+<li>一定要有类型为<code>coroutine_handle&lt;promise_type&gt;</code>的<code>_h</code>作为协程句柄, 这就是前面说的让调用方可以控制协程唤醒的关键, 这个类型中有成员函数<code>resume()</code>, 调用即可唤醒.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><strong>可挂起类</strong> : </p>
+<p>可挂起类用来辅助co_await进行线程的暂停和唤醒, 那么可以帮些什么呢?</p>
+<ul>
+<li><p>可以用来确定co_await是否生效, 也就是说是否真的要暂停.</p>
+</li>
+<li><p>可以决定线程暂停前和唤醒时调用的回调.</p>
+</li>
+<li><p>编写规范 : 形如下 </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">struct</span> <span class="hljs-title class_">Input</span><br>&#123;<br>    Note &amp;note;<br>    <span class="hljs-comment">// 当前对象是否不需要挂起, 返回ture就会立即往下执行, 返回false会立即挂起, 等待外部resume</span><br>    <span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">await_ready</span><span class="hljs-params">()</span> </span>&#123; <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>; &#125;<br>    <span class="hljs-comment">// 如果前面返回false, 在挂起前会调用此函数, 做挂起前的准备</span><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">await_suspend</span><span class="hljs-params">(coroutine_handle&lt;CoRet::promise_type&gt; h)</span></span><br><span class="hljs-function">    </span>&#123;<br>        <span class="hljs-comment">// h.promise()</span><br>    &#125;<br>    <span class="hljs-comment">// 被唤醒后调用的函数</span><br>    <span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">await_resume</span><span class="hljs-params">()</span> </span>&#123; <span class="hljs-keyword">return</span> note.val; &#125;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><p>还是类名怎么起都行, 先不管Note类, 下面的三个函数必须要有, 作用已经标注.</p>
+</li>
+<li><p>注意三个函数中只有await_suspend可以获取到协程句柄, 也就是说其可以通过句柄控制唤醒的时机(比如异步设置一个回调, 回调中触发resume()). 如果await_resume也想要用句柄, 需要提前在await_suspend中保存下句柄才行.</p>
+</li>
+<li><p>await_resume有一个返回值, 你可以填void, 也就是什么都不返回, 但如果协程被唤醒时, 你有想从调用方获取的数据时, 可以通过此处设置返回类型. 也就是说我们可以这样写 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-type">int</span> g = <span class="hljs-keyword">co_await</span> input;<br></code></pre></td></tr></table></figure>
+
+<p>我们在await_resume中返回的值就会在协程函数中被g获取.</p>
+</li>
+<li><p>其实前面在返回对象类中前两个函数的返回值suspend_never和suspend_always其实就是协程库内置的标准可挂起类, 没有其他任何作用, 只是为了确定是否要暂停线程. 所以如果完全不需要数据传输等别的功能, 也可以直接<code>co_await suspend_always&#123;&#125;;</code>来实现暂停.</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="协程函数与main函数的编写"><a href="#协程函数与main函数的编写" class="headerlink" title="协程函数与main函数的编写"></a>协程函数与main函数的编写</h3><p>在构建出上面两个类后, 我们来考虑编写出一个最简单的协程 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;coroutine&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iostream&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;optional&gt;</span></span><br><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std;<br><br><span class="hljs-comment">// 返回对象类</span><br><span class="hljs-comment">// 持有整个协程的句柄, 在协程被挂起时其被交给调用方, 用其可再次唤醒协程</span><br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">CoRet</span><br>&#123;<br>    <span class="hljs-keyword">struct</span> <span class="hljs-title class_">promise_type</span><br>    &#123;<br>        <span class="hljs-comment">// 控制协程开始和结束时是否跳回的函数</span><br>        <span class="hljs-function">suspend_never <span class="hljs-title">initial_suspend</span><span class="hljs-params">()</span> </span>&#123; <span class="hljs-keyword">return</span> &#123;&#125;; &#125;<br>        <span class="hljs-function">suspend_never <span class="hljs-title">final_suspend</span><span class="hljs-params">()</span> <span class="hljs-keyword">noexcept</span> </span>&#123; <span class="hljs-keyword">return</span> &#123;&#125;; &#125;<br>        <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">unhandled_exception</span><span class="hljs-params">()</span> </span>&#123;&#125;<br>        <span class="hljs-comment">// 控制协程最后返回得到的对象</span><br>        <span class="hljs-function">CoRet <span class="hljs-title">get_return_object</span><span class="hljs-params">()</span></span><br><span class="hljs-function">        </span>&#123;<br>            <span class="hljs-keyword">return</span> &#123;coroutine_handle&lt;promise_type&gt;::<span class="hljs-built_in">from_promise</span>(*<span class="hljs-keyword">this</span>)&#125;;<br>        &#125;<br>    &#125;;<br>    coroutine_handle&lt;promise_type&gt; _h;<br>&#125;;<br><br><span class="hljs-comment">// ----------------------------------------------------------------------------------- //</span><br><br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">Note</span><br>&#123;<br>    <span class="hljs-type">int</span> val;<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">set</span><span class="hljs-params">(<span class="hljs-type">int</span> x)</span> </span>&#123; val = x; &#125;<br>&#125;;<br><br><span class="hljs-comment">// Awaitable 可挂起对象</span><br><span class="hljs-comment">// 协程函数中会有co_await等关键字, 与其相关的类必须符合Awaitable的标准(三个函数)</span><br><span class="hljs-comment">// 其用来帮助执行挂起的行为, 使得调用方可以和协程内部进行数据沟通</span><br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">Input</span><br>&#123;<br>    Note &amp;note;<br>    <span class="hljs-comment">// 当前对象是否不需要挂起, 返回ture就会立即往下执行, 返回false会立即挂起, 等待外部resume</span><br>    <span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">await_ready</span><span class="hljs-params">()</span> </span>&#123; <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>; &#125;<br>    <span class="hljs-comment">// 如果前面返回false, 在挂起前会调用此函数, 做挂起前的准备</span><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">await_suspend</span><span class="hljs-params">(coroutine_handle&lt;CoRet::promise_type&gt; h)</span></span><br><span class="hljs-function">    </span>&#123;<br>        <span class="hljs-comment">// h.promise()</span><br>    &#125;<br>    <span class="hljs-comment">// 被唤醒后调用的函数</span><br>    <span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">await_resume</span><span class="hljs-params">()</span> </span>&#123; <span class="hljs-keyword">return</span> note.val; &#125;<br>&#125;;<br><br><span class="hljs-comment">// ----------------------------------------------------------------------------------- //</span><br><span class="hljs-comment">// 协程函数</span><br><span class="hljs-function">CoRet <span class="hljs-title">Guess</span><span class="hljs-params">(Note &amp;note)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-comment">// 协程函数最初都会生成一个promise_type的对象, 其负责一切管理协程生命周期内的一切行为</span><br>    <span class="hljs-comment">// CoRet::promise_type promise;</span><br>    <span class="hljs-comment">// 设置协程最后的返回对象, 其实就是把协程句柄传出去, 使外部可以获取协程内部的数据.</span><br>    <span class="hljs-comment">// CoRet ret = promise.get_return_object();</span><br>    <span class="hljs-comment">// co_await promise.initial_suspend();</span><br><br>    Input input&#123;note&#125;;<br>    <span class="hljs-type">int</span> g = <span class="hljs-keyword">co_await</span> input;<br>    cout &lt;&lt; <span class="hljs-string">&quot;coroutine: You guess &quot;</span> &lt;&lt; g &lt;&lt; endl;<br><br>    <span class="hljs-comment">// co_await promise.final_suspend();</span><br>&#125;<br><br><span class="hljs-comment">// ----------------------------------------------------------------------------------- //</span><br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    Note note;<br>    <span class="hljs-keyword">auto</span> ret = <span class="hljs-built_in">Guess</span>(note);<br>    cout &lt;&lt; <span class="hljs-string">&quot;main : make a guess ...&quot;</span> &lt;&lt; endl;<br><br>    note.<span class="hljs-built_in">set</span>(<span class="hljs-number">6</span>);<br><br>    <span class="hljs-comment">// 恢复协程的运行</span><br>    ret._h.<span class="hljs-built_in">resume</span>();<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>执行可执行文件我们可以得到 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs cpp">main : make a guess ...<br>coroutine: You guess <span class="hljs-number">6</span><br></code></pre></td></tr></table></figure>
+
+<p>先说明这个协程干了些什么 : main函数中调用协程函数, 协程函数利用传入的note构造Input对象, 执行到co_await暂停, main函数设置note值后恢复协程, 协程打印我们在main中设置的note值.</p>
+<ul>
+<li><p>这里面有关note值的设置, 目的是为了展示调用方和协程之间的数据交互, 我们可以看到note在main中构造后传入协程函数, 将其记录在input中, 于是我们便可以在main中设置note值让协程中的input看到, 进而提供给协程函数.</p>
+</li>
+<li><p>可以看到协程函数中有很多注释, 这些其实是运行时内部会加上去的代码, 其会根据我们构建的promise_type生成对象, 并以此调用我们设置的函数. 由此我们可以很明显地感觉到, 返回对象类的作用在于整个协程的把握, 其控制住了整个函数的始终与返回值. 而可挂起对象则辅助我们更好地实现协程函数的暂停和唤醒.</p>
+</li>
+</ul>
+<h3 id="co-yield-co-return"><a href="#co-yield-co-return" class="headerlink" title="co_yield &#x2F; co_return"></a>co_yield &#x2F; co_return</h3><p>学习完了<code>co_await</code>后再去学习<code>co_yield</code>就简单多了, 这个其实类似于一个语法糖, 其在底层会被替换为co_await : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">co_yield</span> <span class="hljs-number">42</span>;<br><span class="hljs-keyword">co_await</span> promise.<span class="hljs-built_in">yield_value</span>(<span class="hljs-number">42</span>);  <span class="hljs-comment">// 替换为</span><br></code></pre></td></tr></table></figure>
+
+<p>根据替换的形式, 可以推断我们需要在promise_type中构造一个yield_value函数, 形如 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-type">int</span> _out;<br><span class="hljs-comment">// ...</span><br><span class="hljs-function">suspend_always <span class="hljs-title">yield_value</span><span class="hljs-params">(<span class="hljs-type">int</span> x)</span></span><br><span class="hljs-function"></span>&#123;<br>	_out = x;<br>    <span class="hljs-keyword">return</span> &#123;&#125;;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>_out 是我们在promise_type中自定义的句段, 用来存储想告诉调用方的信息.</li>
+<li>yield_value必须返回一个awaitable对象, 这里我们直接使用内部自带的suspend_always, 表示我们需要暂停.</li>
+</ul>
+<p>于是我们就是可以在外部通过句柄取得_out值来进行通信了, 其实 co_yield 在底层只是实现了一层替换, 其他什么都没有做, 但是其本身的目的是<strong>产生一个值并跳转返回给调用方</strong>, 所以我们需要自己在 promise_type中自定义句段存储传入的值, 再在外部取出, 做法相当原始, 但就是这样.</p>
+<p><code>co_return</code>就更简单了, 其只负责让我们自己记录希望给调用方的返回值, 一般被放置在协程函数的最后表示协程的结束, 底层替换如下 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">co_return</span> res;<br>promise.<span class="hljs-built_in">return_value</span>(res); <span class="hljs-comment">// 替换为</span><br></code></pre></td></tr></table></figure>
+
+<p>替换完其实就帮我调用了return_value这个函数, 其形如 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-type">int</span> _res;<br><span class="hljs-comment">// ...</span><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">return_value</span><span class="hljs-params">(<span class="hljs-type">int</span> r)</span></span><br><span class="hljs-function"></span>&#123;<br>    _res = r;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>其实还是要我们自己手动记录, 非常原始. </p>
+<p>至此我们可以进行一次简单的猜数字 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;coroutine&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iostream&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;optional&gt;</span></span><br><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std;<br><br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">CoRet</span><br>&#123;<br>    <span class="hljs-keyword">struct</span> <span class="hljs-title class_">promise_type</span><br>    &#123;<br>        <span class="hljs-type">int</span> _out;<br>        <span class="hljs-type">int</span> _res;<br>        <span class="hljs-comment">// 控制协程开始和结束时是否跳回的函数</span><br>        <span class="hljs-function">suspend_never <span class="hljs-title">initial_suspend</span><span class="hljs-params">()</span> </span>&#123; <span class="hljs-keyword">return</span> &#123;&#125;; &#125;<br>        <span class="hljs-function">suspend_always <span class="hljs-title">final_suspend</span><span class="hljs-params">()</span> <span class="hljs-keyword">noexcept</span> </span>&#123; <span class="hljs-keyword">return</span> &#123;&#125;; &#125;<br>        <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">unhandled_exception</span><span class="hljs-params">()</span> </span>&#123;&#125;<br>        <span class="hljs-comment">// 控制协程最后返回得到的对象</span><br>        <span class="hljs-function">CoRet <span class="hljs-title">get_return_object</span><span class="hljs-params">()</span></span><br><span class="hljs-function">        </span>&#123;<br>            <span class="hljs-keyword">return</span> &#123;coroutine_handle&lt;promise_type&gt;::<span class="hljs-built_in">from_promise</span>(*<span class="hljs-keyword">this</span>)&#125;;<br>        &#125;<br><br>        <span class="hljs-function">suspend_always <span class="hljs-title">yield_value</span><span class="hljs-params">(<span class="hljs-type">int</span> x)</span></span><br><span class="hljs-function">        </span>&#123;<br>            _out = x;<br>            <span class="hljs-keyword">return</span> &#123;&#125;;<br>        &#125;<br><br>        <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">return_value</span><span class="hljs-params">(<span class="hljs-type">int</span> r)</span></span><br><span class="hljs-function">        </span>&#123;<br>            _res = r;<br>        &#125;<br>    &#125;;<br>    coroutine_handle&lt;promise_type&gt; _h;<br>&#125;;<br><br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">Note</span><br>&#123;<br>    <span class="hljs-type">int</span> val;<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">set</span><span class="hljs-params">(<span class="hljs-type">int</span> x)</span> </span>&#123; val = x; &#125;<br>&#125;;<br><br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">Input</span><br>&#123;<br>    Note &amp;note;<br>    <span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">await_ready</span><span class="hljs-params">()</span> </span>&#123; <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>; &#125;<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">await_suspend</span><span class="hljs-params">(coroutine_handle&lt;CoRet::promise_type&gt; h)</span> </span>&#123;&#125;<br>    <span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">await_resume</span><span class="hljs-params">()</span> </span>&#123; <span class="hljs-keyword">return</span> note.val; &#125;<br>&#125;;<br><br><span class="hljs-function">CoRet <span class="hljs-title">Guess</span><span class="hljs-params">(Note &amp;note)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-type">int</span> res = (<span class="hljs-built_in">rand</span>() % <span class="hljs-number">30</span>) + <span class="hljs-number">1</span>;<br>    Input input&#123;note&#125;;<br>    <span class="hljs-type">int</span> g = <span class="hljs-keyword">co_await</span> input;<br>    cout &lt;&lt; <span class="hljs-string">&quot;coroutine: You guess &quot;</span> &lt;&lt; g &lt;&lt; endl;<br><br>    <span class="hljs-built_in">co_yield</span> (res &lt; g ? <span class="hljs-number">1</span> : (res == g ? <span class="hljs-number">0</span> : <span class="hljs-number">-1</span>));<br>    <span class="hljs-comment">// co_await promise.yield_value();</span><br><br>    <span class="hljs-keyword">co_return</span> res;<br>    <span class="hljs-comment">// promise.return_value();</span><br>    <span class="hljs-comment">// co_await promise.final_suspend();</span><br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-built_in">srand</span>(<span class="hljs-built_in">time</span>(<span class="hljs-literal">nullptr</span>));<br>    Note note;<br>    <span class="hljs-keyword">auto</span> ret = <span class="hljs-built_in">Guess</span>(note);<br>    cout &lt;&lt; <span class="hljs-string">&quot;main : make a guess ...&quot;</span> &lt;&lt; endl;<br><br>    note.<span class="hljs-built_in">set</span>(<span class="hljs-number">6</span>);<br><br>    <span class="hljs-comment">// 恢复协程的运行</span><br>    ret._h.<span class="hljs-built_in">resume</span>();<br><br>    cout &lt;&lt; <span class="hljs-string">&quot;main: your guess is &quot;</span> &lt;&lt; ((ret._h.<span class="hljs-built_in">promise</span>()._out) == <span class="hljs-number">1</span> ? <span class="hljs-string">&quot;larger&quot;</span> : ((ret._h.<span class="hljs-built_in">promise</span>()._out == <span class="hljs-number">0</span>) ? <span class="hljs-string">&quot;the same&quot;</span> : <span class="hljs-string">&quot;smaller&quot;</span>)) &lt;&lt; endl;<br><br>    ret._h.<span class="hljs-built_in">resume</span>();<br><br>    <span class="hljs-keyword">if</span> (ret._h.<span class="hljs-built_in">done</span>())<br>    &#123;<br>        cout &lt;&lt; <span class="hljs-string">&quot;main: the result is &quot;</span> &lt;&lt; ret._h.<span class="hljs-built_in">promise</span>()._res &lt;&lt; endl;<br>    &#125;<br>    ret._h.<span class="hljs-built_in">destory</span>();<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>运行后的结果如下 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs cpp">➜  boostasiolearn ./coroutinetest                                            <br>main : make a guess ...<br>coroutine: You guess <span class="hljs-number">6</span><br>main: your guess is smaller<br>main: the result is <span class="hljs-number">7</span><br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>done : 其作用在于<strong>判断当前协程是否进入了 <code>final_suspend()</code> 并且已挂起</strong>, 也就是说这是一个调用方用来判断线程是否结束的函数, 如果已经结束, 就可以通过句柄取出希望的结果.</li>
+<li>destory : 销毁协程资源, 必须调用, 否则会内存泄露.</li>
+</ul>
+<h3 id="完整的猜数字游戏"><a href="#完整的猜数字游戏" class="headerlink" title="完整的猜数字游戏"></a>完整的猜数字游戏</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;coroutine&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iostream&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;optional&gt;</span></span><br><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std;<br><br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">CoRet</span><br>&#123;<br>    <span class="hljs-keyword">struct</span> <span class="hljs-title class_">promise_type</span><br>    &#123;<br>        <span class="hljs-type">int</span> _out;<br>        <span class="hljs-type">int</span> _res;<br>        <span class="hljs-comment">// 控制协程开始和结束时是否跳回的函数</span><br>        <span class="hljs-function">suspend_never <span class="hljs-title">initial_suspend</span><span class="hljs-params">()</span> </span>&#123; <span class="hljs-keyword">return</span> &#123;&#125;; &#125;<br>        <span class="hljs-function">suspend_always <span class="hljs-title">final_suspend</span><span class="hljs-params">()</span> <span class="hljs-keyword">noexcept</span> </span>&#123; <span class="hljs-keyword">return</span> &#123;&#125;; &#125;<br>        <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">unhandled_exception</span><span class="hljs-params">()</span> </span>&#123;&#125;<br>        <span class="hljs-comment">// 控制协程最后返回得到的对象</span><br>        <span class="hljs-function">CoRet <span class="hljs-title">get_return_object</span><span class="hljs-params">()</span></span><br><span class="hljs-function">        </span>&#123;<br>            <span class="hljs-keyword">return</span> &#123;coroutine_handle&lt;promise_type&gt;::<span class="hljs-built_in">from_promise</span>(*<span class="hljs-keyword">this</span>)&#125;;<br>        &#125;<br><br>        <span class="hljs-function">suspend_always <span class="hljs-title">yield_value</span><span class="hljs-params">(<span class="hljs-type">int</span> x)</span></span><br><span class="hljs-function">        </span>&#123;<br>            _out = x;<br>            <span class="hljs-keyword">return</span> &#123;&#125;;<br>        &#125;<br><br>        <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">return_value</span><span class="hljs-params">(<span class="hljs-type">int</span> r)</span></span><br><span class="hljs-function">        </span>&#123;<br>            _res = r;<br>        &#125;<br>    &#125;;<br>    coroutine_handle&lt;promise_type&gt; _h;<br>&#125;;<br><br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">Note</span><br>&#123;<br>    <span class="hljs-type">int</span> val;<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">set</span><span class="hljs-params">(<span class="hljs-type">int</span> x)</span> </span>&#123; val = x; &#125;<br>&#125;;<br><br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">Input</span><br>&#123;<br>    Note &amp;note;<br>    <span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">await_ready</span><span class="hljs-params">()</span> </span>&#123; <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>; &#125;<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">await_suspend</span><span class="hljs-params">(coroutine_handle&lt;CoRet::promise_type&gt; h)</span> </span>&#123;&#125;<br>    <span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">await_resume</span><span class="hljs-params">()</span> </span>&#123; <span class="hljs-keyword">return</span> note.val; &#125;<br>&#125;;<br><br><span class="hljs-function">CoRet <span class="hljs-title">Guess</span><span class="hljs-params">(Note &amp;note)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-type">int</span> res = (<span class="hljs-built_in">rand</span>() % <span class="hljs-number">99</span>) + <span class="hljs-number">1</span>;<br><br>    Input input&#123;note&#125;;<br><br>    <span class="hljs-keyword">while</span> (<span class="hljs-literal">true</span>)<br>    &#123;<br>        <span class="hljs-type">int</span> g = <span class="hljs-keyword">co_await</span> input;<br><br>        <span class="hljs-built_in">co_yield</span> (res &lt; g ? <span class="hljs-number">1</span> : (res == g ? <span class="hljs-number">0</span> : <span class="hljs-number">-1</span>));<br>        <span class="hljs-keyword">if</span> (res == g)<br>            <span class="hljs-keyword">break</span>;<br>    &#125;<br><br>    <span class="hljs-keyword">co_return</span> res;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-built_in">srand</span>(<span class="hljs-built_in">time</span>(<span class="hljs-literal">nullptr</span>));<br>    Note note;<br>    <span class="hljs-keyword">auto</span> ret = <span class="hljs-built_in">Guess</span>(note);<br>    cout &lt;&lt; <span class="hljs-string">&quot;main : make a guess ...&quot;</span> &lt;&lt; endl;<br><br>    <span class="hljs-keyword">while</span> (<span class="hljs-literal">true</span>)<br>    &#123;<br>        cout &lt;&lt; <span class="hljs-string">&quot;please input your guess: &quot;</span>;<br>        <span class="hljs-type">int</span> x;<br>        cin &gt;&gt; x;<br>        note.<span class="hljs-built_in">set</span>(x);<br>        <span class="hljs-comment">// 恢复协程的运行</span><br>        ret._h.<span class="hljs-built_in">resume</span>();<br>        cout &lt;&lt; <span class="hljs-string">&quot;your guess is &quot;</span> &lt;&lt; ((ret._h.<span class="hljs-built_in">promise</span>()._out) == <span class="hljs-number">1</span> ? <span class="hljs-string">&quot;larger&quot;</span> : ((ret._h.<span class="hljs-built_in">promise</span>()._out == <span class="hljs-number">0</span>) ? <span class="hljs-string">&quot;the same&quot;</span> : <span class="hljs-string">&quot;smaller&quot;</span>)) &lt;&lt; endl;<br>        <span class="hljs-keyword">if</span> (ret._h.<span class="hljs-built_in">promise</span>()._out == <span class="hljs-number">0</span>)<br>            <span class="hljs-keyword">break</span>;<br>        ret._h.<span class="hljs-built_in">resume</span>();<br>    &#125;<br><br>    <span class="hljs-comment">// 执行到co_return</span><br>    ret._h.<span class="hljs-built_in">resume</span>();<br><br>    <span class="hljs-keyword">if</span> (ret._h.<span class="hljs-built_in">done</span>())<br>    &#123;<br>        cout &lt;&lt; <span class="hljs-string">&quot;the result is &quot;</span> &lt;&lt; ret._h.<span class="hljs-built_in">promise</span>()._res &lt;&lt; endl;<br>    &#125;<br>    ret._h.<span class="hljs-built_in">destroy</span>();<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>运行如下 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs cpp">➜  boostasiolearn ./coroutinetest                                            <br>main : make a guess ...<br>please input your guess: <span class="hljs-number">50</span><br>your guess is larger<br>please input your guess: <span class="hljs-number">25</span><br>your guess is larger<br>please input your guess: <span class="hljs-number">15</span><br>your guess is smaller<br>please input your guess: <span class="hljs-number">20</span><br>your guess is the same<br>the result is <span class="hljs-number">20</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="与boost-asio网络库联动"><a href="#与boost-asio网络库联动" class="headerlink" title="与boost::asio网络库联动"></a>与boost::asio网络库联动</h3><p>asio网络库对C++20协程提供了原生支持, 也就是说我们可以用aiso网络库更简便的实现代码编写, 在前面学习协程使用时, 相信大家都会认为为了使用协程还要编写两个核心类很麻烦, 但那很多时候不一定非得是我们的工作, 之后会有更多的协程库会帮我实现这些类的编写, asio网络库就是其中之一, 我们只需要关注于协程函数的编写就行了.</p>
+<p>下面是利用boost::asio网络库编写的简易Tcp回显服务器 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/asio.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/asio/awaitable.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/asio/co_spawn.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/asio/use_awaitable.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/asio/detached.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iostream&gt;</span></span><br><br><span class="hljs-keyword">using</span> boost::asio::ip::tcp;<br><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> boost::asio;<br><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std::literals;<br><br><span class="hljs-comment">// Echo 处理协程</span><br><span class="hljs-function">awaitable&lt;<span class="hljs-type">void</span>&gt; <span class="hljs-title">echo_session</span><span class="hljs-params">(tcp::socket socket)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">try</span><br>    &#123;<br>        <span class="hljs-type">char</span> data[<span class="hljs-number">1024</span>];<br>        <span class="hljs-keyword">for</span> (;;)<br>        &#123;<br>            <span class="hljs-comment">// 异步读取数据</span><br>            std::<span class="hljs-type">size_t</span> n = <span class="hljs-keyword">co_await</span> socket.<span class="hljs-built_in">async_read_some</span>(<span class="hljs-built_in">buffer</span>(data), use_awaitable);<br>            <span class="hljs-comment">// 异步写回数据</span><br>            <span class="hljs-function"><span class="hljs-keyword">co_await</span> <span class="hljs-title">async_write</span><span class="hljs-params">(socket, buffer(data, n), use_awaitable)</span></span>;<br>        &#125;<br>    &#125;<br>    <span class="hljs-built_in">catch</span> (std::exception &amp;e)<br>    &#123;<br>        std::cerr &lt;&lt; <span class="hljs-string">&quot;Session ended: &quot;</span> &lt;&lt; e.<span class="hljs-built_in">what</span>() &lt;&lt; <span class="hljs-string">&quot;\n&quot;</span>;<br>    &#125;<br>&#125;<br><br><span class="hljs-comment">// 接受连接并启动协程</span><br><span class="hljs-function">awaitable&lt;<span class="hljs-type">void</span>&gt; <span class="hljs-title">listener</span><span class="hljs-params">(<span class="hljs-type">uint16_t</span> port)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-comment">// 获取绑定当前协程的executor, 可以通过其获取io_context</span><br>    <span class="hljs-keyword">auto</span> executor = <span class="hljs-keyword">co_await</span> this_coro::executor;<br>    <span class="hljs-function">tcp::acceptor <span class="hljs-title">acceptor</span><span class="hljs-params">(executor, tcp::endpoint(tcp::v4(), port))</span></span>;<br><br>    <span class="hljs-keyword">for</span> (;;)<br>    &#123;<br>        <span class="hljs-comment">// 异步等待连接事件发生返回socket</span><br>        tcp::socket socket = <span class="hljs-keyword">co_await</span> acceptor.<span class="hljs-built_in">async_accept</span>(use_awaitable);<br>        <span class="hljs-comment">// 再注册新的协程函数并触发</span><br>        <span class="hljs-built_in">co_spawn</span>(executor, <span class="hljs-built_in">echo_session</span>(std::<span class="hljs-built_in">move</span>(socket)), detached);<br>    &#125;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">try</span><br>    &#123;<br>        io_context io;<br>        <span class="hljs-comment">// 启动协程</span><br>        <span class="hljs-built_in">co_spawn</span>(io, <span class="hljs-built_in">listener</span>(<span class="hljs-number">12345</span>), detached);<br>        io.<span class="hljs-built_in">run</span>(); <span class="hljs-comment">// 开始事件循环</span><br>    &#125;<br>    <span class="hljs-built_in">catch</span> (<span class="hljs-type">const</span> std::exception &amp;e)<br>    &#123;<br>        std::cerr &lt;&lt; <span class="hljs-string">&quot;Server error: &quot;</span> &lt;&lt; e.<span class="hljs-built_in">what</span>() &lt;&lt; <span class="hljs-string">&quot;\n&quot;</span>;<br>    &#125;<br><br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>可以看到代码行数非常少, 并且代码风格不像异步那样复杂, 是否解决同步, 但底层却是异步的!</p>
+<p>如果没有学过asio网络库可能有些难以理解, 我之后的博客会出, 最好先学习过再理解.</p>
+<ul>
+<li><p>co_spawn : </p>
+<p>其作用是将协程函数作为任务绑定到事件循环的调度器中去, 会先执行协程函数, 并且这里awaitable在内部promise_type中的起始回调会被设置为suspend_always, 会由调度器发布任务到事件循环中来resume协程.</p>
+</li>
+<li><p>我们可以看到很多co_await后面都会跟着一些网络库函数, 这些其实就是这些网络库函数的协程重载版本, 也可以隐约感觉到其肯定会返回一个awaitable对象, 以<code>async_accept</code>为例, 其返回的对象类型大概是这样的 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">template</span> &lt;&gt;<br><span class="hljs-keyword">class</span> <span class="hljs-title class_">awaitable</span>&lt;tcp::socket&gt;<br>&#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-keyword">struct</span> <span class="hljs-title class_">awaiter</span><br>    &#123;<br>        tcp::acceptor&amp; acceptor_;<br>        tcp::socket socket_;<br>        std::coroutine_handle&lt;&gt; handle_;<br>        boost::system::error_code ec_;<br><br>        <span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">await_ready</span><span class="hljs-params">()</span> <span class="hljs-type">const</span> <span class="hljs-keyword">noexcept</span> </span>&#123; <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>; &#125;<br><br>        <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">await_suspend</span><span class="hljs-params">(std::coroutine_handle&lt;&gt; h)</span></span><br><span class="hljs-function">        </span>&#123;<br>            handle_ = h;<br>            acceptor_.<span class="hljs-built_in">async_accept</span>(<br>                socket_,<br>                [<span class="hljs-keyword">this</span>](boost::system::error_code ec)<br>                &#123;<br>                    ec_ = ec;<br>                    handle_.<span class="hljs-built_in">resume</span>();<br>                &#125;);<br>        &#125;<br><br>        <span class="hljs-function">tcp::socket <span class="hljs-title">await_resume</span><span class="hljs-params">()</span></span><br><span class="hljs-function">        </span>&#123;<br>            <span class="hljs-keyword">if</span> (ec_)<br>                <span class="hljs-keyword">throw</span> boost::system::<span class="hljs-built_in">system_error</span>(ec_);<br>            <span class="hljs-keyword">return</span> std::<span class="hljs-built_in">move</span>(socket_);<br>        &#125;<br>    &#125;;<br><br>    <span class="hljs-function">awaiter <span class="hljs-keyword">operator</span> <span class="hljs-title">co_await</span><span class="hljs-params">()</span> <span class="hljs-type">const</span></span><br><span class="hljs-function">    </span>&#123;<br>        <span class="hljs-keyword">return</span> awaiter&#123;...&#125;;  <span class="hljs-comment">// 用构造器填入 acceptor/socket 等</span><br>    &#125;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>可以看到其在协程暂停前的回调中会调用自己的普通版函数, 将异步任务发布给事件循环, 当socket触发后, 事件循环就会帮我们执行这段代码进而resume协程. 也就是说其思路其实是把resume的时机交给事件循环判断, 非常高明.</p>
+</li>
+</ul>
+<p>回显服务器只是boost::asio网络库与C++20最简单的联动, 还有很多更复杂的设计值得学习, 比如利用strand串行化调度实现协程间资源共享, 这里就不再详述.</p>
+<p>by  天目中云</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E5%8D%8F%E7%A8%8B/" class="print-no-link">#协程</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>C++ 协程学习笔记</div>
+      <div>http://example.com/2025/07/07/C++协程学习笔记/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>天目中云</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年7月7日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/07/08/boost%20asio%E7%BD%91%E7%BB%9C%E5%BA%93/" title="boost::asio网络库">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">boost::asio网络库</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/07/04/Libevent%E4%BA%8B%E4%BB%B6%E5%BA%93/" title="libevent事件库">
+                        <span class="hidden-mobile">libevent事件库</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"NhgfDy2CEByjwxuxPM1Le2t6-MdYXbMMI","appKey":"nvGMdqKfKbpkVnojLSbwmasv","path":"window.location.pathname","placeholder":null,"avatar":"retro","meta":["nick","mail","link"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":false,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":false},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

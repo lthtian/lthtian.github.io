@@ -246,6 +246,86 @@
     <article class="col-12 col-md-12 mx-auto index-info">
       <h2 class="index-header">
         
+        <a href="/2025/07/08/boost%20asio%E7%BD%91%E7%BB%9C%E5%BA%93/" target="_self">
+          boost::asio网络库
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/07/08/boost%20asio%E7%BD%91%E7%BB%9C%E5%BA%93/" target="_self">
+        <div>
+          主要学习asio网络库有关异步方面的使用   这里先给出一个最简便的TCP异步echo服务器 :  12345678910111213141516171819202122232425262728293031323334353637383940414243444546474849505152535455565758596061626364656667686970717273747576777879
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2025-07-08 19:00" pubdate>
+              2025-07-08
+            </time>
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/boost-asio/">#boost::asio</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2025/07/07/C++%E5%8D%8F%E7%A8%8B%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" target="_self">
+          C++ 协程学习笔记
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/07/07/C++%E5%8D%8F%E7%A8%8B%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" target="_self">
+        <div>
+          协程是可以理解为一个可以被暂停(挂起)和唤醒的函数, 系统会帮助你保存协程函数中的局部变量. 协程 vs 线程协程和线程几乎没有任何联系, 它们是相互独立的.   对于执行时间比较短的任务, 不建议用线程来处理, 线程的创建, 调度, 销毁都是会占用资源的. 线程适合那些长时间的任务, 比如轮循或监控. 线程是一个实际的需要操作系统进行调度的对象, 而协程只是函数外加一些在底层跳来跳去的指令.
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2025-07-07 19:00" pubdate>
+              2025-07-07
+            </time>
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/%E5%8D%8F%E7%A8%8B/">#协程</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
         <a href="/2025/07/04/Libevent%E4%BA%8B%E4%BB%B6%E5%BA%93/" target="_self">
           libevent事件库
         </a>
@@ -546,86 +626,6 @@
             <i class="iconfont icon-date"></i>
             <time datetime="2025-05-20 17:00" pubdate>
               2025-05-20
-            </time>
-          </div>
-        
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/RPC/">#RPC</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h2 class="index-header">
-        
-        <a href="/2025/05/15/Rpc%E5%88%86%E5%B8%83%E5%BC%8F%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E6%A1%86%E6%9E%B6(3)%20%E4%BD%BF%E7%94%A8%E6%96%B9%E5%BC%8F/" target="_self">
-          Rpc分布式网络通信框架(3) 使用方式
-        </a>
-      </h2>
-
-      
-      <a class="index-excerpt index-excerpt__noimg" href="/2025/05/15/Rpc%E5%88%86%E5%B8%83%E5%BC%8F%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E6%A1%86%E6%9E%B6(3)%20%E4%BD%BF%E7%94%A8%E6%96%B9%E5%BC%8F/" target="_self">
-        <div>
-          在构建通信框架前,  一定要先了解我们的框架该怎么使用, 大体有哪几个部件, 在本章将会先写出一个简易的客户端和服务端, 让我们了解该设计出什么样的网络通信框架.  统一通信标准首先双方如果需要通信, 那么统一通信标准必不可少, 这也是为什么讲解proto的原因, 所以我们的第一步是编写proto文件并且生成.h和.cpp文件, 这里还是已先前的登录服务为例 :  123456789101112
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2025-05-15 17:00" pubdate>
-              2025-05-15
-            </time>
-          </div>
-        
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/RPC/">#RPC</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h2 class="index-header">
-        
-        <a href="/2025/05/11/Rpc%E5%88%86%E5%B8%83%E5%BC%8F%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E6%A1%86%E6%9E%B6(2)%20protobuf/" target="_self">
-          Rpc分布式网络通信框架(2) protobuf
-        </a>
-      </h2>
-
-      
-      <a class="index-excerpt index-excerpt__noimg" href="/2025/05/11/Rpc%E5%88%86%E5%B8%83%E5%BC%8F%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E6%A1%86%E6%9E%B6(2)%20protobuf/" target="_self">
-        <div>
-          protobuf部分  protobuf的功效和json相似, 都是便利数据的序列化和反序列化用于网络传输, 在rpc分布式网络通信中可以使用protobuf, 让我们先了解其优势 :   传输数据由二进制存储, 节省空间且效率更高. 有专门对于服务&#x2F;方法的封装, 可以更方便地传输一个方法的信息.  当然其劣势在于需要编写.proto文件, 安装和使用都麻烦些, 不过这并不妨碍我们学习
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2025-05-11 17:00" pubdate>
-              2025-05-11
             </time>
           </div>
         

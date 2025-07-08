@@ -1,0 +1,815 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/head.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="天目中云">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="主要学习asio网络库有关异步方面的使用   这里先给出一个最简便的TCP异步echo服务器 :  12345678910111213141516171819202122232425262728293031323334353637383940414243444546474849505152535455565758596061626364656667686970717273747576777879">
+<meta property="og:type" content="article">
+<meta property="og:title" content="boost::asio网络库">
+<meta property="og:url" content="http://example.com/2025/07/08/boost%20asio%E7%BD%91%E7%BB%9C%E5%BA%93/index.html">
+<meta property="og:site_name" content="天目中云">
+<meta property="og:description" content="主要学习asio网络库有关异步方面的使用   这里先给出一个最简便的TCP异步echo服务器 :  12345678910111213141516171819202122232425262728293031323334353637383940414243444546474849505152535455565758596061626364656667686970717273747576777879">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-07-08T11:00:00.000Z">
+<meta property="article:modified_time" content="2025-07-08T11:55:50.616Z">
+<meta property="article:author" content="天目中云">
+<meta property="article:tag" content="boost::asio">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>boost::asio网络库 - 天目中云</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":"NhgfDy2CEByjwxuxPM1Le2t6-MdYXbMMI","app_key":"nvGMdqKfKbpkVnojLSbwmasv","server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>TianMu</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/03.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="boost::asio网络库"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-07-08 19:00" pubdate>
+          2025年7月8日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.7k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          31 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">boost::asio网络库</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <blockquote>
+<p>主要学习asio网络库有关异步方面的使用 </p>
+</blockquote>
+<p>这里先给出一个最简便的TCP异步echo服务器 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// async_echo_server.cpp</span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/asio.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iostream&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;memory&gt;</span></span><br><br><span class="hljs-keyword">using</span> boost::asio::ip::tcp;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Session</span> : <span class="hljs-keyword">public</span> std::enable_shared_from_this&lt;Session&gt;<br>&#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-built_in">Session</span>(tcp::socket socket) : <span class="hljs-built_in">socket_</span>(std::<span class="hljs-built_in">move</span>(socket)) &#123;&#125;<br><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">start</span><span class="hljs-params">()</span> </span>&#123; <span class="hljs-built_in">do_read</span>(); &#125;<br><br><span class="hljs-keyword">private</span>:<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">do_read</span><span class="hljs-params">()</span></span><br><span class="hljs-function">    </span>&#123;<br>        <span class="hljs-function"><span class="hljs-keyword">auto</span> <span class="hljs-title">self</span><span class="hljs-params">(shared_from_this())</span></span>;<br>        socket_.<span class="hljs-built_in">async_read_some</span>(boost::asio::<span class="hljs-built_in">buffer</span>(data_, max_length),<br>                                [<span class="hljs-keyword">this</span>, self](boost::system::error_code ec, std::<span class="hljs-type">size_t</span> length)<br>                                &#123;<br>                                    <span class="hljs-keyword">if</span> (!ec)<br>                                        <span class="hljs-built_in">do_write</span>(length);<br>                                &#125;);<br>    &#125;<br><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">do_write</span><span class="hljs-params">(std::<span class="hljs-type">size_t</span> length)</span></span><br><span class="hljs-function">    </span>&#123;<br>        <span class="hljs-function"><span class="hljs-keyword">auto</span> <span class="hljs-title">self</span><span class="hljs-params">(shared_from_this())</span></span>;<br>        boost::asio::<span class="hljs-built_in">async_write</span>(socket_, boost::asio::<span class="hljs-built_in">buffer</span>(data_, length),<br>                                 [<span class="hljs-keyword">this</span>, self](boost::system::error_code ec, std::<span class="hljs-type">size_t</span> <span class="hljs-comment">/*length*/</span>)<br>                                 &#123;<br>                                     <span class="hljs-keyword">if</span> (!ec)<br>                                         <span class="hljs-built_in">do_read</span>();<br>                                 &#125;);<br>    &#125;<br><br>    tcp::socket socket_;<br>    <span class="hljs-keyword">enum</span><br>    &#123;<br>        max_length = <span class="hljs-number">1024</span><br>    &#125;;<br>    <span class="hljs-type">char</span> data_[max_length];<br>&#125;;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Server</span><br>&#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-built_in">Server</span>(boost::asio::io_context &amp;io_context, <span class="hljs-type">short</span> port)<br>        : <span class="hljs-built_in">acceptor_</span>(io_context, tcp::<span class="hljs-built_in">endpoint</span>(tcp::<span class="hljs-built_in">v4</span>(), port))<br>    &#123;<br>        <span class="hljs-built_in">do_accept</span>();<br>    &#125;<br><br><span class="hljs-keyword">private</span>:<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">do_accept</span><span class="hljs-params">()</span></span><br><span class="hljs-function">    </span>&#123;<br>        acceptor_.<span class="hljs-built_in">async_accept</span>(<br>            [<span class="hljs-keyword">this</span>](boost::system::error_code ec, tcp::socket socket)<br>            &#123;<br>                <span class="hljs-keyword">if</span> (!ec)<br>                    std::<span class="hljs-built_in">make_shared</span>&lt;Session&gt;(std::<span class="hljs-built_in">move</span>(socket))-&gt;<span class="hljs-built_in">start</span>();<br>                <span class="hljs-built_in">do_accept</span>();<br>            &#125;);<br>    &#125;<br><br>    tcp::acceptor acceptor_;<br>&#125;;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">try</span><br>    &#123;<br>        boost::asio::io_context io_context;<br>        <span class="hljs-function">Server <span class="hljs-title">server</span><span class="hljs-params">(io_context, <span class="hljs-number">12345</span>)</span></span>;<br>        io_context.<span class="hljs-built_in">run</span>(); <span class="hljs-comment">// 事件循环</span><br>    &#125;<br>    <span class="hljs-built_in">catch</span> (std::exception &amp;e)<br>    &#123;<br>        std::cerr &lt;&lt; <span class="hljs-string">&quot;Exception: &quot;</span> &lt;&lt; e.<span class="hljs-built_in">what</span>() &lt;&lt; <span class="hljs-string">&quot;\n&quot;</span>;<br>    &#125;<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>main部分 : <ul>
+<li>io_context : 事件循环核心句柄, 通过调用run来开始运作.</li>
+</ul>
+</li>
+<li>Server : 服务器类, 使用acceptor接受并处理连接.<ul>
+<li>acceptor : 这里网络库自带的acceptor类, 只要我们把句柄和绑定需要的数据传入, 在其构造函数中就会自动调用socket + bind + listen.</li>
+<li>endpoint : 这就是一个存放用于绑定数据的类.</li>
+<li>async_accept : 在新连接建立时, 会调用传入的回调函数, 参数要求为(boost::system::error_code ec, tcp::socket socket), 这样就可以取出socket进行操作, 这里调用了Session类的start, 会针对连接进行处理.</li>
+</ul>
+</li>
+<li>Session : 会话类, 处理每一条的连接的读写.<ul>
+<li>async_read_some : 在读事件触发时向准备好的缓冲区存入读到的数据, 然后触发其中给出的回调函数, 可以在回调中进行数据处理, echo服务器所以直接调用do_write准备发回.</li>
+<li>async_write : 传入目标socket, 数据缓冲区, 回调函数, 就可以在发送完数据后调用回调再度调用do_read进入读事件等待阶段.</li>
+</ul>
+</li>
+</ul>
+<h3 id="有关异步使用递归回调的设计哲学"><a href="#有关异步使用递归回调的设计哲学" class="headerlink" title="有关异步使用递归回调的设计哲学"></a>有关异步使用递归回调的设计哲学</h3><p>在同步Reactor模型中,  处理事件循环我们往往会使用while直接处理, 就像下面这样 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">while</span>(<span class="hljs-literal">true</span>)<br>&#123;<br>	<span class="hljs-built_in">read</span>();     <span class="hljs-comment">// 这里一般是阻塞的</span><br>	<span class="hljs-built_in">process</span>();<br>	<span class="hljs-built_in">write</span>();<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>但是while在异步中是使用不了的, 异步强调的是控制流的保持, 其没有任何地方是会阻塞的, 核心全在于回调函数如何处理, 假如我们要让逻辑实现一个闭环, 那就要使用递归回调实现类似于循环的效果.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-built_in">async_read</span>(..., [](...) &#123;<br>    <span class="hljs-built_in">process</span>();<br>    <span class="hljs-built_in">async_write</span>(..., [](...) &#123;<br>        <span class="hljs-built_in">again_read</span>();<br>    &#125;);<br>&#125;);<br></code></pre></td></tr></table></figure>
+
+<p>上面的echo就是这样的逻辑, 读完进行处理, 处理完发送, 发送完再注册读事件, 这样就类似于实现了一个天然的状态机, 并且可以使线程资源最大化.</p>
+<h3 id="enable-shared-from-this"><a href="#enable-shared-from-this" class="headerlink" title="enable_shared_from_this"></a>enable_shared_from_this</h3><p>我们可以看到Session类继承了该类, 其作用在于可以使成员函数内部调用<code>shared_from_this()</code>, 该函数会返回当前类对象的智能指针, 其实就是对this进行了封装.</p>
+<p>其作用的核心在于<strong>延长对象的生命周期</strong>. 这里应用到异步中, 就是可以使构建出来的Session对象始终不被析构, 就算没有实际的对象去管理它们. 因为我们的self对象会一直被lambda捕获, 其内部Session对象就不会被析构. 这里要明白一个知识 : <strong>只要 lambda 回调函数中捕获了 <code>shared_ptr</code>(哪怕它还没执行),对象的引用计数就会保持 +1</strong>. </p>
+<h3 id="多线程版本"><a href="#多线程版本" class="headerlink" title="多线程版本"></a>多线程版本</h3><p>上面只是单线程版本的, 但是并发量由于异步存在已经足够高, 几万并发没什么问题, 当然我们也可以写多线程版本的, 其实只要再main函数中做修改就可以了 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">try</span><br>    &#123;<br>        boost::asio::io_context io_context;<br><br>        <span class="hljs-function">Server <span class="hljs-title">server</span><span class="hljs-params">(io_context, <span class="hljs-number">12345</span>)</span></span>;<br><br>        <span class="hljs-comment">// 获取系统线程数（你也可以写固定值如 4）</span><br>        <span class="hljs-type">int</span> thread_count = std::thread::<span class="hljs-built_in">hardware_concurrency</span>();<br>        std::cout &lt;&lt; <span class="hljs-string">&quot;Start with &quot;</span> &lt;&lt; thread_count &lt;&lt; <span class="hljs-string">&quot; threads\n&quot;</span>;<br><br>        <span class="hljs-comment">// 创建线程池，所有线程调用 io_context.run()</span><br>        std::vector&lt;std::thread&gt; threads;<br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; thread_count; ++i)<br>        &#123;<br>            threads.<span class="hljs-built_in">emplace_back</span>([&amp;io_context]() &#123;<br>                io_context.<span class="hljs-built_in">run</span>();<br>            &#125;);<br>        &#125;<br><br>        <span class="hljs-comment">// 等待所有线程结束（实际永不结束）</span><br>        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">auto</span> &amp;t : threads)<br>            t.<span class="hljs-built_in">join</span>();<br>    &#125;<br>    <span class="hljs-built_in">catch</span> (std::exception &amp;e)<br>    &#123;<br>        std::cerr &lt;&lt; <span class="hljs-string">&quot;Exception: &quot;</span> &lt;&lt; e.<span class="hljs-built_in">what</span>() &lt;&lt; <span class="hljs-string">&quot;\n&quot;</span>;<br>    &#125;<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>io_context作为核心句柄, 你可以理解其内部存在一个线程安全的消息队列, 用其在不同线程调用run(), 其实是让每个线程都可以从自己的消息队列中利用互斥锁线程安全地获取任务.</p>
+<p>当然如果学过muduo, 我们也可以采用<code>one loop per thread</code>的思想, 一个事件循环对应一个线程, 这样就可以避免消息队列中的锁竞争了, 下面是多io_context多线程版本 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/asio.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iostream&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;memory&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;thread&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;vector&gt;</span></span><br><br><span class="hljs-keyword">using</span> boost::asio::ip::tcp;<br><br><span class="hljs-comment">// 一个 echo 会话</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Session</span> : <span class="hljs-keyword">public</span> std::enable_shared_from_this&lt;Session&gt;<br>&#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-built_in">Session</span>(tcp::socket socket) : <span class="hljs-built_in">socket_</span>(std::<span class="hljs-built_in">move</span>(socket)) &#123;&#125;<br><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">start</span><span class="hljs-params">()</span> </span>&#123; <span class="hljs-built_in">do_read</span>(); &#125;<br><br><span class="hljs-keyword">private</span>:<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">do_read</span><span class="hljs-params">()</span></span><br><span class="hljs-function">    </span>&#123;<br>        <span class="hljs-keyword">auto</span> self = <span class="hljs-built_in">shared_from_this</span>();<br>        socket_.<span class="hljs-built_in">async_read_some</span>(boost::asio::<span class="hljs-built_in">buffer</span>(data_),<br>                                [<span class="hljs-keyword">this</span>, self](boost::system::error_code ec, std::<span class="hljs-type">size_t</span> length)<br>                                &#123;<br>                                    <span class="hljs-keyword">if</span> (!ec)<br>                                        <span class="hljs-built_in">do_write</span>(length);<br>                                &#125;);<br>    &#125;<br><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">do_write</span><span class="hljs-params">(std::<span class="hljs-type">size_t</span> length)</span></span><br><span class="hljs-function">    </span>&#123;<br>        <span class="hljs-keyword">auto</span> self = <span class="hljs-built_in">shared_from_this</span>();<br>        boost::asio::<span class="hljs-built_in">async_write</span>(socket_, boost::asio::<span class="hljs-built_in">buffer</span>(data_, length),<br>                                 [<span class="hljs-keyword">this</span>, self](boost::system::error_code ec, std::<span class="hljs-type">size_t</span> <span class="hljs-comment">/*len*/</span>)<br>                                 &#123;<br>                                     <span class="hljs-keyword">if</span> (!ec)<br>                                         <span class="hljs-built_in">do_read</span>();<br>                                 &#125;);<br>    &#125;<br><br>    tcp::socket socket_;<br>    <span class="hljs-keyword">enum</span><br>    &#123;<br>        max_length = <span class="hljs-number">1024</span><br>    &#125;;<br>    <span class="hljs-type">char</span> data_[max_length];<br>&#125;;<br><br><span class="hljs-comment">// 每个 worker 包含一个 io_context 和它自己的线程</span><br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">Worker</span><br>&#123;<br>    boost::asio::io_context io_context;<br>    boost::asio::executor_work_guard&lt;boost::asio::io_context::executor_type&gt; work_guard;<br>    std::thread thread;<br><br>    <span class="hljs-built_in">Worker</span>() : <span class="hljs-built_in">work_guard</span>(boost::asio::<span class="hljs-built_in">make_work_guard</span>(io_context)) &#123;&#125;<br><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">run</span><span class="hljs-params">()</span></span><br><span class="hljs-function">    </span>&#123;<br>        thread = std::<span class="hljs-built_in">thread</span>([<span class="hljs-keyword">this</span>]()<br>                             &#123; io_context.<span class="hljs-built_in">run</span>(); &#125;);<br>    &#125;<br><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">stop</span><span class="hljs-params">()</span></span><br><span class="hljs-function">    </span>&#123;<br>        io_context.<span class="hljs-built_in">stop</span>();<br>        <span class="hljs-keyword">if</span> (thread.<span class="hljs-built_in">joinable</span>())<br>            thread.<span class="hljs-built_in">join</span>();<br>    &#125;<br>&#125;;<br><br><span class="hljs-comment">// Server 只负责监听和分发连接</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Server</span><br>&#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-built_in">Server</span>(boost::asio::io_context &amp;main_io_context, <span class="hljs-type">short</span> port, std::vector&lt;std::shared_ptr&lt;Worker&gt;&gt; &amp;workers)<br>        : <span class="hljs-built_in">acceptor_</span>(main_io_context, tcp::<span class="hljs-built_in">endpoint</span>(tcp::<span class="hljs-built_in">v4</span>(), port)), <span class="hljs-built_in">workers_</span>(workers)<br>    &#123;<br>        <span class="hljs-built_in">do_accept</span>();<br>    &#125;<br><br><span class="hljs-keyword">private</span>:<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">do_accept</span><span class="hljs-params">()</span></span><br><span class="hljs-function">    </span>&#123;<br>        acceptor_.<span class="hljs-built_in">async_accept</span>(<br>            [<span class="hljs-keyword">this</span>](boost::system::error_code ec, tcp::socket socket)<br>            &#123;<br>                <span class="hljs-keyword">if</span> (!ec)<br>                &#123;<br>                    <span class="hljs-comment">// Round-Robin 分发连接</span><br>                    <span class="hljs-keyword">auto</span> &amp;worker = workers_[next_worker_];<br>                    boost::asio::<span class="hljs-built_in">post</span>(worker-&gt;io_context, [sock = std::<span class="hljs-built_in">move</span>(socket)]() <span class="hljs-keyword">mutable</span><br>                                      &#123; std::<span class="hljs-built_in">make_shared</span>&lt;Session&gt;(std::<span class="hljs-built_in">move</span>(sock))-&gt;<span class="hljs-built_in">start</span>(); &#125;);<br>                    next_worker_ = (next_worker_ + <span class="hljs-number">1</span>) % workers_.<span class="hljs-built_in">size</span>();<br>                &#125;<br>                <span class="hljs-built_in">do_accept</span>(); <span class="hljs-comment">// 继续接受</span><br>            &#125;);<br>    &#125;<br><br>    tcp::acceptor acceptor_;<br>    std::vector&lt;std::shared_ptr&lt;Worker&gt;&gt; &amp;workers_;<br>    std::<span class="hljs-type">size_t</span> next_worker_ = <span class="hljs-number">0</span>;<br>&#125;;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">try</span><br>    &#123;<br>        <span class="hljs-type">const</span> <span class="hljs-type">int</span> thread_count = std::thread::<span class="hljs-built_in">hardware_concurrency</span>();<br>        std::cout &lt;&lt; <span class="hljs-string">&quot;Starting server with &quot;</span> &lt;&lt; thread_count &lt;&lt; <span class="hljs-string">&quot; threads\n&quot;</span>;<br><br>        <span class="hljs-comment">// 主 io_context 只用于 acceptor</span><br>        boost::asio::io_context main_io_context;<br><br>        <span class="hljs-comment">// 创建 worker 池</span><br>        std::vector&lt;std::shared_ptr&lt;Worker&gt;&gt; workers;<br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; thread_count; ++i)<br>        &#123;<br>            <span class="hljs-keyword">auto</span> w = std::<span class="hljs-built_in">make_shared</span>&lt;Worker&gt;();<br>            w-&gt;<span class="hljs-built_in">run</span>();<br>            workers.<span class="hljs-built_in">push_back</span>(w);<br>        &#125;<br><br>        <span class="hljs-comment">// 启动服务器（监听 + 分发连接）</span><br>        <span class="hljs-function">Server <span class="hljs-title">server</span><span class="hljs-params">(main_io_context, <span class="hljs-number">12345</span>, workers)</span></span>;<br><br>        <span class="hljs-comment">// 主线程运行 acceptor 的 io_context</span><br>        main_io_context.<span class="hljs-built_in">run</span>();<br><br>        <span class="hljs-comment">// 停止所有工作线程（程序退出时）</span><br>        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">auto</span> &amp;w : workers)<br>            w-&gt;<span class="hljs-built_in">stop</span>();<br>    &#125;<br>    <span class="hljs-built_in">catch</span> (std::exception &amp;e)<br>    &#123;<br>        std::cerr &lt;&lt; <span class="hljs-string">&quot;Exception: &quot;</span> &lt;&lt; e.<span class="hljs-built_in">what</span>() &lt;&lt; <span class="hljs-string">&quot;\n&quot;</span>;<br>    &#125;<br><br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>这里的核心修改在Server和Worker中, Session中没有变动.</p>
+<ul>
+<li><p>主体思路就是由主io_context控制Server, 生成Worker线程存入线程池中, Server将新连接分发到Worker中.</p>
+</li>
+<li><p>Worker : </p>
+<ul>
+<li>每个Worker中都会控制一个io_context, work_guard 和 thread.</li>
+<li>io_context 用来在run时在线程中开始监听.</li>
+<li>work_guard 的作用是<strong>防止io_context在调用run时因为没有任务而立刻退出</strong>, 所以我们如果要在多线程情况下使用线程池的话, 必须要使用work_guard, 其会时run函数就算没有任务, 也会在此阻塞等待任务.</li>
+</ul>
+</li>
+<li><p>Server : </p>
+<ul>
+<li><p>workers_ : main函数中会创建worker线程存入数组, Server构造函数需要传入这个数组.</p>
+</li>
+<li><p>每当接收到一个新连接时, 就会轮询取出一个工作线程, 利用asio库中的post向指定的工作线程中建立监听.</p>
+<ul>
+<li><pre><code class="cpp">boost::asio::post(worker-&gt;io_context, [sock = std::move(socket)]() mutable &#123; std::make_shared&lt;Session&gt;(std::move(sock))-&gt;start(); &#125;);
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><br>      <span class="hljs-string">我们在每个worker中都会存入其对应的io_context,</span> <span class="hljs-string">再在回调函数中建立新的会话,</span> <span class="hljs-string">就可以让工作线程执行对新连接的监听了.</span><br><br>    <span class="hljs-bullet">-</span> <span class="hljs-string">注意这里的mutable是针对lambda的一种写法,</span> <span class="hljs-string">因为默认情况下,</span> <span class="hljs-string">lambda表达式被捕获的变量是不可以被修改的,</span> <span class="hljs-string">因为lambda本身是const的,</span> <span class="hljs-string">但是如果加上mutable就可以进行任意修改了,</span> <span class="hljs-string">这里我们就是希望直接接管socket的使用权,</span> <span class="hljs-string">因此使用了mutable.</span><br><br><span class="hljs-meta">---</span><br><span class="hljs-meta"></span><br><span class="hljs-comment">### executor(调度器)</span><br><br><span class="hljs-string">调度器,</span> <span class="hljs-string">其实asio库用于调度的核心组件,</span> <span class="hljs-string">用于告诉任务应该在哪里(线程</span> <span class="hljs-string">/</span> <span class="hljs-string">io_context</span> <span class="hljs-string">/</span> <span class="hljs-string">strand)执行,</span> <span class="hljs-string">在普通单线程和多线程异步中并没有提及,</span> <span class="hljs-string">是其在背后隐式调用.</span> <span class="hljs-string">但是我们后面会学习协程,</span> <span class="hljs-string">其需要显式调用调度器找到自己工作的线程与io_context,</span>  <span class="hljs-string">故在此先行介绍.</span><br><br><span class="hljs-string">一个</span> <span class="hljs-string">`io_context`</span> <span class="hljs-string">对应一个唯一的</span> <span class="hljs-string">`executor`</span> <span class="hljs-string">实例,</span> <span class="hljs-string">因此我们也可以通过`io.get_executor();`来直接获取调度器.</span> <br><br><span class="hljs-string">在一个绑定了io_context的协程函数中我们就可以这样获取调度器</span> <span class="hljs-string">:</span> <br><br><span class="hljs-string">```cpp</span><br><span class="hljs-string">auto</span> <span class="hljs-string">executor</span> <span class="hljs-string">=</span> <span class="hljs-string">co_await</span> <span class="hljs-string">this_coro::executor;</span><br></code></pre></td></tr></table></figure>
+</code></pre>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="协程版本"><a href="#协程版本" class="headerlink" title="协程版本"></a>协程版本</h3><p>asio网络库也支持协程, 其配合C++20的协程可以写出更加简短的同步风格的异步代码 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/asio.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/asio/awaitable.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/asio/co_spawn.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/asio/use_awaitable.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/asio/detached.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iostream&gt;</span></span><br><br><span class="hljs-keyword">using</span> boost::asio::ip::tcp;<br><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> boost::asio;<br><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std::literals;<br><br><span class="hljs-comment">// Echo 处理协程</span><br><span class="hljs-function">awaitable&lt;<span class="hljs-type">void</span>&gt; <span class="hljs-title">echo_session</span><span class="hljs-params">(tcp::socket socket)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">try</span><br>    &#123;<br>        <span class="hljs-type">char</span> data[<span class="hljs-number">1024</span>];<br>        <span class="hljs-keyword">for</span> (;;)<br>        &#123;<br>            <span class="hljs-comment">// 异步读取数据</span><br>            std::<span class="hljs-type">size_t</span> n = <span class="hljs-keyword">co_await</span> socket.<span class="hljs-built_in">async_read_some</span>(<span class="hljs-built_in">buffer</span>(data), use_awaitable);<br>            <span class="hljs-comment">// 异步写回数据</span><br>            <span class="hljs-function"><span class="hljs-keyword">co_await</span> <span class="hljs-title">async_write</span><span class="hljs-params">(socket, buffer(data, n), use_awaitable)</span></span>;<br>        &#125;<br>    &#125;<br>    <span class="hljs-built_in">catch</span> (std::exception &amp;e)<br>    &#123;<br>        std::cerr &lt;&lt; <span class="hljs-string">&quot;Session ended: &quot;</span> &lt;&lt; e.<span class="hljs-built_in">what</span>() &lt;&lt; <span class="hljs-string">&quot;\n&quot;</span>;<br>    &#125;<br>&#125;<br><br><span class="hljs-comment">// 接受连接并启动协程</span><br><span class="hljs-function">awaitable&lt;<span class="hljs-type">void</span>&gt; <span class="hljs-title">listener</span><span class="hljs-params">(<span class="hljs-type">uint16_t</span> port)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-comment">// 获取绑定当前协程的executor, 可以通过其获取io_context</span><br>    <span class="hljs-keyword">auto</span> executor = <span class="hljs-keyword">co_await</span> this_coro::executor;<br>    <span class="hljs-function">tcp::acceptor <span class="hljs-title">acceptor</span><span class="hljs-params">(executor, tcp::endpoint(tcp::v4(), port))</span></span>;<br><br>    <span class="hljs-keyword">for</span> (;;)<br>    &#123;<br>        <span class="hljs-comment">// 异步等待连接事件发生返回socket</span><br>        tcp::socket socket = <span class="hljs-keyword">co_await</span> acceptor.<span class="hljs-built_in">async_accept</span>(use_awaitable);<br>        <span class="hljs-comment">// 再注册新的协程函数并触发</span><br>        <span class="hljs-built_in">co_spawn</span>(executor, <span class="hljs-built_in">echo_session</span>(std::<span class="hljs-built_in">move</span>(socket)), detached);<br>    &#125;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">try</span><br>    &#123;<br>        io_context io;<br>        <span class="hljs-comment">// 启动协程</span><br>        <span class="hljs-built_in">co_spawn</span>(io, <span class="hljs-built_in">listener</span>(<span class="hljs-number">12345</span>), detached);<br>        io.<span class="hljs-built_in">run</span>(); <span class="hljs-comment">// 开始事件循环</span><br>    &#125;<br>    <span class="hljs-built_in">catch</span> (<span class="hljs-type">const</span> std::exception &amp;e)<br>    &#123;<br>        std::cerr &lt;&lt; <span class="hljs-string">&quot;Server error: &quot;</span> &lt;&lt; e.<span class="hljs-built_in">what</span>() &lt;&lt; <span class="hljs-string">&quot;\n&quot;</span>;<br>    &#125;<br><br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>可以看到代码非常短, 并且和同步代码风格非常相似, 但也有很多要点需要解读 : </p>
+<ul>
+<li><p>如果没有学过C++20协程编程可以看我往期的博客, 不然无法理解里面co_await的用法.</p>
+</li>
+<li><p>co_spawn(事件循环句柄, 协程函数, 结束方式) :</p>
+<p>本函数用来将一个协程注册进入事件循环的executor(调度器)中, 其会先执行协程函数, 然后其中promise_type中起始回调设置的是suspend_always, 在开始就会暂停, 然后调用器会发布任务到事件循环中resume这个协程函数.</p>
+</li>
+<li><p><code>auto executor = co_await this_coro::executor;</code></p>
+<p>获取绑定当前协程的executor, 可以当作固定不变的一步, 因为我们需要executor来构建acceptor.</p>
+</li>
+<li><p>acceptor : </p>
+<p>这里构建acceptor的构造可以理解为调用了其针对协程的特殊版本, 用executor来告诉其新连接建立时应把任务提交给对应的io_context.</p>
+</li>
+<li><p>async_accept(use_awaitable) : </p>
+<p>我们可以看到这里<code>async_accept</code>有对应的协程版本, 传入的<code>use_awaitable</code>代表将协程挂起, 其内部其实也会调用普通版本的<code>async_accept</code>, 只不过是在挂起前调用的回调函数中调用并进行异步处理, 在回调触发后再调用resume唤醒协程, 这些asio库都会在内部帮我们实现. 后面的<code>async_read_some</code>和<code>async_write</code>同理.</p>
+</li>
+</ul>
+<h3 id="strand-串行化"><a href="#strand-串行化" class="headerlink" title="strand(串行化)"></a>strand(串行化)</h3><p>它就是<strong>对executor的进一步封装</strong>, 也就是特殊的调度器. 用这个调度器发布的任务会<strong>串行执行</strong>, 也就是说其真正作用是<strong>帮助协程间共享内存</strong>, 是一种另类高效的<strong>协程间通信</strong>, 甚至你可以理解为一种<strong>另类的锁</strong>.</p>
+<p>下面是一个使用共享map实现name记录的echo服务器, 我们只需要关系里面有关strand和map的内容即可 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/asio.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/asio/awaitable.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/asio/co_spawn.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/asio/detached.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/asio/use_awaitable.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/asio/strand.hpp&gt;</span></span><br><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iostream&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;unordered_map&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;memory&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;atomic&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;string&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;vector&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;thread&gt;</span></span><br><br><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> boost::asio;<br><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> boost::asio::ip;<br><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std::literals;<br><br><span class="hljs-keyword">using</span> awaitable_void = awaitable&lt;<span class="hljs-type">void</span>&gt;;<br><span class="hljs-keyword">using</span> <span class="hljs-type">executor_t</span> = any_io_executor;<br><br>std::unordered_map&lt;<span class="hljs-type">int</span>, std::string&gt; nicknames;<br>std::shared_ptr&lt;strand&lt;<span class="hljs-type">executor_t</span>&gt;&gt; strand_ptr;<br>std::atomic&lt;<span class="hljs-type">int</span>&gt; connection_id&#123;<span class="hljs-number">0</span>&#125;;<br><br><span class="hljs-comment">/// 清理昵称（提取到独立协程）</span><br><span class="hljs-function">awaitable_void <span class="hljs-title">cleanup_nickname</span><span class="hljs-params">(<span class="hljs-type">int</span> id)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">co_await</span> boost::asio::<span class="hljs-built_in">post</span>(*strand_ptr, use_awaitable);<br>    nicknames.<span class="hljs-built_in">erase</span>(id);<br>    <span class="hljs-keyword">co_return</span>;<br>&#125;<br><br><span class="hljs-function">awaitable_void <span class="hljs-title">handle_client</span><span class="hljs-params">(tcp::socket socket)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">auto</span> executor = <span class="hljs-keyword">co_await</span> this_coro::executor;<br>    <span class="hljs-type">int</span> id = connection_id.<span class="hljs-built_in">fetch_add</span>(<span class="hljs-number">1</span>);<br>    <span class="hljs-type">char</span> data[<span class="hljs-number">1024</span>];<br>    std::string nickname;<br><br>    <span class="hljs-keyword">try</span><br>    &#123;<br>        std::string prompt = <span class="hljs-string">&quot;请输入昵称: &quot;</span>;<br>        <span class="hljs-function"><span class="hljs-keyword">co_await</span> <span class="hljs-title">async_write</span><span class="hljs-params">(socket, buffer(prompt), use_awaitable)</span></span>;<br><br>        std::<span class="hljs-type">size_t</span> n = <span class="hljs-keyword">co_await</span> socket.<span class="hljs-built_in">async_read_some</span>(<span class="hljs-built_in">buffer</span>(data), use_awaitable);<br>        nickname = std::<span class="hljs-built_in">string</span>(data, data + n - <span class="hljs-number">1</span>); <span class="hljs-comment">// 去掉换行符</span><br><br>        <span class="hljs-comment">// 加入 nickname 映射（串行化）</span><br>        <span class="hljs-keyword">co_await</span> boost::asio::<span class="hljs-built_in">post</span>(*strand_ptr, use_awaitable);<br>        nicknames[id] = nickname;<br><br>        std::string hello = <span class="hljs-string">&quot;你好，&quot;</span> + nickname + <span class="hljs-string">&quot;！你现在可以发消息，我会帮你回显。\n&quot;</span>;<br>        <span class="hljs-function"><span class="hljs-keyword">co_await</span> <span class="hljs-title">async_write</span><span class="hljs-params">(socket, buffer(hello), use_awaitable)</span></span>;<br><br>        <span class="hljs-keyword">for</span> (;;)<br>        &#123;<br>            std::<span class="hljs-type">size_t</span> len = <span class="hljs-keyword">co_await</span> socket.<span class="hljs-built_in">async_read_some</span>(<span class="hljs-built_in">buffer</span>(data), use_awaitable);<br>            <span class="hljs-function">std::string <span class="hljs-title">input</span><span class="hljs-params">(data, data + len)</span></span>;<br><br>            std::string name;<br><br>            <span class="hljs-comment">// 获取当前昵称（串行化）</span><br>            <span class="hljs-keyword">co_await</span> boost::asio::<span class="hljs-built_in">post</span>(*strand_ptr, use_awaitable);<br>            name = nicknames[id];<br><br>            std::string msg = <span class="hljs-string">&quot;[&quot;</span> + name + <span class="hljs-string">&quot;] 你说的是：&quot;</span> + input;<br>            <span class="hljs-function"><span class="hljs-keyword">co_await</span> <span class="hljs-title">async_write</span><span class="hljs-params">(socket, buffer(msg), use_awaitable)</span></span>;<br>        &#125;<br>    &#125;<br>    <span class="hljs-built_in">catch</span> (...)<br>    &#123;<br>        <span class="hljs-comment">// 不能在 catch 内使用 co_await，使用 co_spawn 调度清理任务</span><br>        <span class="hljs-built_in">co_spawn</span>(executor, <span class="hljs-built_in">cleanup_nickname</span>(id), detached);<br>    &#125;<br>&#125;<br><br><span class="hljs-function">awaitable_void <span class="hljs-title">listener</span><span class="hljs-params">(<span class="hljs-type">uint16_t</span> port)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">auto</span> executor = <span class="hljs-keyword">co_await</span> this_coro::executor;<br>    <span class="hljs-function">tcp::acceptor <span class="hljs-title">acceptor</span><span class="hljs-params">(executor, &#123;tcp::v4(), port&#125;)</span></span>;<br><br>    <span class="hljs-keyword">for</span> (;;)<br>    &#123;<br>        tcp::socket socket = <span class="hljs-keyword">co_await</span> acceptor.<span class="hljs-built_in">async_accept</span>(use_awaitable);<br>        <span class="hljs-built_in">co_spawn</span>(executor, <span class="hljs-built_in">handle_client</span>(std::<span class="hljs-built_in">move</span>(socket)), detached);<br>    &#125;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">try</span><br>    &#123;<br>        io_context io;<br><br>        <span class="hljs-comment">// 创建全局 strand</span><br>        strand_ptr = std::make_shared&lt;strand&lt;<span class="hljs-type">executor_t</span>&gt;&gt;(io.<span class="hljs-built_in">get_executor</span>());<br><br>        <span class="hljs-comment">// 启动监听协程</span><br>        <span class="hljs-built_in">co_spawn</span>(io, <span class="hljs-built_in">listener</span>(<span class="hljs-number">12345</span>), detached);<br><br>        <span class="hljs-comment">// 多线程 run</span><br>        std::vector&lt;std::thread&gt; threads;<br>        <span class="hljs-type">int</span> n = std::thread::<span class="hljs-built_in">hardware_concurrency</span>();<br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; n; ++i)<br>        &#123;<br>            threads.<span class="hljs-built_in">emplace_back</span>([&amp;io]()<br>                                 &#123; io.<span class="hljs-built_in">run</span>(); &#125;);<br>        &#125;<br><br>        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">auto</span> &amp;t : threads)<br>            t.<span class="hljs-built_in">join</span>();<br>    &#125;<br>    <span class="hljs-built_in">catch</span> (<span class="hljs-type">const</span> std::exception &amp;e)<br>    &#123;<br>        std::cerr &lt;&lt; <span class="hljs-string">&quot;Server error: &quot;</span> &lt;&lt; e.<span class="hljs-built_in">what</span>() &lt;&lt; <span class="hljs-string">&quot;\n&quot;</span>;<br>    &#125;<br><br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><p><code>std::shared_ptr&lt;strand&lt;executor_t&gt;&gt; strand_ptr;</code></p>
+<p>在全局设置一个串行化调度器的智能指针.</p>
+</li>
+<li><p><code>strand_ptr = std::make_shared&lt;strand&lt;executor_t&gt;&gt;(io.get_executor());</code></p>
+<p>取出io_context对应的executor.</p>
+</li>
+<li><p><code>co_await boost::asio::post(*strand_ptr, use_awaitable);</code></p>
+<p>在协程函数中, 所有有关全局变量map的操作前都会加这么一段代码, 其post的任务并没有什么实际作用, 其目的只在于<strong>让后面的代码串行化执行</strong>, 以此防止共享资源的竞争. 当我们把这段代码当成一个锁来看, 就会豁然开朗许多, 那么这个锁的范围是什么? 答案是<strong>下一次挂起(co_await)或最后返回(co_return)时</strong>, 在这之后才会串行化执行后面的任务. </p>
+<p>当然这里只是利用strand实现协程间资源共享, 普通的线程间资源共享也是可以实现的 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs cpp">boost::asio::<span class="hljs-built_in">post</span>(strand, [key, value]() &#123;<br>    shared_map[key] = value;  <span class="hljs-comment">// 串行安全访问</span><br>&#125;); <span class="hljs-comment">// 像这样子普通在一个线程中使用串行也是可行的!</span><br></code></pre></td></tr></table></figure></li>
+</ul>
+<hr>
+<h3 id="boost-asio的优势"><a href="#boost-asio的优势" class="headerlink" title="boost::asio的优势"></a>boost::asio的优势</h3><ul>
+<li>支持回调, 协程等多种异步模型.</li>
+<li>跨平台</li>
+<li>对于C++20协程原生支持</li>
+<li>有strand实现多线程多协程下的资源共享</li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/boost-asio/" class="print-no-link">#boost::asio</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>boost::asio网络库</div>
+      <div>http://example.com/2025/07/08/boost asio网络库/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>天目中云</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年7月8日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/07/07/C++%E5%8D%8F%E7%A8%8B%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" title="C++ 协程学习笔记">
+                        <span class="hidden-mobile">C++ 协程学习笔记</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"NhgfDy2CEByjwxuxPM1Le2t6-MdYXbMMI","appKey":"nvGMdqKfKbpkVnojLSbwmasv","path":"window.location.pathname","placeholder":null,"avatar":"retro","meta":["nick","mail","link"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":false,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":false},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
