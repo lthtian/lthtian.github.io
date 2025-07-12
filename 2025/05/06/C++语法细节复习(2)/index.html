@@ -29,7 +29,7 @@
 <meta property="og:description" content="智能指针其本质是利用栈上对象出作用域自动析构的特性自动释放堆上的内存. weak_ptr &#x2F; shared_ptr weak_ptr : 弱智能指针, 观察者, 不影响引用计数, 作用在于观察一个指针, 并在关键时刻可以通过提升得到使用权.  shared_ptr : 强智能指针, 拥有者, 影响引用计数, 确实拥有并可以使用指针.  weak_ptr.lock() : 检测观察对象的引">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2025-05-06T09:00:00.000Z">
-<meta property="article:modified_time" content="2025-06-22T10:02:46.632Z">
+<meta property="article:modified_time" content="2025-07-09T07:34:19.102Z">
 <meta property="article:author" content="天目中云">
 <meta property="article:tag" content="shared_ptr">
 <meta name="twitter:card" content="summary_large_image">
@@ -240,7 +240,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          1.3k 字
+          1.6k 字
         
       </span>
     
@@ -251,7 +251,7 @@
         
         
         
-          11 分钟
+          14 分钟
         
       </span>
     
@@ -367,7 +367,41 @@
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs cpp">map&lt;<span class="hljs-type">int</span>, function&lt;<span class="hljs-type">int</span>(<span class="hljs-type">int</span>, <span class="hljs-type">int</span>)&gt;&gt; cal;<br>cal[<span class="hljs-number">1</span>] = [](<span class="hljs-type">int</span> a, <span class="hljs-type">int</span> b)&#123; <span class="hljs-keyword">return</span> a + b; &#125;;<br>cal[<span class="hljs-number">2</span>] = [](<span class="hljs-type">int</span> a, <span class="hljs-type">int</span> b)&#123; <span class="hljs-keyword">return</span> a - b; &#125;;<br></code></pre></td></tr></table></figure>
 </li>
 <li><p>优先级队列自定义比较</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Data</span>&#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-built_in">Data</span>(<span class="hljs-type">int</span> v1, <span class="hljs-type">int</span> v2) :<span class="hljs-built_in">a</span>(v1) ,<span class="hljs-built_in">b</span>(v2) &#123;&#125;<br><span class="hljs-keyword">private</span>:<br>    <span class="hljs-type">int</span> a, b;<br>&#125;;<br><br><span class="hljs-keyword">using</span> FUNC = function&lt;<span class="hljs-built_in">bool</span>(Data&amp;, Data&amp;)&gt;;<br>priority_queue&lt;Data, vector&lt;data&gt;, FUNC&gt; <span class="hljs-built_in">Heap</span>([](Data&amp; d1, Data&amp;d2)&#123;<br>    <span class="hljs-keyword">return</span> d<span class="hljs-number">1.</span>ma &gt; d<span class="hljs-number">2.</span>ma;<br>&#125;);<br></code></pre></td></tr></table></figure></li>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Data</span>&#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-built_in">Data</span>(<span class="hljs-type">int</span> v1, <span class="hljs-type">int</span> v2) :<span class="hljs-built_in">a</span>(v1) ,<span class="hljs-built_in">b</span>(v2) &#123;&#125;<br><span class="hljs-keyword">private</span>:<br>    <span class="hljs-type">int</span> a, b;<br>&#125;;<br><br><span class="hljs-keyword">using</span> FUNC = function&lt;<span class="hljs-built_in">bool</span>(Data&amp;, Data&amp;)&gt;;<br>priority_queue&lt;Data, vector&lt;data&gt;, FUNC&gt; <span class="hljs-built_in">Heap</span>([](Data&amp; d1, Data&amp;d2)&#123;<br>    <span class="hljs-keyword">return</span> d<span class="hljs-number">1.</span>ma &gt; d<span class="hljs-number">2.</span>ma;<br>&#125;);<br></code></pre></td></tr></table></figure>
+</li>
+<li><p>lambda默认const, 其不可修改任何捕获到的变量, 但是可以用mutable使得可以修改 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cpp">boost::asio::<span class="hljs-built_in">post</span>(worker-&gt;io_context, [sock = std::<span class="hljs-built_in">move</span>(socket)]() <span class="hljs-keyword">mutable</span> &#123; std::<span class="hljs-built_in">make_shared</span>&lt;Session&gt;(std::<span class="hljs-built_in">move</span>(sock))-&gt;<span class="hljs-built_in">start</span>(); &#125;);<br></code></pre></td></tr></table></figure></li>
+</ul>
+<hr>
+<ul>
+<li><p>malloc只负责分配内存, 而new则实现了分配+构造, 其内部会调用malloc, 然后再分配到的内存上执行对应的构造函数.</p>
+</li>
+<li><p>c++中一个对象会在什么时候会被释放掉?</p>
+<ul>
+<li>栈上对象离开作用领域会自动析构</li>
+<li>堆上对象必须手动析构, 可以利用智能指针实现自动析构.</li>
+<li>静态对象程序结束时析构</li>
+</ul>
+</li>
+<li><p>什么会引起内存泄露 : </p>
+<ul>
+<li>不成对使用new和delete</li>
+<li>智能指针相互引用</li>
+</ul>
+</li>
+<li><p>自动检测内存泄露 : </p>
+<ul>
+<li>如果想自己写, 可以自己重写自定义的new和delete, 可以配合全局变量进行计数.</li>
+<li>Linux有常用的内存检测工具<code>valgrind</code>.</li>
+</ul>
+</li>
+<li><p>磁盘翻译到内存的过程效率是很低的, 有什么优化思路 : </p>
+<ul>
+<li>使用内存池或者写一个LRU缓存.</li>
+<li>减少频繁调用malloc.</li>
+<li>使用mmap将磁盘上的文件映射到一段虚拟内存地址中.</li>
+</ul>
+</li>
 </ul>
 
                 

@@ -246,6 +246,88 @@
     <article class="col-12 col-md-12 mx-auto index-info">
       <h2 class="index-header">
         
+        <a href="/2025/07/12/%5BLinux%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%9C%8D%E5%8A%A1%E7%AB%AF%E7%BC%96%E7%A8%8B%5D%20%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0(1)/" target="_self">
+          Linux多线程服务端编程 读书笔记1
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/07/12/%5BLinux%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%9C%8D%E5%8A%A1%E7%AB%AF%E7%BC%96%E7%A8%8B%5D%20%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0(1)/" target="_self">
+        <div>
+          第一部分 C++多线程系统编程  析构所在的线程当share_ptr引用计数归零时, 会在归零的这个线程就地析构, 而这个线程不一定是对象诞生的线程. 这就引发出一个问题 :   如果对象的析构比较耗时, 且经常在关键线程触发析构, 就会拖慢关键线程的速度.  这种情况的解决方案是专门做一个阻塞队列存入要析构的智能指针, 另开一个专门析构的线程从队列中取出进行析构. 多线程适用场景 其核心作用在
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2025-07-12 18:25" pubdate>
+              2025-07-12
+            </time>
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/">#多线程</a>
+            
+              <a href="/tags/Muduo/">#Muduo</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2025/07/11/libuv%E7%BD%91%E7%BB%9C%E5%BA%93/" target="_self">
+          libuv事件库
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/07/11/libuv%E7%BD%91%E7%BB%9C%E5%BA%93/" target="_self">
+        <div>
+          回显服务器先实现一个最简的Tcp回显服务器 :  1234567891011121314151617181920212223242526272829303132333435363738394041424344454647484950515253545556575859606162636465666768697071727374757677787980818283848586878889909192
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2025-07-11 18:00" pubdate>
+              2025-07-11
+            </time>
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/libuv/">#libuv</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
         <a href="/2025/07/08/boost%20asio%E7%BD%91%E7%BB%9C%E5%BA%93/" target="_self">
           boost::asio网络库
         </a>
@@ -546,86 +628,6 @@
             <i class="iconfont icon-date"></i>
             <time datetime="2025-06-25 21:00" pubdate>
               2025-06-25
-            </time>
-          </div>
-        
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/RPC/">#RPC</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h2 class="index-header">
-        
-        <a href="/2025/06/23/Rpc%E5%88%86%E5%B8%83%E5%BC%8F%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E6%A1%86%E6%9E%B6(5)%20RpcProdvider/" target="_self">
-          Rpc分布式网络通信框架(5) RpcProdvider
-        </a>
-      </h2>
-
-      
-      <a class="index-excerpt index-excerpt__noimg" href="/2025/06/23/Rpc%E5%88%86%E5%B8%83%E5%BC%8F%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E6%A1%86%E6%9E%B6(5)%20RpcProdvider/" target="_self">
-        <div>
-          RpcProdvider  RpcProdvider是提供给服务发布端的核心类.  既然想把方法发布为远程方法被外部调用, 那么发布端需要做的无非就是作为一个服务器持续接收外部的方法调用请求, 根据请求在本地调用对应的方法, 最后再将响应发送回去, 可以当作一个简易的webServer, 但是需要配合我们先前protobuf的Service类, 使其对于方法调用更加便捷与通用. 12345678
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2025-06-23 21:00" pubdate>
-              2025-06-23
-            </time>
-          </div>
-        
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/RPC/">#RPC</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h2 class="index-header">
-        
-        <a href="/2025/05/20/Rpc%E5%88%86%E5%B8%83%E5%BC%8F%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E6%A1%86%E6%9E%B6(4)%20RpcApplication/" target="_self">
-          Rpc分布式网络通信框架(4) RpcApplication
-        </a>
-      </h2>
-
-      
-      <a class="index-excerpt index-excerpt__noimg" href="/2025/05/20/Rpc%E5%88%86%E5%B8%83%E5%BC%8F%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E6%A1%86%E6%9E%B6(4)%20RpcApplication/" target="_self">
-        <div>
-          RpcApplication  本章讲解第一个核心类RpcApplication, 该类的主要任务是解析传入的配置文件, 并可以取出解析到的内容, 简单来说就是执行初始化任务.  为什么要传入并解析配置文件? 网络通信是点到点的, 你必须要知道对端的ip和port才能真正实现通信. 在本框架中, 配置文件主要存储的就是我们的目标服务器的ip与port, 当然如果我们使用zookeeper, 也会
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2025-05-20 17:00" pubdate>
-              2025-05-20
             </time>
           </div>
         

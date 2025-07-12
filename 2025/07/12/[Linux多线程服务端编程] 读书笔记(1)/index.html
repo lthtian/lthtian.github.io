@@ -1,0 +1,792 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/head.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="天目中云">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="第一部分 C++多线程系统编程  析构所在的线程当share_ptr引用计数归零时, 会在归零的这个线程就地析构, 而这个线程不一定是对象诞生的线程. 这就引发出一个问题 :   如果对象的析构比较耗时, 且经常在关键线程触发析构, 就会拖慢关键线程的速度.  这种情况的解决方案是专门做一个阻塞队列存入要析构的智能指针, 另开一个专门析构的线程从队列中取出进行析构. 多线程适用场景 其核心作用在">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux多线程服务端编程 读书笔记1">
+<meta property="og:url" content="http://example.com/2025/07/12/[Linux%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%9C%8D%E5%8A%A1%E7%AB%AF%E7%BC%96%E7%A8%8B]%20%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0(1)/index.html">
+<meta property="og:site_name" content="天目中云">
+<meta property="og:description" content="第一部分 C++多线程系统编程  析构所在的线程当share_ptr引用计数归零时, 会在归零的这个线程就地析构, 而这个线程不一定是对象诞生的线程. 这就引发出一个问题 :   如果对象的析构比较耗时, 且经常在关键线程触发析构, 就会拖慢关键线程的速度.  这种情况的解决方案是专门做一个阻塞队列存入要析构的智能指针, 另开一个专门析构的线程从队列中取出进行析构. 多线程适用场景 其核心作用在">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-07-12T10:25:00.000Z">
+<meta property="article:modified_time" content="2025-07-12T10:25:48.627Z">
+<meta property="article:author" content="天目中云">
+<meta property="article:tag" content="多线程">
+<meta property="article:tag" content="Muduo">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>Linux多线程服务端编程 读书笔记1 - 天目中云</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":"NhgfDy2CEByjwxuxPM1Le2t6-MdYXbMMI","app_key":"nvGMdqKfKbpkVnojLSbwmasv","server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>TianMu</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/03.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Linux多线程服务端编程 读书笔记1"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-07-12 18:25" pubdate>
+          2025年7月12日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.8k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          16 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Linux多线程服务端编程 读书笔记1</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <blockquote>
+<p>第一部分 C++多线程系统编程</p>
+</blockquote>
+<h3 id="析构所在的线程"><a href="#析构所在的线程" class="headerlink" title="析构所在的线程"></a>析构所在的线程</h3><p>当share_ptr引用计数归零时, 会在归零的这个线程就地析构, 而这个线程不一定是对象诞生的线程.</p>
+<p>这就引发出一个问题 : </p>
+<ul>
+<li>如果对象的析构比较耗时, 且经常在关键线程触发析构, 就会拖慢关键线程的速度.</li>
+</ul>
+<p>这种情况的解决方案是专门做一个阻塞队列存入要析构的智能指针, 另开一个专门析构的线程从队列中取出进行析构.</p>
+<h3 id="多线程适用场景"><a href="#多线程适用场景" class="headerlink" title="多线程适用场景"></a>多线程适用场景</h3><ul>
+<li><p>其核心作用在于<strong>提高响应速度</strong>, 不是提高绝对性能, 而是提高平均响应性能.</p>
+</li>
+<li><p>绝对的IO密集和绝对的计算密集都并非多线程的优势, 前者性能瓶颈在磁盘&#x2F;网络IO(简单说就是从磁盘&#x2F;网络缓冲区读数据太慢了, 读到的内容cpu可以马上处理, 而且单线程就可以完成, 根本不是cpu的问题), 后者多进程也完全可以. </p>
+</li>
+<li><p>适用多线程的条件 : </p>
+<ul>
+<li>存在数据共享.</li>
+<li>提供非均质的服务, 有优先级差异或难易度差异.</li>
+<li>希望使用异步操作.</li>
+<li>需要有效划分责任和功能.</li>
+</ul>
+</li>
+<li><p>多线程可以让IO和计算相互重叠, 降低延迟, 简单讲就是如果用一个主线程专门用来响应, 其将工作分发给工作线程, 相比于只用一个主线程响应+工作, 一个任务速度一样, 但是多个任务并发效率就会明显提升.</p>
+</li>
+<li><p>一个事件循环的多线程程序应该轻松支持5万并发连接.</p>
+</li>
+<li><p>多线程可以有效降低”简单任务被复杂任务被任务压住”的出现概率.</p>
+</li>
+<li><p>BlockingQueue是解决多线程程序的利器.</p>
+</li>
+<li><p>虽然所有网络写操作都可以异步去做, 但是如果Tcp缓存区是空的, 也可以直接在服务线程写完, 这是一种网络库的性能优化策略.</p>
+</li>
+</ul>
+<h3 id="线程模型选择"><a href="#线程模型选择" class="headerlink" title="线程模型选择"></a>线程模型选择</h3><ul>
+<li>计算密集型 : Reactor + 线程池(多线程) -&gt; IO不是瓶颈, 多线程增加cpu利用, 比多进程易于管理.</li>
+<li>轻量级请求(短连接 + 快速响应) : Reactor + 单线程 -&gt; 处理本身迅速, 无需线程池, 参考Nginx.</li>
+<li>IO密集型 : Proactor -&gt; 事件IO全部交给内核处理, 自己线程运行响应不受影响.</li>
+<li>延迟敏感&#x2F;要求高吞吐 : Proactor -&gt; 可以随时同时处理很多任务(虽然是内核背后实现的).</li>
+</ul>
+<h3 id="多线程磁盘IO"><a href="#多线程磁盘IO" class="headerlink" title="多线程磁盘IO"></a>多线程磁盘IO</h3><p>如果想提高文件读取效率, 可以使用多线程每个线程分配多个部分同时读取, 都使用pread, 拼接到目标的buffer.</p>
+<p>也可以使用mmap, 从映射中每个线程分别读取自己的部分到buffer中.</p>
+<p>当然如果想要磁盘IO到socket, sendfile这种内核函数往往才是最优解.</p>
+<p>现在也可以使用io_uring,  其可以实现异步将数据从磁盘搬到用户缓冲区, 真异步, 并且搬运效率还比前两种高.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;liburing.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;fcntl.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;unistd.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;string.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdlib.h&gt;</span></span><br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;<br>    io_uring ring;<br>    <span class="hljs-built_in">io_uring_queue_init</span>(<span class="hljs-number">8</span>, &amp;ring, <span class="hljs-number">0</span>);<br><br>    <span class="hljs-type">int</span> fd = <span class="hljs-built_in">open</span>(<span class="hljs-string">&quot;file.txt&quot;</span>, O_RDONLY);<br>    <span class="hljs-type">char</span>* buf = (<span class="hljs-type">char</span>*)<span class="hljs-built_in">malloc</span>(<span class="hljs-number">4096</span>);<br><br>    <span class="hljs-keyword">struct</span> <span class="hljs-title class_">io_uring_sqe</span>* sqe = <span class="hljs-built_in">io_uring_get_sqe</span>(&amp;ring);<br>    <span class="hljs-built_in">io_uring_prep_read</span>(sqe, fd, buf, <span class="hljs-number">4096</span>, <span class="hljs-number">0</span>);<br>    <span class="hljs-built_in">io_uring_submit</span>(&amp;ring);<br><br>    <span class="hljs-keyword">struct</span> <span class="hljs-title class_">io_uring_cqe</span>* cqe;<br>    <span class="hljs-built_in">io_uring_wait_cqe</span>(&amp;ring, &amp;cqe);<br><br>    <span class="hljs-keyword">if</span> (cqe-&gt;res &lt; <span class="hljs-number">0</span>)<br>        <span class="hljs-built_in">fprintf</span>(stderr, <span class="hljs-string">&quot;read error: %s\n&quot;</span>, <span class="hljs-built_in">strerror</span>(-cqe-&gt;res));<br>    <span class="hljs-keyword">else</span><br>        <span class="hljs-built_in">write</span>(STDOUT_FILENO, buf, cqe-&gt;res);<br><br>    <span class="hljs-built_in">io_uring_cqe_seen</span>(&amp;ring, cqe);<br>    <span class="hljs-built_in">close</span>(fd);<br>    <span class="hljs-built_in">free</span>(buf);<br>    <span class="hljs-built_in">io_uring_queue_exit</span>(&amp;ring);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="Linux分配文件描述符方式所引发的问题"><a href="#Linux分配文件描述符方式所引发的问题" class="headerlink" title="Linux分配文件描述符方式所引发的问题"></a>Linux分配文件描述符方式所引发的问题</h3><ul>
+<li>Linux分配文件描述符, 分配的是当前最小可用的文件描述符码.</li>
+</ul>
+<p>这种分配方式有可能会引发”串话”, 简单说就是两个不同时间的对象持有同一个文件描述符, 向前一个发送的消息有可能发送到后一个中. 解决方法是 : </p>
+<ul>
+<li>用RAII包装文件描述符.</li>
+</ul>
+<p>人话说就是用一个类管理文件描述符, 这个类在外部用智能指针之类的资源管理类维护, 这样就算文件描述符一样, 但是我们看的是持有这个文件描述符的对象, 只要各自有一个对象就行.</p>
+<p>实践到Muduo库中, 就是TcpConnection, 一般用<code>share_ptr&lt;Tcpconnection&gt;</code>, 只要连接断开这个对象就会析构, 但是我们处理事务对象也会同时拥有对应的<code>weak_ptr&lt;Tcpconnection&gt;</code>用来观察, 在事务处理完后就可用通过提升弱指针观察Tcpconnection是否还存在, 存在就发送, 不存在就算了, 这种处理技术又被称为 — <strong>弱回调</strong>.</p>
+<h3 id="细碎知识"><a href="#细碎知识" class="headerlink" title="细碎知识"></a>细碎知识</h3><ul>
+<li><p>最低限度地共享对象,  优先使用高层同步设施(线程池, 队列), 如果不得已必须, 优先使用互斥锁和条件变量, 不要用读写锁和信号量.</p>
+</li>
+<li><p>读写锁的效率不一定比互斥锁高, 因为其会维护额外的东西, 并且我们一般希望临界区短些, 临界区越短, 读写锁的优势越小.</p>
+</li>
+<li><p>必须通过循环判断布尔值来解决虚假唤醒问题.</p>
+</li>
+<li><p>单例模式中的实例一般是静态变量, 在第一次执行时创建, C++11后保证静态变量的创建是线程安全的, 也就是说这种创建方式是线程安全的. 也可以通过new在堆上创建, 这种创建是可以传入参数的(静态变量不可), 并且销毁是可控的, 但是这里会有线程安全问题, 可以通过call_once来解决 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">typename</span>... Args&gt;<br><span class="hljs-function"><span class="hljs-type">static</span> T* <span class="hljs-title">instance</span><span class="hljs-params">(Args&amp;&amp;... args)</span> </span>&#123;<br>    std::<span class="hljs-built_in">call_once</span>(flag_, [&amp;] &#123;<br>        instance_ = <span class="hljs-keyword">new</span> <span class="hljs-built_in">T</span>(std::forward&lt;Args&gt;(args)...);<br>    &#125;);<br>    <span class="hljs-keyword">return</span> instance_;<br>&#125;traverse<br></code></pre></td></tr></table></figure>
+
+<p>其保证内部的代码原子且只被执行一次.</p>
+</li>
+<li><p>one loop per thread 的优势 : </p>
+<ul>
+<li>线程数目固定, 开始时创建, 不会频繁地创建和销毁, 如果用一个线程池去控制也更方便, 更好控制.</li>
+<li>负责调配方便, 数目固定直接轮询其实就是非常好的方案.</li>
+<li>每个连接会对应固定线程, 不需要关心线程安全, 没有锁的顾虑.</li>
+</ul>
+</li>
+<li><p>进程间通信选择TCP往往是最优的选择, 因为其天然跨主机, 可以长连接, 更稳定, 相比于多出来的一些花销, 其使用更加简洁且功能丰富.</p>
+</li>
+<li><p>当想限制CPU的占用率时, 需要使用单线程.</p>
+</li>
+<li><p>系统的文件函数一般都是线程安全的, 但是如果组合起来的话就可能有问题, 比如想指定读某个文件的某部分, 就需要先lseek再read, 但是lseek和read的中间可能有其他线程也会调用lseek, 由于lseek的影响是全局的, 就会read错误. 解决方法是使用pread, 其就是内部封装了lseek和read再使其原子化. </p>
+</li>
+<li><p>多线程程序中不要使用信号, 就算要用也要转换成统一的事件, 推荐用signalfd之间转化为文件描述符事件.</p>
+</li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/" class="print-no-link">#多线程</a>
+      
+        <a href="/tags/Muduo/" class="print-no-link">#Muduo</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Linux多线程服务端编程 读书笔记1</div>
+      <div>http://example.com/2025/07/12/[Linux多线程服务端编程] 读书笔记(1)/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>天目中云</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年7月12日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/07/11/libuv%E7%BD%91%E7%BB%9C%E5%BA%93/" title="libuv事件库">
+                        <span class="hidden-mobile">libuv事件库</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"NhgfDy2CEByjwxuxPM1Le2t6-MdYXbMMI","appKey":"nvGMdqKfKbpkVnojLSbwmasv","path":"window.location.pathname","placeholder":null,"avatar":"retro","meta":["nick","mail","link"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":false,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":false},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

@@ -1,0 +1,737 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/head.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="天目中云">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="回显服务器先实现一个最简的Tcp回显服务器 :  1234567891011121314151617181920212223242526272829303132333435363738394041424344454647484950515253545556575859606162636465666768697071727374757677787980818283848586878889909192">
+<meta property="og:type" content="article">
+<meta property="og:title" content="libuv事件库">
+<meta property="og:url" content="http://example.com/2025/07/11/libuv%E7%BD%91%E7%BB%9C%E5%BA%93/index.html">
+<meta property="og:site_name" content="天目中云">
+<meta property="og:description" content="回显服务器先实现一个最简的Tcp回显服务器 :  1234567891011121314151617181920212223242526272829303132333435363738394041424344454647484950515253545556575859606162636465666768697071727374757677787980818283848586878889909192">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-07-11T10:00:00.000Z">
+<meta property="article:modified_time" content="2025-07-12T10:28:38.286Z">
+<meta property="article:author" content="天目中云">
+<meta property="article:tag" content="libuv">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>libuv事件库 - 天目中云</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":"NhgfDy2CEByjwxuxPM1Le2t6-MdYXbMMI","app_key":"nvGMdqKfKbpkVnojLSbwmasv","server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>TianMu</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/03.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="libuv事件库"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-07-11 18:00" pubdate>
+          2025年7月11日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          972 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          9 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">libuv事件库</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h3 id="回显服务器"><a href="#回显服务器" class="headerlink" title="回显服务器"></a>回显服务器</h3><p>先实现一个最简的Tcp回显服务器 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdlib.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;string.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;uv.h&gt;</span></span><br><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> PORT 7000</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> BUFFER_SIZE 1024</span><br><br><span class="hljs-comment">// 分配缓冲区</span><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">alloc_buffer</span><span class="hljs-params">(<span class="hljs-type">uv_handle_t</span> *handle, <span class="hljs-type">size_t</span> suggested_size, <span class="hljs-type">uv_buf_t</span> *buf)</span></span><br><span class="hljs-function"></span>&#123;<br>    buf-&gt;base = (<span class="hljs-type">char</span> *)<span class="hljs-built_in">malloc</span>(suggested_size);<br>    buf-&gt;len = suggested_size;<br>&#125;<br><br><span class="hljs-comment">// 关闭连接</span><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">on_close</span><span class="hljs-params">(<span class="hljs-type">uv_handle_t</span> *handle)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-built_in">free</span>(handle);<br>&#125;<br><br><span class="hljs-comment">// 写回数据后的回调</span><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">echo_write</span><span class="hljs-params">(<span class="hljs-type">uv_write_t</span> *req, <span class="hljs-type">int</span> status)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">if</span> (status &lt; <span class="hljs-number">0</span>)<br>    &#123;<br>        <span class="hljs-built_in">fprintf</span>(stderr, <span class="hljs-string">&quot;Write error %s\n&quot;</span>, <span class="hljs-built_in">uv_strerror</span>(status));<br>    &#125;<br>    <span class="hljs-built_in">free</span>(req-&gt;data);<br>    <span class="hljs-built_in">free</span>(req);<br>&#125;<br><br><span class="hljs-comment">// 读数据后的回调</span><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">on_read</span><span class="hljs-params">(<span class="hljs-type">uv_stream_t</span> *client, <span class="hljs-type">ssize_t</span> nread, <span class="hljs-type">const</span> <span class="hljs-type">uv_buf_t</span> *buf)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">if</span> (nread &gt; <span class="hljs-number">0</span>)<br>    &#123;<br>        <span class="hljs-type">uv_write_t</span> *req = (<span class="hljs-type">uv_write_t</span> *)<span class="hljs-built_in">malloc</span>(<span class="hljs-built_in">sizeof</span>(<span class="hljs-type">uv_write_t</span>));<br>        <span class="hljs-type">uv_buf_t</span> wrbuf = <span class="hljs-built_in">uv_buf_init</span>(buf-&gt;base, nread);<br>        req-&gt;data = buf-&gt;base; <span class="hljs-comment">// 保存写回用的数据</span><br><br>        <span class="hljs-built_in">uv_write</span>(req, client, &amp;wrbuf, <span class="hljs-number">1</span>, echo_write);<br>        <span class="hljs-keyword">return</span>;<br>    &#125;<br>    <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (nread &lt; <span class="hljs-number">0</span>)<br>    &#123;<br>        <span class="hljs-keyword">if</span> (nread != UV_EOF)<br>            <span class="hljs-built_in">fprintf</span>(stderr, <span class="hljs-string">&quot;Read error %s\n&quot;</span>, <span class="hljs-built_in">uv_err_name</span>(nread));<br>        <span class="hljs-built_in">uv_close</span>((<span class="hljs-type">uv_handle_t</span> *)client, on_close);<br>    &#125;<br><br>    <span class="hljs-built_in">free</span>(buf-&gt;base);<br>&#125;<br><br><span class="hljs-comment">// 有新连接时触发</span><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">on_new_connection</span><span class="hljs-params">(<span class="hljs-type">uv_stream_t</span> *server, <span class="hljs-type">int</span> status)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">if</span> (status &lt; <span class="hljs-number">0</span>)<br>    &#123;<br>        <span class="hljs-built_in">fprintf</span>(stderr, <span class="hljs-string">&quot;New connection error %s\n&quot;</span>, <span class="hljs-built_in">uv_strerror</span>(status));<br>        <span class="hljs-keyword">return</span>;<br>    &#125;<br><br>    <span class="hljs-type">uv_tcp_t</span> *client = (<span class="hljs-type">uv_tcp_t</span> *)<span class="hljs-built_in">malloc</span>(<span class="hljs-built_in">sizeof</span>(<span class="hljs-type">uv_tcp_t</span>));<br>    <span class="hljs-built_in">uv_tcp_init</span>(server-&gt;loop, client);<br><br>    <span class="hljs-keyword">if</span> (<span class="hljs-built_in">uv_accept</span>(server, (<span class="hljs-type">uv_stream_t</span> *)client) == <span class="hljs-number">0</span>)<br>    &#123;<br>        <span class="hljs-built_in">uv_read_start</span>((<span class="hljs-type">uv_stream_t</span> *)client, alloc_buffer, on_read);<br>    &#125;<br>    <span class="hljs-keyword">else</span><br>    &#123;<br>        <span class="hljs-built_in">uv_close</span>((<span class="hljs-type">uv_handle_t</span> *)client, on_close);<br>    &#125;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-type">uv_loop_t</span> *loop = <span class="hljs-built_in">uv_default_loop</span>();<br><br>    <span class="hljs-type">uv_tcp_t</span> server;<br>    <span class="hljs-built_in">uv_tcp_init</span>(loop, &amp;server);<br><br>    <span class="hljs-keyword">struct</span> <span class="hljs-title class_">sockaddr_in</span> addr;<br>    <span class="hljs-built_in">uv_ip4_addr</span>(<span class="hljs-string">&quot;0.0.0.0&quot;</span>, PORT, &amp;addr);<br><br>    <span class="hljs-built_in">uv_tcp_bind</span>(&amp;server, (<span class="hljs-type">const</span> <span class="hljs-keyword">struct</span> sockaddr *)&amp;addr, <span class="hljs-number">0</span>);<br>    <span class="hljs-type">int</span> r = <span class="hljs-built_in">uv_listen</span>((<span class="hljs-type">uv_stream_t</span> *)&amp;server, <span class="hljs-number">128</span>, on_new_connection);<br><br>    <span class="hljs-keyword">if</span> (r)<br>    &#123;<br>        <span class="hljs-built_in">fprintf</span>(stderr, <span class="hljs-string">&quot;Listen error %s\n&quot;</span>, <span class="hljs-built_in">uv_strerror</span>(r));<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">1</span>;<br>    &#125;<br><br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;Echo server listening on port %d...\n&quot;</span>, PORT);<br>    <span class="hljs-keyword">return</span> <span class="hljs-built_in">uv_run</span>(loop, UV_RUN_DEFAULT);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>可以看到都是和其他网络库非常相似的事件循环, 但也有非常强的异步风格, 处理事件都是需要传入相应回调的.</p>
+<p>比较有意思的是<code>uv_read_start</code>的使用, 这个函数需要传入申请缓冲区的回调和读事件发生后的回调, 这里并不需要我们在外部提前申请缓冲区, 而是由库内部自己决定申请缓冲区的时机, 于是就可以在读事件发生时再及时申请内存然后读入, 非常好地利用了异步的特性, 避免了长期占有部分内存. 关于如何获取内部读到的数据, 读事件完毕后的回调中必须要有<code>uv_buf_t</code>这个类型, 我们可以从该类型参数中取出读到的内容.</p>
+<h3 id="libuv特性及优势"><a href="#libuv特性及优势" class="headerlink" title="libuv特性及优势"></a>libuv特性及优势</h3><ul>
+<li><p>libuv是一般使用单线程模型, 支持线程池但很少使用. 本身还是Reactor模型, 通过事件循环多路复用分发事件.</p>
+</li>
+<li><p>非常标准的纯异步网络库, 都是通过回调进行处理.</p>
+</li>
+<li><p>专门匹配Node.js, 可以比较完美地匹配windows环境, 虽然本身跨平台, 但是相比于其他网络库在windows平台有天然优势, 可以实现很多windows下的异步操作.</p>
+</li>
+<li><p>原生支持异步文件 &#x2F; DNS &#x2F; 子进程.</p>
+</li>
+</ul>
+<h3 id="异步文件操作"><a href="#异步文件操作" class="headerlink" title="异步文件操作"></a>异步文件操作</h3><p>利用libuv实现异步文件读取.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdlib.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;uv.h&gt;</span></span><br><br><span class="hljs-type">uv_loop_t</span> *loop;<br><span class="hljs-type">uv_fs_t</span> open_req, read_req, close_req;<br><span class="hljs-type">uv_buf_t</span> iov;<br><span class="hljs-type">char</span> buffer[<span class="hljs-number">1024</span>];<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">on_close</span><span class="hljs-params">(<span class="hljs-type">uv_fs_t</span>* req)</span> </span>&#123;<br>    <span class="hljs-built_in">uv_fs_req_cleanup</span>(req);<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">on_read</span><span class="hljs-params">(<span class="hljs-type">uv_fs_t</span>* req)</span> </span>&#123;<br>    <span class="hljs-keyword">if</span> (req-&gt;result &gt; <span class="hljs-number">0</span>) &#123;<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;Read: %.*s\n&quot;</span>, (<span class="hljs-type">int</span>)req-&gt;result, buffer);<br>    &#125;<br>    <span class="hljs-built_in">uv_fs_req_cleanup</span>(req);<br>    <span class="hljs-built_in">uv_fs_close</span>(loop, &amp;close_req, open_req.result, on_close);<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">on_open</span><span class="hljs-params">(<span class="hljs-type">uv_fs_t</span>* req)</span> </span>&#123;<br>    <span class="hljs-keyword">if</span> (req-&gt;result &gt;= <span class="hljs-number">0</span>) &#123;<br>        iov = <span class="hljs-built_in">uv_buf_init</span>(buffer, <span class="hljs-built_in">sizeof</span>(buffer));<br>        <span class="hljs-built_in">uv_fs_read</span>(loop, &amp;read_req, req-&gt;result, &amp;iov, <span class="hljs-number">1</span>, <span class="hljs-number">-1</span>, on_read);<br>    &#125; <span class="hljs-keyword">else</span> &#123;<br>        <span class="hljs-built_in">fprintf</span>(stderr, <span class="hljs-string">&quot;Error opening file: %s\n&quot;</span>, <span class="hljs-built_in">uv_strerror</span>((<span class="hljs-type">int</span>)req-&gt;result));<br>    &#125;<br>    <span class="hljs-built_in">uv_fs_req_cleanup</span>(req);<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;<br>    loop = <span class="hljs-built_in">uv_default_loop</span>();<br>    <span class="hljs-built_in">uv_fs_open</span>(loop, &amp;open_req, <span class="hljs-string">&quot;test.txt&quot;</span>, O_RDONLY, <span class="hljs-number">0</span>, on_open);<br>    <span class="hljs-built_in">uv_run</span>(loop, UV_RUN_DEFAULT);<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>主要就是围绕<code>uv_fs_t</code>这个类实现异步文件读取, 读到内容都会先存在这个类中.</p>
+<h3 id="异步-DNS-解析"><a href="#异步-DNS-解析" class="headerlink" title="异步 DNS 解析"></a>异步 DNS 解析</h3><p>这个主要是为了配合Nodejs实现网页前端的异步域名解析 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdlib.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;uv.h&gt;</span></span><br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">on_resolved</span><span class="hljs-params">(<span class="hljs-type">uv_getaddrinfo_t</span>* req, <span class="hljs-type">int</span> status, <span class="hljs-keyword">struct</span> addrinfo* res)</span> </span>&#123;<br>    <span class="hljs-keyword">if</span> (status &lt; <span class="hljs-number">0</span>) &#123;<br>        <span class="hljs-built_in">fprintf</span>(stderr, <span class="hljs-string">&quot;getaddrinfo callback error %s\n&quot;</span>, <span class="hljs-built_in">uv_strerror</span>(status));<br>        <span class="hljs-keyword">return</span>;<br>    &#125;<br><br>    <span class="hljs-type">char</span> addr[<span class="hljs-number">17</span>] = &#123;<span class="hljs-string">&#x27;\0&#x27;</span>&#125;;<br>    <span class="hljs-built_in">uv_ip4_name</span>((<span class="hljs-keyword">struct</span> sockaddr_in*) res-&gt;ai_addr, addr, <span class="hljs-number">16</span>);<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;Resolved IP: %s\n&quot;</span>, addr);<br><br>    <span class="hljs-built_in">uv_freeaddrinfo</span>(res);<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-type">uv_loop_t</span>* loop = <span class="hljs-built_in">uv_default_loop</span>();<br>    <span class="hljs-type">uv_getaddrinfo_t</span> resolver;<br><br>    <span class="hljs-keyword">struct</span> <span class="hljs-title class_">addrinfo</span> hints = &#123;<span class="hljs-number">0</span>&#125;;<br>    hints.ai_family = AF_INET;<br>    hints.ai_socktype = SOCK_STREAM;<br><br>    <span class="hljs-built_in">uv_getaddrinfo</span>(loop, &amp;resolver, on_resolved, <span class="hljs-string">&quot;www.baidu.com&quot;</span>, <span class="hljs-string">&quot;80&quot;</span>, &amp;hints);<br>    <span class="hljs-built_in">uv_run</span>(loop, UV_RUN_DEFAULT);<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/libuv/" class="print-no-link">#libuv</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>libuv事件库</div>
+      <div>http://example.com/2025/07/11/libuv网络库/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>天目中云</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年7月11日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/07/12/%5BLinux%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%9C%8D%E5%8A%A1%E7%AB%AF%E7%BC%96%E7%A8%8B%5D%20%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0(1)/" title="Linux多线程服务端编程 读书笔记1">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Linux多线程服务端编程 读书笔记1</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/07/08/boost%20asio%E7%BD%91%E7%BB%9C%E5%BA%93/" title="boost::asio网络库">
+                        <span class="hidden-mobile">boost::asio网络库</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"NhgfDy2CEByjwxuxPM1Le2t6-MdYXbMMI","appKey":"nvGMdqKfKbpkVnojLSbwmasv","path":"window.location.pathname","placeholder":null,"avatar":"retro","meta":["nick","mail","link"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":false,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":false},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
