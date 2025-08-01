@@ -246,6 +246,46 @@
     <article class="col-12 col-md-12 mx-auto index-info">
       <h2 class="index-header">
         
+        <a href="/2025/08/01/HTTP2/" target="_self">
+          HTTP/2
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/08/01/HTTP2/" target="_self">
+        <div>
+          分为两部分 : 理论知识 和 nghttp2库使用  理论知识可以理解为在HTTP&#x2F;1.1上做了很多精简优化的工作, 解决了很多冗余的部分, 实现了精细地控制. 提升了加载速度, 减少了连接资源的浪费, 避免的频繁的队头阻塞. 整体理解 依旧使用TCP进行数据传递, 但是不同的请求都将始终在一条TCP连接上实现, 也就是说一组请求响应不再会长时间占用整个TCP连接. 流机制和帧机制实现
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2025-08-01 17:00" pubdate>
+              2025-08-01
+            </time>
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/HTTP/">#HTTP</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
         <a href="/2025/07/20/HTTP1/" target="_self">
           HTTP/1
         </a>
@@ -597,46 +637,6 @@
               <a href="/tags/RPC/">#RPC</a>
             
               <a href="/tags/%E6%97%A5%E5%BF%97%E7%B3%BB%E7%BB%9F/">#日志系统</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h2 class="index-header">
-        
-        <a href="/2025/06/26/Rpc%E5%88%86%E5%B8%83%E5%BC%8F%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E6%A1%86%E6%9E%B6(7)%20Zookeeper/" target="_self">
-          Rpc分布式网络通信框架(7) Zookeeper
-        </a>
-      </h2>
-
-      
-      <a class="index-excerpt index-excerpt__noimg" href="/2025/06/26/Rpc%E5%88%86%E5%B8%83%E5%BC%8F%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E6%A1%86%E6%9E%B6(7)%20Zookeeper/" target="_self">
-        <div>
-          本章了解zookeeper的作用与简易的使用方式.  Zookeeper是一个使用非常广泛的服务发现中间件. 这个中间件为c&#x2F;s模式, 也就是其会运行在一个服务器上, 其内部维护了一个特殊的文件系统, 可以存储大量的服务信息, 供客户端提取. 以本项目为例, 在上一章RpcChannel想要获取远程调用服务, 就必须知道提供该服务服务器的ip和port并存入配置文件中, 这样操作是非常
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2025-06-26 12:00" pubdate>
-              2025-06-26
-            </time>
-          </div>
-        
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/RPC/">#RPC</a>
             
           </div>
         
