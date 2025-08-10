@@ -1,0 +1,1112 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/head.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="天目中云">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="C编译链接系统 先来回顾C语言的编译流程 : 预处理 -&gt; 编译 -&gt; 汇编 -&gt; 链接  Preprocessor 预处理 输入  .c &#x2F; .cc 文件 输出  .i (intermediate 中间) 文件 工作 :  将include字段用对应的.h文件替换 替换define字段 处理条件编译 删除注释    Compiler 编译 输入 .i 文件 输出 .s">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C++编译链接模型精要">
+<meta property="og:url" content="http://example.com/2025/08/10/C++%E7%BC%96%E8%AF%91%E9%93%BE%E6%8E%A5%E6%A8%A1%E5%9E%8B%E7%B2%BE%E8%A6%81/index.html">
+<meta property="og:site_name" content="天目中云">
+<meta property="og:description" content="C编译链接系统 先来回顾C语言的编译流程 : 预处理 -&gt; 编译 -&gt; 汇编 -&gt; 链接  Preprocessor 预处理 输入  .c &#x2F; .cc 文件 输出  .i (intermediate 中间) 文件 工作 :  将include字段用对应的.h文件替换 替换define字段 处理条件编译 删除注释    Compiler 编译 输入 .i 文件 输出 .s">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="c:\Users\ASUS\AppData\Roaming\Typora\typora-user-images\image-20250808110147021.png">
+<meta property="og:image" content="c:\Users\ASUS\AppData\Roaming\Typora\typora-user-images\image-20250808112355184.png">
+<meta property="article:published_time" content="2025-08-10T12:40:00.000Z">
+<meta property="article:modified_time" content="2025-08-10T12:41:29.344Z">
+<meta property="article:author" content="天目中云">
+<meta property="article:tag" content="编译链接">
+<meta property="article:tag" content="C++20模块">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="c:\Users\ASUS\AppData\Roaming\Typora\typora-user-images\image-20250808110147021.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>C++编译链接模型精要 - 天目中云</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":"NhgfDy2CEByjwxuxPM1Le2t6-MdYXbMMI","app_key":"nvGMdqKfKbpkVnojLSbwmasv","server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>TianMu</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/03.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="C++编译链接模型精要"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-08-10 20:40" pubdate>
+          2025年8月10日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          8.3k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          69 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">C++编译链接模型精要</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h2 id="C编译链接系统"><a href="#C编译链接系统" class="headerlink" title="C编译链接系统"></a>C编译链接系统</h2><blockquote>
+<p>先来回顾C语言的编译流程 : 预处理 -&gt; 编译 -&gt; 汇编 -&gt; 链接</p>
+</blockquote>
+<h3 id="Preprocessor-预处理"><a href="#Preprocessor-预处理" class="headerlink" title="Preprocessor 预处理"></a>Preprocessor 预处理</h3><ul>
+<li>输入  .c &#x2F; .cc 文件</li>
+<li>输出  .i (intermediate 中间) 文件</li>
+<li>工作 : <ul>
+<li>将include字段用对应的.h文件替换</li>
+<li>替换define字段</li>
+<li>处理条件编译</li>
+<li>删除注释</li>
+</ul>
+</li>
+</ul>
+<h3 id="Compiler-编译"><a href="#Compiler-编译" class="headerlink" title="Compiler 编译"></a>Compiler 编译</h3><ul>
+<li>输入 .i 文件</li>
+<li>输出 .s (source 源码) 文件</li>
+<li>工作 :  进行编译层面的语法优化 + 转化为汇编语言. 其内部实现其实相对复杂, 编译器会分析你所构建的类或函数, 在内部生成类似语义树的结构, 进而推动高级代码向汇编代码的转变.</li>
+</ul>
+<h3 id="Assembler-汇编"><a href="#Assembler-汇编" class="headerlink" title="Assembler 汇编"></a>Assembler 汇编</h3><ul>
+<li>输入 .s 文件</li>
+<li>输出 .o (object 目标) 文件</li>
+<li>工作 : 将汇编语言转化为适合的<strong>目标机器码</strong>(也就是CPU可以理解并且执行的二进制码).</li>
+<li>注意 : 汇编语言有多种, CPU也有不同的目标机器码, 前两个阶段都根据不同的机器&#x2F;环境做出变化.</li>
+</ul>
+<h3 id="Linker-链接"><a href="#Linker-链接" class="headerlink" title="Linker 链接"></a>Linker 链接</h3><ul>
+<li><p>输入 .o 文件</p>
+</li>
+<li><p>输出可执行文件</p>
+</li>
+<li><p>工作 : 实现多文件的链接, 将.o文件中需要的外部资源通过搜索查找等途径填充, 由预处理阶段替换的.h字段引导.</p>
+<ul>
+<li><p>符号解析 &#x2F; 重定位 : 为.o文件中引用但未定义的函数或变量在外部文件找到定义.</p>
+</li>
+<li><p><strong>节段机制</strong> : </p>
+<p>学过进程地址空间就会直到, 每个进程地址空间都会被分配代码块, 数据块等字段用于进程运作, 链接器会利用节段机制将不同.cc文件的数据和代码汇聚到进程地址空间的<code>.test</code> &#x2F; <code>.data</code> &#x2F; <code>.bss</code> 等中, 实际就是将分散的源代码汇聚到一个进程体系中, 使其可以作为一个进程真正实现运行.</p>
+</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>上述过程可以简单理解为 高级语言 -&gt; 汇编语言 -&gt; 目标机器码 -&gt; 代码合并 + 进程实现 </p>
+<p>我们一般统称前三个阶段<code>预处理-&gt;编译-&gt;汇编</code>为编译阶段, 最后一步为链接阶段.</p>
+<p>下面是一些基础概念的讲解 :</p>
+</blockquote>
+<h3 id="翻译单元-TU"><a href="#翻译单元-TU" class="headerlink" title="翻译单元(TU)"></a>翻译单元(TU)</h3><p>可以理解为<strong>一个<code>.o</code>文件就是一个翻译单元</strong>, 而一个<code>.o</code>又对应一个<code>.cpp</code>, 也就是说一个项目<code>.cpp</code>文件的数量就是最后翻译单元的数量.</p>
+<p>官方点说, 翻译单元就是源文件通过前三个阶段得来的展开代码, 而最后一个阶段就是把各个编译单元链接到一块的过程.</p>
+<ul>
+<li><strong>编译阶段每个翻译单元相互独立, 而链接阶段会汇聚所有翻译单元产生的<code>.o</code>文件</strong>.</li>
+</ul>
+<h3 id="增量编译"><a href="#增量编译" class="headerlink" title="增量编译"></a>增量编译</h3><p>通常编译器会缓存<code>.o</code>文件, 只有当<code>.o</code>文件对应的<code>.cpp</code>文件发生了修改(其包含的头文件发生修改也算), 才会重新进行编译, 不然都会直接使用原来的.o文件而不进行额外的编译, 这是后面前向声明的前置机制.</p>
+<h3 id="头文件-h-与源文件-cpp-分离"><a href="#头文件-h-与源文件-cpp-分离" class="headerlink" title="头文件(.h)与源文件(.cpp)分离"></a>头文件(.h)与源文件(.cpp)分离</h3><p>这是一个非常基础的理念, 但是在这里重申一下, 首先这种分块的形式便于项目模块的分类和规划, 提供给外部使用也更方便. 但在编译角度, 这种形式可以天然降低重复编译 : 如果<code>.cpp</code>文件发生变化, 只要<code>.h</code>文件不变, 那么其他包含了该<code>.h</code>文件的<code>.cpp</code>文件就无需重新编译, 只需要发生变动的这个<code>.cpp</code>文件重新编译即可.</p>
+<h3 id="符号表"><a href="#符号表" class="headerlink" title="符号表"></a>符号表</h3><p>C内部有各种各样的符号表, 这里专门讲解在<code>.o</code>文件中的符号表, 不过就算是讲解, 也只是表达概念而不是深入底层, 因为其内部实现相对复杂, 不好理解.</p>
+<ul>
+<li><p>符号 : 你可以理解为对函数&#x2F;类&#x2F;变量的简称, 一般就是其名称再加一些标志符号.</p>
+</li>
+<li><p><code>.o</code>文件中的符号表 约等于 <strong>本目标文件对外的接口清单 + 对外的依赖清单</strong>.</p>
+</li>
+<li><p>在链接器拿到<code>.o</code>文件后就会知道其有什么样接口, 可以供其他文件使用; 同时也知道其有怎样的依赖, 需要链接器帮它找这些依赖文件.</p>
+</li>
+<li><p>一般<code>T</code>被用于表示<strong>拥有其定义</strong>, <code>U</code>被用于表示<strong>引用但未定义</strong>需要链接器帮忙寻找, 还有很多标志这里不详述.</p>
+</li>
+</ul>
+<h3 id="静态库-a-lib"><a href="#静态库-a-lib" class="headerlink" title="静态库( .a &#x2F; .lib )"></a>静态库( .a &#x2F; .lib )</h3><p>这是一种用于<strong>存储<code>.o</code>文件</strong>的形式. </p>
+<ul>
+<li><p>目的 : 通过存储集合<code>.o</code>文件到<code>.a</code>中, <strong>在链接阶段直接使用现成的<code>.o</code>文件</strong>而直接跳过编译阶段, 大大提升编译速度.</p>
+</li>
+<li><p>生成 : 下面主要展示Linux系统中如何生成静态库, 一般都是使用<code>ar</code>进行静态库相关操作.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment"># 1. 生成目标文件</span><br>gcc -c add.c sub.c<br><span class="hljs-comment"># 2. 归档成静态库</span><br>ar rcs libmath.a add.o sub.o<br></code></pre></td></tr></table></figure>
+</li>
+<li><p>使用 : 生成的静态库名为<code>libmath.a</code>, 那么其真正库名就是<code>math</code>, 链接时需要<code>-l库名</code>.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment"># 3. 使用静态库链接</span><br>gcc main.c -L. -lmath -o main_static<br></code></pre></td></tr></table></figure>
+</li>
+<li><p>底层实现 : 在链接过程中, 链接器会<strong>把需要的<code>.o</code>文件拷贝到可执行文件的代码段</strong>.</p>
+</li>
+<li><p>更新 : 在头&#x2F;源文件发生变动时, 需要重新编译<code>.o</code>文件, 再将其重新加入静态库中, 如果原来有就会覆盖.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment"># 将 add.o 归并到 math 库中</span><br>ar rcs libmath.a add.o<br></code></pre></td></tr></table></figure></li>
+</ul>
+<h3 id="动态库-so-dll"><a href="#动态库-so-dll" class="headerlink" title="动态库( .so &#x2F; .dll )"></a>动态库( .so &#x2F; .dll )</h3><p>同样也是一种存储<code>.o</code>文件的形式, 其与静态库的差异主要在使用方式.</p>
+<ul>
+<li><p>目的 : 和静态库相同, 也是直接使用现成的<code>.o</code>文件跳过编译阶段, 但是其具体实现有很大差异.</p>
+</li>
+<li><p>生成 : </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment"># 编译为位置无关代码</span><br>gcc -fPIC -c add.c sub.c<br><span class="hljs-comment"># 链接成动态库</span><br>gcc -shared -o libmath.so add.o sub.o<br></code></pre></td></tr></table></figure>
+</li>
+<li><p>使用 : 与静态库一致.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">gcc main.c -L. -lmath -o main<br></code></pre></td></tr></table></figure>
+</li>
+<li><p>更新 :  动态库没有静态库类似的归并动作, 直接文件替换就行, 但是需要考虑链接问题 : </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment"># 直接新增或替换</span><br><span class="hljs-built_in">cp</span> libmath.so.1.0.1 /usr/lib/  <br><span class="hljs-comment"># 将原本的链接导向新动态库</span><br><span class="hljs-built_in">ln</span> -sf libmath.so.1.0.1 /usr/lib/libmath.so.1<br></code></pre></td></tr></table></figure>
+</li>
+<li><p>底层实现 : </p>
+<p>在连接过程中, 链接器<strong>会告诉可执行文件需要的<code>.o</code>文件在哪里</strong>, <strong>不进行实际的拷贝, 而是让可执行文件在运行时将其加载到内存中, 可执行文件到内存中去找</strong>.</p>
+</li>
+<li><p>优势 : </p>
+<ul>
+<li>加载到内存的动态库可以被共享, 也就是说只进行一次到内存的加载即可, <strong>内存占用低</strong>.</li>
+<li>动态库可以理解为可执行文件的外部依赖, 但并无实际关联, 动态库的更新无需可执行文件重新编译, <strong>更新便捷</strong>.</li>
+</ul>
+</li>
+<li><p>劣势 : 虽然更新便捷, 但是事实上会带来很多版本兼容性问题.</p>
+</li>
+</ul>
+<hr>
+<h2 id="C-编译链接系统"><a href="#C-编译链接系统" class="headerlink" title="C++编译链接系统"></a>C++编译链接系统</h2><h3 id="前向声明"><a href="#前向声明" class="headerlink" title="前向声明"></a>前向声明</h3><blockquote>
+<p>前向声明在C中就存在, 不过在C++中重要性被进一步提升了, 这里就放入了C++部分.</p>
+</blockquote>
+<p>用来<strong>降低编译依存性</strong>的最主要手段, 可以大大减少编译时间.</p>
+<blockquote>
+<p>有关编译依存性在我往期博客 Effective C++ 系列中提到过, 后面也会深入讲解.</p>
+</blockquote>
+<ul>
+<li><p>什么是编译依存性?</p>
+<p>一个头文件如果修改, 那么所有使用其的源文件就都要重新编译, 由于头文件很大可能是一个套一个的, 一个头文件的修改就会引发非常多的源文件需要重新编译, 这就是编译依存性, 而前向声明可以极大降低这种危害.</p>
+</li>
+<li><p>什么是前向声明? </p>
+<ul>
+<li><p>在头文件中对函数进行声明, 可以视为一种最基础的前向声明, 表明在源文件中有其定义, 实现了函数声明与定义的解耦.</p>
+</li>
+<li><p>还有一种<strong>class的前向声明</strong>, 形式为<code>class PersonImpl;</code>保证有这样一个类型, 实现了类型声明与定义的解耦.</p>
+<p>但是最为重要的是, 使用class前向声明有一个必须的前置规则 : </p>
+<ul>
+<li><strong>不可以访问该class的成员</strong>或<strong>执行需要知晓该class大小的行为(如建立实参等)</strong>.</li>
+</ul>
+<p>因为以上两种行为代表编译器必须要知道class的定义才能实现, 使用定义必须包含头文件而非前向声明.</p>
+<p>不过一般也不需要记”不可以”怎样, 这里给出两种”可以”的情况 : </p>
+<ul>
+<li><strong>只使用指针或引用</strong>(Foo* or Foo&amp;), 因为指针大小是固定的, 不需要实际定义.</li>
+<li><strong>作为函数的参数或返回类型</strong>, 并且不在该头文件的其他地方调用该函数.</li>
+</ul>
+</li>
+</ul>
+<p>这里举一个例子 : Person需要组合一个Name类实现自己的功能 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// person.h</span><br><span class="hljs-meta">#<span class="hljs-keyword">pragma</span> once</span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span><span class="hljs-string">&lt;iostream&gt;</span></span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Name</span>;<br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Person</span><br>&#123;<br>	<span class="hljs-function">std::string <span class="hljs-title">getname</span><span class="hljs-params">()</span></span>;<br><span class="hljs-keyword">private</span>:<br>	Name* name;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// name.h</span><br><span class="hljs-meta">#<span class="hljs-keyword">pragma</span> once</span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span><span class="hljs-string">&lt;iostream&gt;</span></span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Name</span><br>&#123;<br><span class="hljs-keyword">public</span>:<br>	<span class="hljs-function">std::string <span class="hljs-title">getname</span><span class="hljs-params">()</span> </span>&#123; <span class="hljs-keyword">return</span> name; &#125;<br><span class="hljs-keyword">private</span>:<br>	std::string name;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// person.cpp</span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;person.h&quot;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;name.h&quot;</span></span><br><span class="hljs-function">std::string <span class="hljs-title">Person::getname</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>	<span class="hljs-keyword">return</span> name-&gt;<span class="hljs-built_in">getname</span>();<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>我们会发现, 虽然在<code>person.h</code>中<strong>用到了Name的指针</strong>, 但我们只需要前向声明保证有这个类型, 就无需再包含对应的头文件.</p>
+<p>相应的, 我们会<strong>在源文件中包含对应的头文件</strong>, 在源文件中实现对Name的使用.</p>
+<p>为了深入理解前向声明的作用, 我们用一个图来解释 : </p>
+<p><img src="C:\Users\ASUS\AppData\Roaming\Typora\typora-user-images\image-20250808110147021.png" srcset="/img/loading.gif" lazyload alt="image-20250808110147021"></p>
+<p>这里我们用实线代表包含, 虚线代表前向声明. </p>
+<ul>
+<li><code>1.h</code>包含于当前头文件, 那么如果该文件发生修改, 那么源文件1234就都要重新编译.</li>
+<li><code>2.h</code>前向声明于当前头文件, 包含于<code>1.cpp</code>, 那么如果该文件发生修改, 就只有<code>1.cpp</code>需要重新编译, 不会影响到其他源文件.</li>
+</ul>
+</li>
+</ul>
+<h3 id="Handle-classes"><a href="#Handle-classes" class="headerlink" title="Handle classes"></a>Handle classes</h3><p>这是一个基于前向声明降低编译依存性的典型方案, 我在Effective C++系列讲解过, 在此引用并加入一些新的理解 : </p>
+<p>本方案以<strong>pimpl idiom</strong>手法为核心, <code>Handle classes</code>意为使用句柄的类, 这个句柄就是<strong>pimpl idiom</strong>手法的指针, <code>Person</code>类还是和上文一致, <code>PersonImpl</code>类<strong>应当和Person有着完全相同的成员函数, 并且有原本Person预想拥有的成员变量</strong>,  可以理解为<code>PersonImpl</code>才是真正的<code>Person</code>类, 以后所有的修改将在<code>PersonImpl</code>中进行.</p>
+<p>一般来说我们要实现三个文件, 一个<code>Person.h</code>存放供客户使用的接口类, 一个<code>PersonImpl.h</code>存放对应接口类的实现类, 一个<code>Person.cpp</code>实现<code>Person</code>中函数声明的对应定义.  有点麻烦, 可以看代码理解, 接下来将给出两个分别封装接口类和实现类的头文件 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// Person.h  存放接口类, 和上文一致</span><br><span class="hljs-meta">#<span class="hljs-keyword">pragma</span> once</span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;string&gt;</span>                      </span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;memory&gt;</span>                      <span class="hljs-comment">// shared_ptr所在</span></span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">PersonImpl</span>;                      <span class="hljs-comment">// 同时也声明实现类</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Date</span>;                        <br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Address</span>;                         <br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Person</span> &#123;<br><span class="hljs-keyword">public</span>:<br>	<span class="hljs-built_in">Person</span>(<span class="hljs-type">const</span> std::string&amp; name, <span class="hljs-type">const</span> Date&amp; birthday,<br>	        <span class="hljs-type">const</span> Address&amp; addr);<br>	<span class="hljs-function">std::string <span class="hljs-title">name</span><span class="hljs-params">()</span> <span class="hljs-type">const</span></span>;<br>	<span class="hljs-function">std::string <span class="hljs-title">birthDate</span><span class="hljs-params">()</span> <span class="hljs-type">const</span></span>;<br>	<span class="hljs-function">std::string <span class="hljs-title">address</span><span class="hljs-params">()</span> <span class="hljs-type">const</span></span>;<br>	...<br><br><span class="hljs-keyword">private</span>:                                   <br>  	std::shared_ptr&lt;PersonImpl&gt; pImpl;  <span class="hljs-comment">// shared_ptr使用见条款13</span><br>&#125;; <br></code></pre></td></tr></table></figure>
+
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// PersonImpl.h  存放实现类</span><br><span class="hljs-meta">#<span class="hljs-keyword">pragma</span> once</span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;Date.h&quot;</span>   <span class="hljs-comment">// 对实现所需的其他类进行包含</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;Address.h&quot;</span></span><br><br><span class="hljs-comment">// 定义实现类</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">PersonImpl</span> &#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-built_in">PersonImpl</span>(<span class="hljs-type">const</span> std::string&amp; n, <span class="hljs-type">const</span> Date&amp; b, <span class="hljs-type">const</span> Address&amp; a)<br>        :_name(n) ,_birthDate(b) ,_address(a)<br>    &#123;&#125;<br>    <span class="hljs-function">std::string <span class="hljs-title">name</span><span class="hljs-params">()</span> <span class="hljs-type">const</span> </span>&#123; <span class="hljs-keyword">return</span> _name; &#125;<br>    <span class="hljs-function">std::string <span class="hljs-title">birthDate</span><span class="hljs-params">()</span> <span class="hljs-type">const</span> </span>&#123; <span class="hljs-keyword">return</span> _birthDate.<span class="hljs-built_in">toString</span>(); &#125;<br>    <span class="hljs-function">std::string <span class="hljs-title">address</span><span class="hljs-params">()</span> <span class="hljs-type">const</span> </span>&#123; <span class="hljs-keyword">return</span> _address.<span class="hljs-built_in">toString</span>(); &#125;<br><span class="hljs-keyword">private</span>:<br>    std::string _name;<br>    Date _birthDate;<br>    Address _address;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// Person.cpp  在该文件实现接口类和实现类的真正关联</span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;Person.h&quot;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;PersonImpl.h&quot;</span></span><br><br><span class="hljs-comment">// 完成对接口类中声明函数的定义</span><br>Person::<span class="hljs-built_in">Person</span>(<span class="hljs-type">const</span> std::string&amp; name, <span class="hljs-type">const</span> Date&amp; birthday, <span class="hljs-type">const</span> Address&amp; addr)<br>    : <span class="hljs-built_in">pImpl</span>(std::<span class="hljs-built_in">make_shared</span>&lt;PersonImpl&gt;(name, birthday, addr)) &#123;&#125;<br><br><span class="hljs-function">std::string <span class="hljs-title">Person::name</span><span class="hljs-params">()</span> <span class="hljs-type">const</span> </span>&#123; <span class="hljs-keyword">return</span> pImpl-&gt;<span class="hljs-built_in">name</span>(); &#125;<br><span class="hljs-function">std::string <span class="hljs-title">Person::birthDate</span><span class="hljs-params">()</span> <span class="hljs-type">const</span> </span>&#123; <span class="hljs-keyword">return</span> pImpl-&gt;<span class="hljs-built_in">birthDate</span>(); &#125;<br><span class="hljs-function">std::string <span class="hljs-title">Person::address</span><span class="hljs-params">()</span> <span class="hljs-type">const</span> </span>&#123; <span class="hljs-keyword">return</span> pImpl-&gt;<span class="hljs-built_in">address</span>(); &#125;<br></code></pre></td></tr></table></figure>
+
+<p>于是客户就可以这样调用<code>Person</code>类 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iostream&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;Person.h&quot;</span>  <span class="hljs-comment">// 只需包含接口类即可</span></span><br><span class="hljs-keyword">using</span> std::cout;<br><span class="hljs-keyword">using</span> std::endl;<br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>	<span class="hljs-function">Date <span class="hljs-title">date</span><span class="hljs-params">(<span class="hljs-number">2024</span>, <span class="hljs-number">12</span>, <span class="hljs-number">10</span>)</span></span>;<br>	<span class="hljs-function">Address <span class="hljs-title">addr</span><span class="hljs-params">(<span class="hljs-string">&quot;NUC&quot;</span>)</span></span>;<br>	<span class="hljs-function">Person <span class="hljs-title">p</span><span class="hljs-params">(<span class="hljs-string">&quot;张三&quot;</span>, date, addr)</span></span>;<br>	cout &lt;&lt; p.<span class="hljs-built_in">name</span>() &lt;&lt; endl;<br>	cout &lt;&lt; p.<span class="hljs-built_in">birthDate</span>() &lt;&lt; endl;<br>	cout &lt;&lt; p.<span class="hljs-built_in">address</span>() &lt;&lt; endl;<br>	<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>这里重申一下Handle classes的使用方式 : </p>
+<ul>
+<li>头文件分为接口类和实现类, 二者有<strong>完全相同的函数声明</strong>.</li>
+<li>接口类<strong>前向声明实现类</strong>, 拥有实现类的指针.</li>
+<li>实现类拥有所有成员变量, 包含各种与其相关的头文件.</li>
+<li>在源文件<code>.cpp</code>中, 同时包含这两个类, <strong>让接口类(如 <code>Person</code>)的成员函数调用实现类(如 <code>PersonImpl</code>)的对应函数</strong>.</li>
+</ul>
+<p>可以通过下图加深理解 : </p>
+<p><img src="C:\Users\ASUS\AppData\Roaming\Typora\typora-user-images\image-20250808112355184.png" srcset="/img/loading.gif" lazyload alt="image-20250808112355184"></p>
+<p>这种手法相比于最初的前向声明使用方法, 界限划分更加明显, 并且接口类的修改频率可以进一步降低, 因为<strong>其内部只前向声明了实现类</strong>, 无需前向声明其他类. 同时依旧保证了对实现类的修改不会影响包含了的接口类的源文件.</p>
+<blockquote>
+<p>下面介绍各种C++特性引发的编译过程变化 :</p>
+</blockquote>
+<h3 id="名字改编-name-mangling-与-函数重载"><a href="#名字改编-name-mangling-与-函数重载" class="headerlink" title="名字改编(name mangling) 与 函数重载"></a>名字改编(name mangling) 与 函数重载</h3><p>在C的链接阶段中描述一个函数一般都是直接用函数名, 因为C不允许函数同名, 在C++中为了契合函数重载, <strong>函数名会在前面的编译或汇编阶段在底层被修改, 通常是利用其返回值与参数配合原名进行修改</strong>, 使得在编译阶段不存在同名函数, 这种处理方式被称为 <code>name mangling</code>.</p>
+<ul>
+<li><p><code>extern &quot;C&quot;;</code> </p>
+<p>这是C++为了适配C提供的声明语句. 声明此语句的头文件, <strong>表示其内部的函数是C风格的, 不受<code>name mangling</code>的影响</strong>.</p>
+</li>
+</ul>
+<h3 id="ODR-One-Definition-Rule-原则"><a href="#ODR-One-Definition-Rule-原则" class="headerlink" title="ODR(One Definition Rule)原则"></a>ODR(One Definition Rule)原则</h3><ul>
+<li><p>What :  <strong>在整个程序中，每个变量、函数、类、模板、枚举等实体只能有一个定义。</strong></p>
+</li>
+<li><p>Why :  因为C&#x2F;C++编译链接采取<strong>编译链接分离原则</strong>. 编译阶段取得的目标机器码, 必须要对于链接合法, 假如多个目标机器码(<code>.o</code>)合并后发现有重复的定义, 会导致链接失败.</p>
+</li>
+<li><p>How : </p>
+<ul>
+<li><p>不能在多个 <code>.cpp</code> 文件中定义同一个全局变量或普通函数。</p>
+</li>
+<li><p>一个含有全局变量或非 inline 函数的<code>.h</code>文件不能被参与编译的多个<code>.cpp</code>文件包含.</p>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="基于ODR的例外处理"><a href="#基于ODR的例外处理" class="headerlink" title="基于ODR的例外处理"></a>基于ODR的例外处理</h3><p>前文说”合并<code>.o</code>文件在发现有重复定义后会直接链接失败”, 但是这种处理是有例外情况, 以下是情况列举 : </p>
+<ul>
+<li><p>inline 函数</p>
+</li>
+<li><p>模板的实例化结果（函数模板、类模板成员函数）</p>
+</li>
+<li><p><code>constexpr</code> 函数</p>
+</li>
+<li><p>类定义（尤其是 <code>inline</code> 成员函数）</p>
+</li>
+<li><p>inline 变量（C++17）</p>
+</li>
+</ul>
+<p>现在先不要理解这些情况具体是什么, 后面会有详细的介绍, 只需要知道<strong>这些情况都会在编译阶段产生相同的定义后触发例外处理的机制</strong>.</p>
+<p>例外处理一般是这样的 : <strong>如果有多个相同定义，保留一个，丢掉其他</strong>. </p>
+<p>这种例外处理其实是编译器对于C++语法的一种妥协, 也在一定程度上是<strong>代码膨胀的根源</strong>. 进一步理解就是多个<code>.o</code>文件合并时, 丢弃掉的生成码都是多余浪费的, 而由于C底层的编译链接分离机制在根本上无法解决.</p>
+<h3 id="inline"><a href="#inline" class="headerlink" title="inline"></a>inline</h3><ul>
+<li><p>错误认知 : </p>
+<p>在学习inline初期很多人都将inline和内联展开进行了强关联, 但在现代C++这两者的关联非常微弱, 可以认为是完全不同的两个东西.</p>
+</li>
+<li><p>内联展开 : </p>
+<p>编译器会在编译期间将一些函数调用直接替换为函数内部的代码, 其实际意义在于省去了函数调用复杂的步骤, 但是如果函数实际代码很长, 拷贝一遍的代价反而不如直接调用, 那就得不偿失了. 但是这不是我们需要考虑的, <strong>编译器会衡量是否应该使用内联展开</strong>. 许多教材中会表明inline关键字会”建议”函数进行内联展开, 但是这种建议其实也是近乎无效的,可以不纳入考虑.</p>
+</li>
+<li><p>真正意义 : </p>
+<p><strong>inline函数允许在头文件中多次定义, 并遵守 ODR.</strong></p>
+<p>其实就是解决了”一个头文件被多个源文件包含, 其中的函数由于同名会产生链接错误”的情况, 编译器和链接器会把其当成上面的例外情况处理.</p>
+<p><strong>这种显示声明inline的函数</strong>, <strong>必须在头文件中实现定义</strong>, 因为链接器要确定只有这一个版本的定义并且所有调用点都可以看到完整的函数体.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// math.h</span><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">square</span><span class="hljs-params">(<span class="hljs-type">int</span> x)</span> </span>&#123;<br>    <span class="hljs-keyword">return</span> x * x;<br>&#125;<br><br><span class="hljs-comment">// a.cpp</span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;math.h&quot;</span></span><br><span class="hljs-type">int</span> a = <span class="hljs-built_in">square</span>(<span class="hljs-number">3</span>);<br><br><span class="hljs-comment">// b.cpp</span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;math.h&quot;</span></span><br><span class="hljs-type">int</span> b = <span class="hljs-built_in">square</span>(<span class="hljs-number">4</span>);<br></code></pre></td></tr></table></figure>
+
+<p>假如想把上面两个源文件合并编译为可执行文件, 在链接阶段就会发生报错, 但是如果<code>square</code>函数设置inline就不会报错.</p>
+</li>
+<li><p>inline 变量 : </p>
+<p>在C++17引入, 但其思想内核与inline函数一致, 都是为了防止重定义带来的链接错误.</p>
+</li>
+<li><p>认知修正 : </p>
+<p><strong>inline关键字与性能无关, 其真正目的是为了防止重定义带来的链接错误</strong>.</p>
+</li>
+</ul>
+<h3 id="constexpr-函数"><a href="#constexpr-函数" class="headerlink" title="constexpr 函数"></a>constexpr 函数</h3><p>常量表达式函数, 这种函数如果编译器检测出可以直接求值, 那么编译器会直接将其替换为计算结果. </p>
+<p>其底层其实采用了inline的机制, 你可以认为其自带一个inline关键字, 因此可以触发ORD的例外处理.</p>
+<h3 id="模板"><a href="#模板" class="headerlink" title="模板"></a>模板</h3><p>这里不细究模板本身, 主要理解和编译相关的模板实例化部分.</p>
+<ul>
+<li><p>模板实例化 : </p>
+<p>简单理解就是<strong>在编译阶段会根据拿到的实际类型&#x2F;参数代入获得实例化的代码</strong>, 有以下需要注意的地方 : </p>
+<ul>
+<li>只要模板类型或模板参数不同, 就要生成一份额外的实例.</li>
+<li>由于编译单元之间是相互独立的, 假如不同源文件中会使用相同的类型或参数生成模板, 依旧会生成两份相同的代码, 在链接阶段再根据例外处理留下一份, 这会造成实际的代码膨胀和浪费.</li>
+</ul>
+</li>
+<li><p><code>extern template</code> : </p>
+<p>该语法于C++11引入, 其作用是<strong>显式禁止某个模板在当前翻译单元内自动隐式实例化</strong>.</p>
+<p>其实就是针对我们上面提到的第二点注意, 当我们意识到多个文件中如果使用了相同的实例化, 就可以<strong>只留一个执行实例化</strong>. </p>
+<p>具体操作一般是<strong>在公共头文件中使用该语法, 禁止所有使用了该模板的源文件进行实例化, 再在一个源文件中显示实例化一次</strong>.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// 在头文件中</span><br><span class="hljs-keyword">extern</span> <span class="hljs-keyword">template</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">std</span>::basic_string&lt;<span class="hljs-type">char</span>&gt;; <span class="hljs-comment">// 禁止自动生成</span><br><br><span class="hljs-comment">// 在一个 .cpp 文件中</span><br><span class="hljs-keyword">template</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">std</span>::basic_string&lt;<span class="hljs-type">char</span>&gt;; <span class="hljs-comment">// 显式生成一次</span><br></code></pre></td></tr></table></figure>
+
+<p>在一个要被广泛使用的模板头文件中使用该操作, 可以有效缓解代码膨胀, C++标准库就广泛使用了这种技术.</p>
+</li>
+</ul>
+<h3 id="static"><a href="#static" class="headerlink" title="static"></a>static</h3><p>static关键字主要作用是<strong>控制存储期和控制链接类型</strong>.</p>
+<ul>
+<li>链接类型 : 这是针对<strong>名称</strong>的概念, 如函数名, 变量名, 类名, <strong>描述其在不同翻译单元的可见性</strong>.<ul>
+<li>外部链接 : 该名称在不同编译单元可见, 也就是跨源文件共享, 普通函数&#x2F;变量, inline函数&#x2F;变量, 模板函数&#x2F;变量 均属于外部链接. </li>
+<li>内部链接 : 仅当前所处翻译单元可见, 只可在当前源文件中使用, 其他源文件不可获取, 即 static函数&#x2F;变量.</li>
+<li>外部链接出现同名会报错, 但有很多例外处理; 内部链接在不同翻译单元可以同名, 互不影响.</li>
+</ul>
+</li>
+</ul>
+<p>static控制存储期为全局且唯一, 并且链接类型为内部链接, 也就是说只针对所处翻译单元.</p>
+<p>,</p>
+<h2 id="C-20-Modules-模块"><a href="#C-20-Modules-模块" class="headerlink" title="C++20 Modules (模块)"></a>C++20 Modules (模块)</h2><blockquote>
+<p>对于C++20模块机制, 将会以 初步认知 -&gt; 简易使用 -&gt; 底层详解 -&gt; 复杂使用 的方式进行</p>
+</blockquote>
+<h3 id="初步认知"><a href="#初步认知" class="headerlink" title="初步认知"></a>初步认知</h3><p>C++20 Modules 抛弃了以<code>.h</code>文件为核心的<strong>文本替换</strong>的预处理过程, 转而支持以<code>.ixx</code>文件为核心的<strong>模块导出</strong>.</p>
+<p>我们可以在<code>.ixx</code>文件中做出近乎<code>.h</code>文件的所有操作, 只需要添加一些特殊用于表明模块的关键字即可, 编译器便会在底层帮我们实现模块的支持.</p>
+<p>模块在实际中可以大大加快编译速度, 减少代码膨胀, 对于编译依存性也有实质性的改善, 可以理解为是对于C&#x2F;C++编译系统的现代进化.</p>
+<p>我们先学习模块的简易使用, 再进行后面深入的理解.</p>
+<h3 id="初步使用"><a href="#初步使用" class="headerlink" title="初步使用"></a>初步使用</h3><p>就像原本<code>.h</code>和<code>.cpp</code>的组合一样, 我们也可以写一个<code>.ixx</code>和<code>.cpp</code>的组合.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// math.ixx</span><br><span class="hljs-keyword">export</span> <span class="hljs-keyword">module</span> math;             <span class="hljs-comment">// 声明一个“可导出的”模块接口</span><br><br><span class="hljs-function"><span class="hljs-keyword">export</span> <span class="hljs-type">int</span> <span class="hljs-title">add</span><span class="hljs-params">(<span class="hljs-type">int</span> a, <span class="hljs-type">int</span> b)</span></span>;   <span class="hljs-comment">// 普通函数</span><br><br><span class="hljs-keyword">export</span> <span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> T&gt;		<span class="hljs-comment">// 模板函数(需要实现定义)</span><br><span class="hljs-function">T <span class="hljs-title">sub</span><span class="hljs-params">(T a, T b)</span> </span>&#123; <span class="hljs-keyword">return</span> a - b; &#125;<br><br><span class="hljs-keyword">export</span> <span class="hljs-keyword">struct</span> <span class="hljs-title class_">Vec2</span> &#123;			<span class="hljs-comment">// 结构体 / 类</span><br>    <span class="hljs-type">double</span> x&#123;&#125;, y&#123;&#125;;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// math_impl.cpp</span><br><span class="hljs-keyword">module</span> math;                    <span class="hljs-comment">// 说明“这是 math 模块的实现单元”</span><br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">add</span><span class="hljs-params">(<span class="hljs-type">int</span> a, <span class="hljs-type">int</span> b)</span> </span>&#123; <span class="hljs-keyword">return</span> a + b; &#125;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><p><code>expert</code>  : </p>
+<p>表示<strong>导出</strong>, 可以比较直观的理解这个动作, 就是把代码导出, 放在一个地方随时供使用. </p>
+<ul>
+<li><code>export module 名称;</code>   一个<code>.ixx</code>文件中只有一个, 用来表述导出的模块名, 模块名可以供其他文件导入使用.</li>
+<li>再想要暴露给外部的函数&#x2F;类前加该关键字, 就会将其暴露其给导入该模块的文件, 可以用其控制可见性.</li>
+</ul>
+</li>
+</ul>
+<p>于是我们就可以通过<code>import</code>导入模块了 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">import</span> math;                    <span class="hljs-comment">// 导入模块</span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iostream&gt;</span></span><br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;<br>    std::cout &lt;&lt; <span class="hljs-built_in">add</span>(<span class="hljs-number">2</span>, <span class="hljs-number">3</span>) &lt;&lt; std::endl;<br>    std::cout &lt;&lt; <span class="hljs-built_in">sub</span>&lt;<span class="hljs-type">int</span>&gt;(<span class="hljs-number">2</span>, <span class="hljs-number">3</span>) &lt;&lt; std::endl;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="底层实现"><a href="#底层实现" class="headerlink" title="底层实现"></a>底层实现</h3><p>现在我们深入了解模块机制在编译期做了什么, 以实现一开始所说的优秀效果.</p>
+<ul>
+<li><p><code>.pcm</code> (Precompiled Module file) :</p>
+<p><strong>预编译模块文件</strong>, 又称为<strong>语义单元</strong>. 每一个<code>.ixx</code>模板文件在编译阶段都会生成一个<code>.pcm</code>文件, 存储在系统中供后续编译使用. 我们知道在编译阶段, <code>include</code>头文件会执行文本替换, 并且编译器会进行语义分析生成语义树, 从而知道如何使用这些代码. 而<code>import</code>模板文件则是会直接调用<code>.pcm</code>文件, 你可以简单理解为其<strong>直接告诉你怎么使用这些代码</strong>, 从而<strong>跳过了文本替换和语义分析过程</strong>.</p>
+<p><code>.pcm</code>中<strong>没有实际的机器码</strong>, <strong>有的只是语义信息(比如函数&#x2F;类名称, 参数等)</strong>, 告诉你怎么用. 真正的机器码在<code>.ixx</code>文件对应的那个<code>.cpp</code>文件所正常编译出来的<code>.o</code>文件中, 在链接阶段会直接导向这个<code>.o</code>文件, 也就是说整个过程中只有这一份机器码被频繁使用, 不会产生额外的编译.</p>
+<p>并且<code>.pcm</code>也有类似于<code>.o</code>文件的存储机制. 在一次构建中, 新构建出来的<code>.pcm</code>文件将被存储, 除非模块文件的实现发生修改, 不然后续都会使用先前构建出来的这个<code>.pcm</code>文件, 这会大大减少编译实际.</p>
+<p>这里需要明确一个概念 : <code>.pcm</code>是被用来进行<strong>跨TU(编译单元)交流</strong>的, 你可以理解为模块文件会提供一个<code>.pcm</code>文件用来告知其他编译单元中<code>import</code>它的源文件它怎么用.</p>
+<p><code>.pcm</code>是GCC编译器给出的后缀, 在不同的编译器会有不同的后缀这里不细究, 但这种文件一般被统称为<strong>BMI</strong>.</p>
+</li>
+<li><p>编译顺序 : </p>
+<p>上面遗留了一个非常关键的问题需要讨论 : </p>
+<ul>
+<li><strong>每个TU之间是相互独立的, 那么是如何保证模块文件的编译一定在其他编译单元之前的呢?</strong></li>
+</ul>
+<p>假如不保证, <code>.pcm</code>文件根本就没有生成, 也就不用讨论其他文件怎么使用了.</p>
+<p>解决办法是 : <strong>C++要求编译器强制控制编译顺序</strong>, 也就是说虽然每个TU相互独立, 但是编译的顺序是可以调整的.</p>
+<p>具体调整方式是 : 在构建初期会<strong>依据模块的依赖关系构造拓扑图</strong> (因为不同模块之间也有可能有依赖, 这点后面再议) , <strong>依照拓扑图的顺序进行编译</strong>.</p>
+<p>这种编译顺序的硬性要求, 是使得<code>.pcm</code>文件可以实现跨TU交流的根基.</p>
+</li>
+<li><p>整体逻辑 : </p>
+<ul>
+<li><p>依据模块依赖关系构建拓扑图, 按序进行开始编译.</p>
+</li>
+<li><p>编译阶段(每个TU相互独立) : </p>
+<p>模块文件 : 生成唯一的<code>.pcm</code>文件和<code>.o</code>文件. </p>
+<p>普通文件 : 无模块导入, 照旧生成普通<code>.o</code>文件; 有模块导入, 获取对应<code>.pcm</code>文件, 依据其指导生成<code>.o</code>文件, 其中符号表中会对模块函数&#x2F;类显示<strong>引用但未定义(U)</strong>, 需要链接器帮忙寻找拥有其定义的目标机器码(T).</p>
+</li>
+<li><p>链接阶段 : </p>
+<p>链接器汇聚所有<code>.o</code>文件, 依旧执行符号解析, 重定位, 节段等操作, 这里对于引用了模块文件的<code>.o</code>文件, 链接器会帮它们找到模块文件对应的目标机器码.</p>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="与头文件的对比"><a href="#与头文件的对比" class="headerlink" title="与头文件的对比"></a>与头文件的对比</h3><table>
+<thead>
+<tr>
+<th>特性</th>
+<th>头文件模式</th>
+<th>模块模式</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>依赖获取方式</td>
+<td>预处理文本替换</td>
+<td>语法级 import</td>
+</tr>
+<tr>
+<td>编译顺序</td>
+<td>由 include 顺序隐式决定</td>
+<td>由依赖图显式决定</td>
+</tr>
+<tr>
+<td>依赖追踪</td>
+<td>无（编译器不知道完整依赖图）</td>
+<td><code>.pcm</code> 存完整依赖关系</td>
+</tr>
+<tr>
+<td>重复解析</td>
+<td>每个 TU 重新解析头文件</td>
+<td><code>.pcm</code> 一次解析多次加载</td>
+</tr>
+<tr>
+<td>重复实现</td>
+<td>每个 TU 生成一份（ODR 合并）</td>
+<td>单一实现（唯一 <code>.o</code>）</td>
+</tr>
+</tbody></table>
+<h3 id="导出方式"><a href="#导出方式" class="headerlink" title="导出方式"></a>导出方式</h3><ul>
+<li><p>批量导出 : 除了在函数&#x2F;类&#x2F;变量前加<code>export</code>来实现导出, 还可以用花括号包住进行批量导出 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">export</span> &#123;<br>    <span class="hljs-keyword">struct</span> <span class="hljs-title class_">S</span> &#123; ... &#125;;<br>    <span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">f</span><span class="hljs-params">()</span></span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+</li>
+<li><p>转发导出 : </p>
+<p>一个模块文件可以通过<code>import</code>导入其他文件, 但是这样导入的模块接口只能自己使用, 不会对外暴露, 这是与<code>include</code>机制本质不同的. 因此我们如果想要把这些接口暴露出去, 那么可以使用转发导出, 语法形式为<code>export import</code> + 模块名.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">export</span> <span class="hljs-keyword">import</span> other_module;<br></code></pre></td></tr></table></figure></li>
+</ul>
+<h3 id="模块分区"><a href="#模块分区" class="headerlink" title="模块分区"></a>模块分区</h3><p>该技术用来将<strong>一个模块文件拆分成一主多副</strong>, 虽然拆分成了多个模块文件, 但是其本质还是同属同一个模块.</p>
+<p>这种技术的核心价值还是在于<strong>分类</strong>, 让一个模块的功能划分与结构更加清晰, 在底层也许会在依赖方面有一定的优化, 但是你可以认为这都是附带的. </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// 1) 主接口单元</span><br><span class="hljs-comment">// M.ixx</span><br><span class="hljs-keyword">export</span> <span class="hljs-keyword">module</span> M;              <span class="hljs-comment">// 一个文件里只能有一次</span><br><span class="hljs-keyword">export</span> <span class="hljs-keyword">import</span> :core;          <span class="hljs-comment">// 把导出分区“并入”公共接口</span><br><span class="hljs-function"><span class="hljs-keyword">export</span> <span class="hljs-type">int</span> <span class="hljs-title">api</span><span class="hljs-params">()</span></span>;<br><br><span class="hljs-comment">// 2) 导出分区（接口分区）</span><br><span class="hljs-comment">// M.core.ixx</span><br><span class="hljs-keyword">export</span> <span class="hljs-keyword">module</span> M:core;         <span class="hljs-comment">// 声明这是“可导出的分区（接口分区）”</span><br><span class="hljs-function"><span class="hljs-keyword">export</span> <span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">class</span> T&gt;</span><br><span class="hljs-function">T <span class="hljs-title">add</span><span class="hljs-params">(T a, T b)</span> </span>&#123; <span class="hljs-keyword">return</span> a + b; &#125;<br><br><span class="hljs-comment">// 3) 内部分区</span><br><span class="hljs-comment">// M.detail.ixx</span><br><span class="hljs-keyword">module</span> M:detail;              <span class="hljs-comment">// 仅供模块 M 内部导入</span><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">helper</span><span class="hljs-params">(<span class="hljs-type">int</span>)</span></span>;<br><br><span class="hljs-comment">// 4) 实现单元</span><br><span class="hljs-comment">// M_impl.cpp</span><br><span class="hljs-keyword">module</span> M;                     <span class="hljs-comment">// 不是分区，M 的实现单元</span><br><span class="hljs-keyword">import</span> :detail;               <span class="hljs-comment">// 只能在 M 内部导入内部分区</span><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">api</span><span class="hljs-params">()</span> </span>&#123; <span class="hljs-keyword">return</span> <span class="hljs-built_in">helper</span>(<span class="hljs-number">42</span>); &#125;<br></code></pre></td></tr></table></figure>
+
+<p>一般是如下对一个模块进行划分的 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">export</span> <span class="hljs-keyword">module</span> M;           <span class="hljs-comment">// 主接口：只放门面、稳定声明</span><br><span class="hljs-keyword">export</span> <span class="hljs-keyword">import</span> :api;        <span class="hljs-comment">// 导出分区：对外模板/内联（尽量稳定）</span><br><br><span class="hljs-keyword">export</span> <span class="hljs-keyword">module</span> M:api;       <span class="hljs-comment">// 导出分区（少而稳）：模板/内联的小逻辑</span><br><span class="hljs-comment">// 导出少量真正需要对外可见的定义</span><br><br><span class="hljs-keyword">module</span> M:detail;           <span class="hljs-comment">// 内部分区：实现细节、第三方适配、重头依赖</span><br><span class="hljs-comment">// 大实现、重依赖、私有类型都放这里</span><br><br><span class="hljs-keyword">module</span> M;                  <span class="hljs-comment">// 实现单元：非模板大实现（.cpp 风格）</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="全局模块片段（Global-Module-Fragment-GMF）"><a href="#全局模块片段（Global-Module-Fragment-GMF）" class="headerlink" title="全局模块片段（Global Module Fragment, GMF）"></a>全局模块片段（Global Module Fragment, GMF）</h3><p>该机制主要用于<strong>旧式头文件与模块文件的兼容</strong>, 如果想要使用旧式头文件的函数进行模块文件内容的实现, 最好使用此机制, 使用方法如下 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">module</span>;                  <span class="hljs-comment">// ① 开始 Global Module Fragment</span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iostream&gt;</span>      <span class="hljs-comment">// ② 可以放传统头文件（旧式 include）</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;legacy.h&quot;</span>      <span class="hljs-comment">//    甚至本地的非模块化头文件</span></span><br><br><span class="hljs-keyword">export</span> <span class="hljs-keyword">module</span> mymod;     <span class="hljs-comment">// ③ 正式进入模块接口部分</span><br><span class="hljs-function"><span class="hljs-keyword">export</span> <span class="hljs-type">void</span> <span class="hljs-title">foo</span><span class="hljs-params">()</span></span>;<br></code></pre></td></tr></table></figure>
+
+<p>规则为 : <strong>在<code>module;(固定)</code>和<code>export module</code>之间添加头文件</strong>.</p>
+<p>其中的头文件会<strong>正常进行文本替换, 并且不会被处理到<code>.pcm</code>等BMI文件中</strong>, 头文件中的内容都可以在本模块中被使用. 其优势在于<strong>隔绝了编译依赖</strong>, 本模块包含的头文件发生变化不会影响到其他包含本模块的代码.</p>
+<p>假如不使用GMF而直接包含头文件, 头文件中的内容将不会进行文本替换并被正常处理到<code>.pcm</code>中, 会产生依赖传递, 并且宏会失效.</p>
+<h3 id="私有模块片段（Private-Module-Fragment-PMF）"><a href="#私有模块片段（Private-Module-Fragment-PMF）" class="headerlink" title="私有模块片段（Private Module Fragment, PMF）"></a>私有模块片段（Private Module Fragment, PMF）</h3><p>和GMF相似, 但是与兼容无关, 目的只是为了<strong>隔绝编译依赖</strong>, 不让在接口文件中内容暴露出去.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">export</span> <span class="hljs-keyword">module</span> image;<br><br><span class="hljs-keyword">export</span> <span class="hljs-keyword">struct</span> <span class="hljs-title class_">Image</span> &#123; <span class="hljs-comment">/* ... */</span> &#125;;<br><br><span class="hljs-keyword">module</span> :<span class="hljs-keyword">private</span>;         <span class="hljs-comment">// ← 从这里起是“私有片段”，只对本接口单元可见</span><br><span class="hljs-comment">// 这里写一些只在本单元使用的实现细节/包含/静态对象等</span><br></code></pre></td></tr></table></figure>
+
+<p>规则为 : 模块接口文件<strong>末尾</strong>使用<code>module :private;</code> , <strong>后续的任何实现都不会被处理到<code>.pcm</code>等BMI文件</strong>, 仅在本模块可见.</p>
+<p>其实这些实现代码都应该在<code>.cpp</code>中实现, 但是有时出于便利或排版, 也完全可以考虑以PMF的形式写入模块接口文件.</p>
+<h3 id="编译依存性相关"><a href="#编译依存性相关" class="headerlink" title="编译依存性相关"></a>编译依存性相关</h3><p>即使使用C++20模块, 编译依存性的问题依旧存在, 这是不可避免的, 因为只要存在模块和模块之间存在依赖, 只要发生接口修改, 就会像头文件包含头文件一样发生依赖传递, 不过C++20模块在依赖传递上做出了比较大的限制 :</p>
+<ul>
+<li><p>使用头文件会发生<strong>文本替换</strong>, 也就是说<strong>文本变化 &#x3D; 需要重新编译</strong>; 但使用模块会发生<strong>BMI文件调用</strong>, 也就是说文本变化不等于需要重新编译, <strong>没有加入BMI的内容, 怎么修改都无需重新编译</strong>, 我们可以使用PMF辅助.</p>
+</li>
+<li><p>默认<code>import</code>的模块外部不可见, 除非采用<strong>转发导入</strong><code>export import</code>, 让依赖传递更加可控.</p>
+</li>
+<li><p><strong>内部分区</strong>的机制鼓励程序员在模块内部分区构建实现类, 实现接口与实现分离, 从而隔绝依赖.</p>
+</li>
+</ul>
+<p>因此<code>pimpl idiom</code>手法依然有效, 可以帮我们将所有实现隐藏在实现类中, <strong>在隔绝依赖的同时避免向外部暴露代码</strong>.</p>
+<p>下面是C++20模块版本的 Handle Class : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// person.ixx（主接口单元，导出 API）</span><br><br><span class="hljs-keyword">export</span> <span class="hljs-keyword">module</span> person;<br><span class="hljs-keyword">import</span> &lt;memory&gt;;<br><span class="hljs-keyword">import</span> &lt;string&gt;;<br><span class="hljs-comment">// 只做前置声明；不引入重头，避免污染 BMI</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Date</span>;<br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Address</span>;<br><span class="hljs-comment">// 不导出，实现类仅做前置声明即可</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">PersonImpl</span>;<br><br><span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Person</span> &#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-built_in">Person</span>(<span class="hljs-type">const</span> std::string&amp; name, <span class="hljs-type">const</span> Date&amp; birthday, <span class="hljs-type">const</span> Address&amp; addr);<br>    ~<span class="hljs-built_in">Person</span>();                                  <span class="hljs-comment">// 声明析构，在实现单元里定义（关键点）</span><br>    <span class="hljs-function">std::string <span class="hljs-title">name</span><span class="hljs-params">()</span> <span class="hljs-type">const</span></span>;<br>    <span class="hljs-function">std::string <span class="hljs-title">birthDate</span><span class="hljs-params">()</span> <span class="hljs-type">const</span></span>;<br>    <span class="hljs-function">std::string <span class="hljs-title">address</span><span class="hljs-params">()</span> <span class="hljs-type">const</span></span>;<br><span class="hljs-keyword">private</span>:<br>    <span class="hljs-comment">// 用 unique_ptr 最稳：默认 deleter 需要完整类型，但我们把析构定义放到实现单元</span><br>    std::unique_ptr&lt;PersonImpl&gt; pImpl;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// person.detail.ixx（内部分区，放实现细节）</span><br><br><span class="hljs-keyword">module</span>;                 <span class="hljs-comment">// 全局模块片段：这里可以吃“老头”</span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;Date.h&quot;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;Address.h&quot;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;string&gt;</span></span><br><span class="hljs-keyword">module</span> person:detail;<br><br><span class="hljs-comment">// 真正的实现类（完全不导出）</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">PersonImpl</span> &#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-built_in">PersonImpl</span>(<span class="hljs-type">const</span> std::string&amp; n, <span class="hljs-type">const</span> Date&amp; b, <span class="hljs-type">const</span> Address&amp; a)<br>        : _name(n), _birthDate(b), _address(a) &#123;&#125;<br>    <span class="hljs-function">std::string <span class="hljs-title">name</span><span class="hljs-params">()</span> <span class="hljs-type">const</span>        </span>&#123; <span class="hljs-keyword">return</span> _name; &#125;<br>    <span class="hljs-function">std::string <span class="hljs-title">birthDate</span><span class="hljs-params">()</span> <span class="hljs-type">const</span>   </span>&#123; <span class="hljs-keyword">return</span> _birthDate.<span class="hljs-built_in">toString</span>(); &#125;<br>    <span class="hljs-function">std::string <span class="hljs-title">address</span><span class="hljs-params">()</span> <span class="hljs-type">const</span>     </span>&#123; <span class="hljs-keyword">return</span> _address.<span class="hljs-built_in">toString</span>(); &#125;<br><span class="hljs-keyword">private</span>:<br>    std::string _name;<br>    Date        _birthDate;<br>    Address     _address;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// person_impl.cpp（实现单元，定义 Person 成员）</span><br><span class="hljs-keyword">module</span>; <br><span class="hljs-keyword">module</span> person;   <span class="hljs-comment">// 注意：不是 export</span><br><span class="hljs-keyword">import</span> :detail;         <span class="hljs-comment">// 用到内部分区里的 PersonImpl</span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;memory&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;utility&gt;</span></span><br><br>Person::<span class="hljs-built_in">Person</span>(<span class="hljs-type">const</span> std::string&amp; name, <span class="hljs-type">const</span> Date&amp; birthday, <span class="hljs-type">const</span> Address&amp; addr)<br>    : <span class="hljs-built_in">pImpl</span>(std::<span class="hljs-built_in">make_unique</span>&lt;PersonImpl&gt;(name, birthday, addr)) &#123;&#125;<br><br>Person::~<span class="hljs-built_in">Person</span>() = <span class="hljs-keyword">default</span>;  <span class="hljs-comment">// 在这里生成析构：此处已见到 PersonImpl 完整类型</span><br><br><span class="hljs-function">std::string <span class="hljs-title">Person::name</span><span class="hljs-params">()</span> <span class="hljs-type">const</span>      </span>&#123; <span class="hljs-keyword">return</span> pImpl-&gt;<span class="hljs-built_in">name</span>(); &#125;<br><span class="hljs-function">std::string <span class="hljs-title">Person::birthDate</span><span class="hljs-params">()</span> <span class="hljs-type">const</span> </span>&#123; <span class="hljs-keyword">return</span> pImpl-&gt;<span class="hljs-built_in">birthDate</span>(); &#125;<br><span class="hljs-function">std::string <span class="hljs-title">Person::address</span><span class="hljs-params">()</span> <span class="hljs-type">const</span>   </span>&#123; <span class="hljs-keyword">return</span> pImpl-&gt;<span class="hljs-built_in">address</span>(); &#125;<br></code></pre></td></tr></table></figure>
+
+<p>你可以理解为把原来另开一个头尾件的形式改为给模块开一个内部分区, 但实质都是在存放实现类.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E7%BC%96%E8%AF%91%E9%93%BE%E6%8E%A5/" class="print-no-link">#编译链接</a>
+      
+        <a href="/tags/C-20%E6%A8%A1%E5%9D%97/" class="print-no-link">#C++20模块</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>C++编译链接模型精要</div>
+      <div>http://example.com/2025/08/10/C++编译链接模型精要/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>天目中云</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年8月10日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/08/01/HTTP2/" title="HTTP/2">
+                        <span class="hidden-mobile">HTTP/2</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"NhgfDy2CEByjwxuxPM1Le2t6-MdYXbMMI","appKey":"nvGMdqKfKbpkVnojLSbwmasv","path":"window.location.pathname","placeholder":null,"avatar":"retro","meta":["nick","mail","link"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":false,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":false},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

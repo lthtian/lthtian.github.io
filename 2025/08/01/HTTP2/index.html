@@ -21,15 +21,15 @@
   <meta name="author" content="天目中云">
   <meta name="keywords" content="">
   
-    <meta name="description" content="分为两部分 : 理论知识 和 nghttp2库使用  理论知识可以理解为在HTTP&#x2F;1.1上做了很多精简优化的工作, 解决了很多冗余的部分, 实现了精细地控制. 提升了加载速度, 减少了连接资源的浪费, 避免的频繁的队头阻塞. 整体理解 依旧使用TCP进行数据传递, 但是不同的请求都将始终在一条TCP连接上实现, 也就是说一组请求响应不再会长时间占用整个TCP连接. 流机制和帧机制实现">
+    <meta name="description" content="分为两部分 : 理论知识 和 nghttp2库使用  理论知识可以理解为在HTTP&#x2F;1.1上做了很多精简优化的工作, 解决了很多冗余的部分, 实现了精细地控制. 提升了加载速度, 减少了连接资源的浪费, 避免的频繁的队头阻塞. 整体理解 依旧使用TCP进行数据传递, 但是一组请求响应不再会长时间占用整个TCP连接, 并且不同的请求都将始终在一条TCP连接上实现. 流机制和帧机制实现了上">
 <meta property="og:type" content="article">
 <meta property="og:title" content="HTTP&#x2F;2">
 <meta property="og:url" content="http://example.com/2025/08/01/HTTP2/index.html">
 <meta property="og:site_name" content="天目中云">
-<meta property="og:description" content="分为两部分 : 理论知识 和 nghttp2库使用  理论知识可以理解为在HTTP&#x2F;1.1上做了很多精简优化的工作, 解决了很多冗余的部分, 实现了精细地控制. 提升了加载速度, 减少了连接资源的浪费, 避免的频繁的队头阻塞. 整体理解 依旧使用TCP进行数据传递, 但是不同的请求都将始终在一条TCP连接上实现, 也就是说一组请求响应不再会长时间占用整个TCP连接. 流机制和帧机制实现">
+<meta property="og:description" content="分为两部分 : 理论知识 和 nghttp2库使用  理论知识可以理解为在HTTP&#x2F;1.1上做了很多精简优化的工作, 解决了很多冗余的部分, 实现了精细地控制. 提升了加载速度, 减少了连接资源的浪费, 避免的频繁的队头阻塞. 整体理解 依旧使用TCP进行数据传递, 但是一组请求响应不再会长时间占用整个TCP连接, 并且不同的请求都将始终在一条TCP连接上实现. 流机制和帧机制实现了上">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2025-08-01T09:00:00.000Z">
-<meta property="article:modified_time" content="2025-08-01T09:52:07.975Z">
+<meta property="article:modified_time" content="2025-08-04T06:32:29.743Z">
 <meta property="article:author" content="天目中云">
 <meta property="article:tag" content="HTTP">
 <meta name="twitter:card" content="summary_large_image">
@@ -240,7 +240,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          4.3k 字
+          4.5k 字
         
       </span>
     
@@ -251,7 +251,7 @@
         
         
         
-          37 分钟
+          38 分钟
         
       </span>
     
@@ -308,7 +308,7 @@
 <h2 id="理论知识"><a href="#理论知识" class="headerlink" title="理论知识"></a>理论知识</h2><p>可以理解为在HTTP&#x2F;1.1上做了很多精简优化的工作, 解决了很多冗余的部分, 实现了精细地控制.</p>
 <p>提升了加载速度, 减少了连接资源的浪费, 避免的频繁的队头阻塞.</p>
 <h3 id="整体理解"><a href="#整体理解" class="headerlink" title="整体理解"></a>整体理解</h3><ul>
-<li>依旧使用TCP进行数据传递, 但是不同的请求都将始终在一条TCP连接上实现, 也就是说一组请求响应不再会长时间占用整个TCP连接.</li>
+<li>依旧使用TCP进行数据传递, 但是一组请求响应不再会长时间占用整个TCP连接, 并且不同的请求都将始终在一条TCP连接上实现.</li>
 <li>流机制和帧机制实现了上述的效果.</li>
 <li>HPACK压缩机制实现了对多个相同报头的字段冗余问题.</li>
 <li>提供优先级机制控制不同流直接的传输优先级.</li>
@@ -394,7 +394,10 @@
 <li><p>最常用的标志位是<code>END_STREAM</code>, 该标志代表流结束, 可以在<code>HEADERS</code>和<code>DATA</code>帧中出现, 表示后续不会有新的帧传来, 流已经结束.</p>
 </li>
 </ul>
-<h3 id="服务器推送-Server-Push"><a href="#服务器推送-Server-Push" class="headerlink" title="服务器推送 Server Push"></a>服务器推送 Server Push</h3><ul>
+<h3 id="服务器推送-Server-Push"><a href="#服务器推送-Server-Push" class="headerlink" title="服务器推送 Server Push"></a>服务器推送 Server Push</h3><blockquote>
+<p>注意该技术很大程度上已过时.</p>
+</blockquote>
+<ul>
 <li><p>由服务器主动向客户端发起请求, 新建一个流进行数据传递.</p>
 </li>
 <li><p>类似场景如请求一个网站, 服务端会将需求的html页面作为响应发送给用户, 相应的服务端也会知道网页需要的css&#x2F;js&#x2F;图片等资源, 于是不用等客户端再次请求这些资源, 服务端就可以申请向客户端直接发送.</p>
@@ -416,10 +419,12 @@
 <p>在一个TCP连接中, 发送的报头其实有很多都是重复的, 比如很多method都是GET, 很多scheme都是https, 但普通情况下我们还是需要传输一个很长的字段再解析出来, 这其实是相对低效的做法, 而这种报头压缩机制会将字段转化成简短的索引, 就可以有效解决这种问题.</p>
 </li>
 <li><p>方法简述 : </p>
-<p>其实本质就是维护一些映射, 使得一些非常小的索引可以代指一些比较长的字段, 这需要双方的信息互通.</p>
+<p>其实本质就是维护一些映射, 使得一些非常小的索引可以代指一些比较长的字段. 但是这种映射只有<strong>在双方互通且完全一致</strong>的情况下才有可行性, 而TCP可以帮助我们实现这种要求.</p>
 </li>
 <li><p>存储结构 : </p>
 <ul>
+<li><p>存储机构包含两种 : 静态表 和 动态表, 前者固定不变, 后者同步更新.</p>
+</li>
 <li><p>静态表 : 存储<strong>固定的、所有连接共享的、永不变的</strong>索引映射, 这是官方定好的, 具体如下 : </p>
 <table>
 <thead>
@@ -508,6 +513,7 @@
 </tr>
 </tbody></table>
 <p>动态表索引从<strong>62</strong>开始, 按序递增, 动态表中的映射一般都是对完整[name value]的映射.</p>
+<p>需要注意的是, 动态表的更新<strong>必须同步</strong>, 也就是说双方维护的动态表必须完全相同, 如果不同, 那么交流的正确性是绝对无法保证的, 而这一点可以用TCP的<strong>有序</strong>性质实现保证.</p>
 </li>
 </ul>
 <p>注意上述的两个表, 在实现中大多用vector实现而非map, 因为我们的索引可以和数组下标对应, 用顺序表更为快捷便利.</p>
@@ -753,6 +759,12 @@
                 <div class="post-prevnext my-3">
                   <article class="post-prev col-6">
                     
+                    
+                      <a href="/2025/08/10/C++%E7%BC%96%E8%AF%91%E9%93%BE%E6%8E%A5%E6%A8%A1%E5%9E%8B%E7%B2%BE%E8%A6%81/" title="C++编译链接模型精要">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">C++编译链接模型精要</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
                     
                   </article>
                   <article class="post-next col-6">

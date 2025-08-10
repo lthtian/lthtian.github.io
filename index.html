@@ -246,6 +246,48 @@
     <article class="col-12 col-md-12 mx-auto index-info">
       <h2 class="index-header">
         
+        <a href="/2025/08/10/C++%E7%BC%96%E8%AF%91%E9%93%BE%E6%8E%A5%E6%A8%A1%E5%9E%8B%E7%B2%BE%E8%A6%81/" target="_self">
+          C++编译链接模型精要
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/08/10/C++%E7%BC%96%E8%AF%91%E9%93%BE%E6%8E%A5%E6%A8%A1%E5%9E%8B%E7%B2%BE%E8%A6%81/" target="_self">
+        <div>
+          C编译链接系统 先来回顾C语言的编译流程 : 预处理 -&gt; 编译 -&gt; 汇编 -&gt; 链接  Preprocessor 预处理 输入  .c &#x2F; .cc 文件 输出  .i (intermediate 中间) 文件 工作 :  将include字段用对应的.h文件替换 替换define字段 处理条件编译 删除注释    Compiler 编译 输入 .i 文件 输出 .s
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2025-08-10 20:40" pubdate>
+              2025-08-10
+            </time>
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/%E7%BC%96%E8%AF%91%E9%93%BE%E6%8E%A5/">#编译链接</a>
+            
+              <a href="/tags/C-20%E6%A8%A1%E5%9D%97/">#C++20模块</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
         <a href="/2025/08/01/HTTP2/" target="_self">
           HTTP/2
         </a>
@@ -254,7 +296,7 @@
       
       <a class="index-excerpt index-excerpt__noimg" href="/2025/08/01/HTTP2/" target="_self">
         <div>
-          分为两部分 : 理论知识 和 nghttp2库使用  理论知识可以理解为在HTTP&#x2F;1.1上做了很多精简优化的工作, 解决了很多冗余的部分, 实现了精细地控制. 提升了加载速度, 减少了连接资源的浪费, 避免的频繁的队头阻塞. 整体理解 依旧使用TCP进行数据传递, 但是不同的请求都将始终在一条TCP连接上实现, 也就是说一组请求响应不再会长时间占用整个TCP连接. 流机制和帧机制实现
+          分为两部分 : 理论知识 和 nghttp2库使用  理论知识可以理解为在HTTP&#x2F;1.1上做了很多精简优化的工作, 解决了很多冗余的部分, 实现了精细地控制. 提升了加载速度, 减少了连接资源的浪费, 避免的频繁的队头阻塞. 整体理解 依旧使用TCP进行数据传递, 但是一组请求响应不再会长时间占用整个TCP连接, 并且不同的请求都将始终在一条TCP连接上实现. 流机制和帧机制实现了上
         </div>
       </a>
 
@@ -595,48 +637,6 @@
             <i class="iconfont icon-tags"></i>
             
               <a href="/tags/ffmpeg/">#ffmpeg</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h2 class="index-header">
-        
-        <a href="/2025/06/26/Rpc%E5%88%86%E5%B8%83%E5%BC%8F%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E6%A1%86%E6%9E%B6(8)%20Logger/" target="_self">
-          Rpc分布式网络通信框架(8) Logger
-        </a>
-      </h2>
-
-      
-      <a class="index-excerpt index-excerpt__noimg" href="/2025/06/26/Rpc%E5%88%86%E5%B8%83%E5%BC%8F%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E6%A1%86%E6%9E%B6(8)%20Logger/" target="_self">
-        <div>
-          asyncqueue + Logger  本章处理一下Rpc框架的遗留问题—日志处理.  最普通的日志处理就是直接在一个文件中写入, 但是这属于磁盘I&#x2F;O, 效率极低, 我们不会希望在高性能Rpc通信框架中仅仅为了日志在过程中加入磁盘I&#x2F;O的过程, 那么如何解决呢?  可以将要写入磁盘文件的日志先存入队列, 再开一个专门进行日志磁盘I&#x2F;O的线程从队列取出进行写入.
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2025-06-26 15:00" pubdate>
-              2025-06-26
-            </time>
-          </div>
-        
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/RPC/">#RPC</a>
-            
-              <a href="/tags/%E6%97%A5%E5%BF%97%E7%B3%BB%E7%BB%9F/">#日志系统</a>
             
           </div>
         
