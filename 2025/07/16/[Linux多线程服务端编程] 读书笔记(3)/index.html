@@ -21,25 +21,24 @@
   <meta name="author" content="天目中云">
   <meta name="keywords" content="">
   
-    <meta name="description" content="第一部分 C++多线程系统编程  析构所在的线程当share_ptr引用计数归零时, 会在归零的这个线程就地析构, 而这个线程不一定是对象诞生的线程. 这就引发出一个问题 :   如果对象的析构比较耗时, 且经常在关键线程触发析构, 就会拖慢关键线程的速度.  这种情况的解决方案是专门做一个阻塞队列存入要析构的智能指针, 另开一个专门析构的线程从队列中取出进行析构. 多线程适用场景 其核心作用在">
+    <meta name="description" content="工程实践经验谈   分布式系统 分布式系统不是放大了的单机系统, 根本原因在于单机没有部分故障. 单机与分布式的根本区别在于进程地址空间是一个还是多个.  负载均衡一般的解决方案是 :  通过某个集中的负载均衡器来收集并分发负载情况, 可以把消息数目降到M + N(M台web服务器, N台服务提供服务器). 但是这种方式会引发单点故障(Single Point of Failure), 最简单的">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Linux多线程服务端编程 读书笔记1">
-<meta property="og:url" content="http://example.com/2025/07/12/[Linux%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%9C%8D%E5%8A%A1%E7%AB%AF%E7%BC%96%E7%A8%8B]%20%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0(1)/index.html">
+<meta property="og:title" content="Linux多线程服务端编程 读书笔记3">
+<meta property="og:url" content="http://example.com/2025/07/16/[Linux%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%9C%8D%E5%8A%A1%E7%AB%AF%E7%BC%96%E7%A8%8B]%20%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0(3)/index.html">
 <meta property="og:site_name" content="天目中云">
-<meta property="og:description" content="第一部分 C++多线程系统编程  析构所在的线程当share_ptr引用计数归零时, 会在归零的这个线程就地析构, 而这个线程不一定是对象诞生的线程. 这就引发出一个问题 :   如果对象的析构比较耗时, 且经常在关键线程触发析构, 就会拖慢关键线程的速度.  这种情况的解决方案是专门做一个阻塞队列存入要析构的智能指针, 另开一个专门析构的线程从队列中取出进行析构. 多线程适用场景 其核心作用在">
+<meta property="og:description" content="工程实践经验谈   分布式系统 分布式系统不是放大了的单机系统, 根本原因在于单机没有部分故障. 单机与分布式的根本区别在于进程地址空间是一个还是多个.  负载均衡一般的解决方案是 :  通过某个集中的负载均衡器来收集并分发负载情况, 可以把消息数目降到M + N(M台web服务器, N台服务提供服务器). 但是这种方式会引发单点故障(Single Point of Failure), 最简单的">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2025-07-12T10:25:00.000Z">
-<meta property="article:modified_time" content="2025-07-12T10:25:48.627Z">
+<meta property="article:published_time" content="2025-07-16T09:00:00.000Z">
+<meta property="article:modified_time" content="2025-08-22T10:02:23.836Z">
 <meta property="article:author" content="天目中云">
-<meta property="article:tag" content="多线程">
-<meta property="article:tag" content="Muduo">
+<meta property="article:tag" content="分布式系统">
 <meta name="twitter:card" content="summary_large_image">
   
   
     <meta name="referrer" content="no-referrer-when-downgrade">
   
   
-  <title>Linux多线程服务端编程 读书笔记1 - 天目中云</title>
+  <title>Linux多线程服务端编程 读书笔记3 - 天目中云</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -218,7 +217,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="Linux多线程服务端编程 读书笔记1"></span>
+            <span id="subtitle" data-typed-text="Linux多线程服务端编程 读书笔记3"></span>
           
         </div>
 
@@ -229,8 +228,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2025-07-12 18:25" pubdate>
-          2025年7月12日 晚上
+        <time datetime="2025-07-16 17:00" pubdate>
+          2025年7月16日 下午
         </time>
       </span>
     
@@ -241,7 +240,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          1.8k 字
+          2k 字
         
       </span>
     
@@ -252,7 +251,7 @@
         
         
         
-          16 分钟
+          17 分钟
         
       </span>
     
@@ -298,91 +297,89 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <h1 id="seo-header">Linux多线程服务端编程 读书笔记1</h1>
+            <h1 id="seo-header">Linux多线程服务端编程 读书笔记3</h1>
             
             
               <div class="markdown-body">
                 
                 <blockquote>
-<p>第一部分 C++多线程系统编程</p>
+<p>工程实践经验谈 </p>
 </blockquote>
-<h3 id="析构所在的线程"><a href="#析构所在的线程" class="headerlink" title="析构所在的线程"></a>析构所在的线程</h3><p>当share_ptr引用计数归零时, 会在归零的这个线程就地析构, 而这个线程不一定是对象诞生的线程.</p>
-<p>这就引发出一个问题 : </p>
+<h2 id="分布式系统"><a href="#分布式系统" class="headerlink" title="分布式系统"></a>分布式系统</h2><ul>
+<li>分布式系统不是放大了的单机系统, 根本原因在于单机没有部分故障.</li>
+<li>单机与分布式的根本区别在于进程地址空间是一个还是多个.</li>
+</ul>
+<h4 id="负载均衡"><a href="#负载均衡" class="headerlink" title="负载均衡"></a>负载均衡</h4><p>一般的解决方案是 : </p>
+<p>通过某个集中的负载均衡器来收集并分发负载情况, 可以把消息数目降到M + N(M台web服务器, N台服务提供服务器).</p>
+<p>但是这种方式会引发单点故障(Single Point of Failure), 最简单的解决方法是进行冗余备份, Nginx就有通过在不同服务器上搭建主从实例的功能来实现保活.</p>
 <ul>
-<li>如果对象的析构比较耗时, 且经常在关键线程触发析构, 就会拖慢关键线程的速度.</li>
+<li><p>如何定义服务端的负载?</p>
+<p>负载可以认为是一种性能集合, 我们可以把很多因素考虑进去, 如 : CPU使用率, 内存占用率, 硬盘剩余空间, 网络带宽等等. 没有明确唯一的定义, 不同中间件对于负载的计算方法也有很大差异, 而且会给使用者留出很大的可操作空间.</p>
+</li>
+<li><p>如何规避分布式系统中保持全局数据一致性的问题?</p>
+<p>其实很多时候如果对全局数据没有强制要求, 可以先忽视, 只是从当前视角分析哪个服务器负载小, 就选哪个, 这样体现在全局上, 大体依旧是均匀分配的.</p>
+</li>
 </ul>
-<p>这种情况的解决方案是专门做一个阻塞队列存入要析构的智能指针, 另开一个专门析构的线程从队列中取出进行析构.</p>
-<h3 id="多线程适用场景"><a href="#多线程适用场景" class="headerlink" title="多线程适用场景"></a>多线程适用场景</h3><ul>
-<li><p>其核心作用在于<strong>提高响应速度</strong>, 不是提高绝对性能, 而是提高平均响应性能.</p>
-</li>
-<li><p>绝对的IO密集和绝对的计算密集都并非多线程的优势, 前者性能瓶颈在磁盘&#x2F;网络IO(简单说就是从磁盘&#x2F;网络缓冲区读数据太慢了, 读到的内容cpu可以马上处理, 而且单线程就可以完成, 根本不是cpu的问题), 后者多进程也完全可以. </p>
-</li>
-<li><p>适用多线程的条件 : </p>
+<h4 id="时序混乱"><a href="#时序混乱" class="headerlink" title="时序混乱"></a>时序混乱</h4><p>虽然两个服务器间建立的TCP连接是可以保序的, 但是多个服务器之间的发送时序是无法包装, 就算是理应提前发出去的消息, 也有可能延迟于其他服务器后发的消息. 而且不同服务器的时钟一定会有误差, 通过发送方和接收方的时间戳插值计算延迟是完全不可靠的.</p>
 <ul>
-<li>存在数据共享.</li>
-<li>提供非均质的服务, 有优先级差异或难易度差异.</li>
-<li>希望使用异步操作.</li>
-<li>需要有效划分责任和功能.</li>
+<li>可以使分布式系统内每台机器都运行NTP(网络时间协议)来使各台机器间的时间大体同步.</li>
+<li>如果还需更精确, 有逻辑时钟等方案.</li>
 </ul>
-</li>
-<li><p>多线程可以让IO和计算相互重叠, 降低延迟, 简单讲就是如果用一个主线程专门用来响应, 其将工作分发给工作线程, 相比于只用一个主线程响应+工作, 一个任务速度一样, 但是多个任务并发效率就会明显提升.</p>
-</li>
-<li><p>一个事件循环的多线程程序应该轻松支持5万并发连接.</p>
-</li>
-<li><p>多线程可以有效降低”简单任务被复杂任务被任务压住”的出现概率.</p>
-</li>
-<li><p>BlockingQueue是解决多线程程序的利器.</p>
-</li>
-<li><p>虽然所有网络写操作都可以异步去做, 但是如果Tcp缓存区是空的, 也可以直接在服务线程写完, 这是一种网络库的性能优化策略.</p>
-</li>
+<h4 id="可靠性和可用性"><a href="#可靠性和可用性" class="headerlink" title="可靠性和可用性"></a>可靠性和可用性</h4><ul>
+<li>“并联”可以极大地提高可靠性, 在硬件上可以体现为两套电源, 在软件上可以体现为多个相同服务的服务器.</li>
+<li>提高冗余, 增加数据备份 &#x2F; 降低重建硬盘的时间 可以进一步提高可靠性.</li>
+<li>可靠性指的是数据不丢失的概率, 可用性指的是数据或服务可以随时被访问到的概率.</li>
+<li>在没有 RAID 的服务器上启用 swap，等于将“全系统的内存可靠性”交给一个“可能随时坏掉的磁盘”，一旦 swap 区损坏，任意进程都可能崩溃或行为异常，因此建议关闭 swap.</li>
+<li>高可用的关键不在于做到不停机, 而是能做到<strong>随时重启任何一个进程或服务</strong>.</li>
+<li>软件的可靠性指标不应过高, 因为体量提高后的硬件故障率其实非常高, 软件非常可靠也没有用.</li>
 </ul>
-<h3 id="线程模型选择"><a href="#线程模型选择" class="headerlink" title="线程模型选择"></a>线程模型选择</h3><ul>
-<li>计算密集型 : Reactor + 线程池(多线程) -&gt; IO不是瓶颈, 多线程增加cpu利用, 比多进程易于管理.</li>
-<li>轻量级请求(短连接 + 快速响应) : Reactor + 单线程 -&gt; 处理本身迅速, 无需线程池, 参考Nginx.</li>
-<li>IO密集型 : Proactor -&gt; 事件IO全部交给内核处理, 自己线程运行响应不受影响.</li>
-<li>延迟敏感&#x2F;要求高吞吐 : Proactor -&gt; 可以随时同时处理很多任务(虽然是内核背后实现的).</li>
+<h4 id="“随时重启进程”作为程序设计目标"><a href="#“随时重启进程”作为程序设计目标" class="headerlink" title="“随时重启进程”作为程序设计目标"></a>“随时重启进程”作为程序设计目标</h4><ul>
+<li>进程只要被kill或exit就可以直接重启.</li>
+<li>这要求我们的ICP(进程间通信方式)必须是<strong>操作系统可自动回收</strong>的, 其不可以对其他进程造成任何影响.</li>
+<li>只应当用TCP作为唯一的进程间通信手段, 进程一旦退出, 操作系统会自动将连接与断开关闭, 不要使用跨进程的信号量或共享内存.</li>
+<li>客户端应在连接断开后可以自动重连, 要求客户端可以检测服务端心跳, 在断开后可以自动failover到备用地址.</li>
+<li>客户端应兼容新旧版的服务端协议, 这样在升级服务端时就可以每次杀掉一部分的服务进行, 使服务升级交替进行(<strong>灰度升级</strong>).</li>
+<li>另一种升级方式是迁移, 可以先启动新服务进程, 再让旧服务进程停止接受新请求, 再将新请求导向新进程.</li>
 </ul>
-<h3 id="多线程磁盘IO"><a href="#多线程磁盘IO" class="headerlink" title="多线程磁盘IO"></a>多线程磁盘IO</h3><p>如果想提高文件读取效率, 可以使用多线程每个线程分配多个部分同时读取, 都使用pread, 拼接到目标的buffer.</p>
-<p>也可以使用mmap, 从映射中每个线程分别读取自己的部分到buffer中.</p>
-<p>当然如果想要磁盘IO到socket, sendfile这种内核函数往往才是最优解.</p>
-<p>现在也可以使用io_uring,  其可以实现异步将数据从磁盘搬到用户缓冲区, 真异步, 并且搬运效率还比前两种高.</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;liburing.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;fcntl.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;unistd.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;string.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdlib.h&gt;</span></span><br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;<br>    io_uring ring;<br>    <span class="hljs-built_in">io_uring_queue_init</span>(<span class="hljs-number">8</span>, &amp;ring, <span class="hljs-number">0</span>);<br><br>    <span class="hljs-type">int</span> fd = <span class="hljs-built_in">open</span>(<span class="hljs-string">&quot;file.txt&quot;</span>, O_RDONLY);<br>    <span class="hljs-type">char</span>* buf = (<span class="hljs-type">char</span>*)<span class="hljs-built_in">malloc</span>(<span class="hljs-number">4096</span>);<br><br>    <span class="hljs-keyword">struct</span> <span class="hljs-title class_">io_uring_sqe</span>* sqe = <span class="hljs-built_in">io_uring_get_sqe</span>(&amp;ring);<br>    <span class="hljs-built_in">io_uring_prep_read</span>(sqe, fd, buf, <span class="hljs-number">4096</span>, <span class="hljs-number">0</span>);<br>    <span class="hljs-built_in">io_uring_submit</span>(&amp;ring);<br><br>    <span class="hljs-keyword">struct</span> <span class="hljs-title class_">io_uring_cqe</span>* cqe;<br>    <span class="hljs-built_in">io_uring_wait_cqe</span>(&amp;ring, &amp;cqe);<br><br>    <span class="hljs-keyword">if</span> (cqe-&gt;res &lt; <span class="hljs-number">0</span>)<br>        <span class="hljs-built_in">fprintf</span>(stderr, <span class="hljs-string">&quot;read error: %s\n&quot;</span>, <span class="hljs-built_in">strerror</span>(-cqe-&gt;res));<br>    <span class="hljs-keyword">else</span><br>        <span class="hljs-built_in">write</span>(STDOUT_FILENO, buf, cqe-&gt;res);<br><br>    <span class="hljs-built_in">io_uring_cqe_seen</span>(&amp;ring, cqe);<br>    <span class="hljs-built_in">close</span>(fd);<br>    <span class="hljs-built_in">free</span>(buf);<br>    <span class="hljs-built_in">io_uring_queue_exit</span>(&amp;ring);<br>&#125;<br></code></pre></td></tr></table></figure>
-
-<h3 id="Linux分配文件描述符方式所引发的问题"><a href="#Linux分配文件描述符方式所引发的问题" class="headerlink" title="Linux分配文件描述符方式所引发的问题"></a>Linux分配文件描述符方式所引发的问题</h3><ul>
-<li>Linux分配文件描述符, 分配的是当前最小可用的文件描述符码.</li>
-</ul>
-<p>这种分配方式有可能会引发”串话”, 简单说就是两个不同时间的对象持有同一个文件描述符, 向前一个发送的消息有可能发送到后一个中. 解决方法是 : </p>
+<h4 id="进程标识"><a href="#进程标识" class="headerlink" title="进程标识"></a>进程标识</h4><ul>
+<li><p>服务分为有状态服务和无状态服务,  其实就是指代服务需不需要记录上下文信息, 比如登录状态, 会话状态, 临时缓存的信息等等. 无状态服务是很有优势的, 在故障发生时重启也没有问题, 但是有状态服务需要考虑前世进程的影响, 因为进程一旦重启, <strong>之前记录或缓存的所有信息都会清空</strong>.</p>
+</li>
+<li><p>举个例子就是客户端已经在服务端登录了, 结果服务端崩溃, 重启之后服务端并不知道客户端登录, 但是客户端如果没有有效手段区分出服务端已经重启, 那么就会依旧认为自己是已经登录的状态, 就会造成双方的逻辑不一致, 很有可能崩溃.</p>
+</li>
+<li><p>因此在使用有状态服务时, 我们需要对每个进程设置一个<strong>唯一进程标识</strong>, 让客户端分清进程是否发生变化, 一旦发生变化, 客户就可以进行对应的救灾措施, 比如马上重新执行登录操作, 恢复之前的状态.</p>
+</li>
+<li><p>如果设定唯一进程标识?</p>
 <ul>
-<li>用RAII包装文件描述符.</li>
+<li><p><code>&quot;ip:prot&quot;</code>的方式只可被无状态服务使用, 有状态服务这样子使用是无法区分先后的.</p>
+</li>
+<li><p><code>&quot;ip:port:start_time:pid&quot;</code> 这种定义标准可以被使用, 其几乎没有重复概率, 将其发给客户端就可以表示当前的唯一进程, 并且其本身是有意义的, 从中可以随时提取出服务定位和时间, 便于服务重启.</p>
+</li>
+<li><p><code>UUID</code>是当前最主流标识唯一进程的方式, 其绝对不会重复且获取简单, 在终端界面可以用<code>uuidgen</code>获取 ,  在c&#x2F;c++代码可以通过以下方式获取:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;uuid/uuid.h&gt;</span></span><br><span class="hljs-comment">//....</span><br><span class="hljs-type">uuid_t</span> uuid;<br><span class="hljs-type">char</span> uuid_str[<span class="hljs-number">37</span>];  <span class="hljs-comment">// UUID 字符串长度为 36 + 1 个 &#x27;\0&#x27;</span><br><span class="hljs-built_in">uuid_generate</span>(uuid);<br><span class="hljs-built_in">uuid_unparse</span>(uuid, uuid_str);<br></code></pre></td></tr></table></figure></li>
 </ul>
-<p>人话说就是用一个类管理文件描述符, 这个类在外部用智能指针之类的资源管理类维护, 这样就算文件描述符一样, 但是我们看的是持有这个文件描述符的对象, 只要各自有一个对象就行.</p>
-<p>实践到Muduo库中, 就是TcpConnection, 一般用<code>share_ptr&lt;Tcpconnection&gt;</code>, 只要连接断开这个对象就会析构, 但是我们处理事务对象也会同时拥有对应的<code>weak_ptr&lt;Tcpconnection&gt;</code>用来观察, 在事务处理完后就可用通过提升弱指针观察Tcpconnection是否还存在, 存在就发送, 不存在就算了, 这种处理技术又被称为 — <strong>弱回调</strong>.</p>
-<h3 id="细碎知识"><a href="#细碎知识" class="headerlink" title="细碎知识"></a>细碎知识</h3><ul>
-<li><p>最低限度地共享对象,  优先使用高层同步设施(线程池, 队列), 如果不得已必须, 优先使用互斥锁和条件变量, 不要用读写锁和信号量.</p>
 </li>
-<li><p>读写锁的效率不一定比互斥锁高, 因为其会维护额外的东西, 并且我们一般希望临界区短些, 临界区越短, 读写锁的优势越小.</p>
+</ul>
+<h4 id="应用层心跳"><a href="#应用层心跳" class="headerlink" title="应用层心跳"></a>应用层心跳</h4><ul>
+<li><p>为什么不能用Tcp keepalive替代应用层心跳?</p>
+<p>Tcp keepalive只能证明目标端口上的进程依旧在线, 不能确定此进程是否正常运行, 不可知对方是否死锁或阻塞.</p>
 </li>
-<li><p>必须通过循环判断布尔值来解决虚假唤醒问题.</p>
+<li><p>因此我们需要设置应用层心跳, 一般是服务端向客户端发送心跳.</p>
 </li>
-<li><p>单例模式中的实例一般是静态变量, 在第一次执行时创建, C++11后保证静态变量的创建是线程安全的, 也就是说这种创建方式是线程安全的. 也可以通过new在堆上创建, 这种创建是可以传入参数的(静态变量不可), 并且销毁是可控的, 但是这里会有线程安全问题, 可以通过call_once来解决 : </p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">typename</span>... Args&gt;<br><span class="hljs-function"><span class="hljs-type">static</span> T* <span class="hljs-title">instance</span><span class="hljs-params">(Args&amp;&amp;... args)</span> </span>&#123;<br>    std::<span class="hljs-built_in">call_once</span>(flag_, [&amp;] &#123;<br>        instance_ = <span class="hljs-keyword">new</span> <span class="hljs-built_in">T</span>(std::forward&lt;Args&gt;(args)...);<br>    &#125;);<br>    <span class="hljs-keyword">return</span> instance_;<br>&#125;traverse<br></code></pre></td></tr></table></figure>
-
-<p>其保证内部的代码原子且只被执行一次.</p>
+<li><p>延迟不可避免, 分布式系统没有全局的瞬时状态, 不存在立刻判断对方故障的方法.</p>
 </li>
-<li><p>one loop per thread 的优势 : </p>
+<li><p>高置信度和低反应时间不可兼得.</p>
+</li>
+<li><p>心跳包中可以包含当前服务端的复杂, 可以便于客户端做负载均衡.</p>
+</li>
+<li><p>心跳协议实现还有两个关键点 : </p>
 <ul>
-<li>线程数目固定, 开始时创建, 不会频繁地创建和销毁, 如果用一个线程池去控制也更方便, 更好控制.</li>
-<li>负责调配方便, 数目固定直接轮询其实就是非常好的方案.</li>
-<li>每个连接会对应固定线程, 不需要关心线程安全, 没有锁的顾虑.</li>
+<li><p><strong>要在工作线程发送, 不要单独起一个心跳线程</strong>.</p>
+<p>这是<strong>防止工作线程死锁或阻塞时还在继续发心跳</strong>, 工作线程必须实际可用才行.</p>
+</li>
+<li><p><strong>与业务消息用同一个连接, 不要单独用一个心跳连接.</strong></p>
+<p>应用层心跳还应该可以<strong>验证网络通畅</strong>, 只有用同一个连接发送才可以证明连接通畅. 另外还有一个用处是进行连接的<strong>保活</strong>, 因为很多服务器会设置防火墙, 在一个连接长时间没有数据交换后, 防火墙就会在双方不知情的清空下断开连接, 也就是说这之后的第一条消息必定是延迟的, TCP会根据延迟判断连接已经断开, 再重新建立连接发送.</p>
+</li>
 </ul>
-</li>
-<li><p>进程间通信选择TCP往往是最优的选择, 因为其天然跨主机, 可以长连接, 更稳定, 相比于多出来的一些花销, 其使用更加简洁且功能丰富.</p>
-</li>
-<li><p>当想限制CPU的占用率时, 需要使用单线程.</p>
-</li>
-<li><p>系统的文件函数一般都是线程安全的, 但是如果组合起来的话就可能有问题, 比如想指定读某个文件的某部分, 就需要先lseek再read, 但是lseek和read的中间可能有其他线程也会调用lseek, 由于lseek的影响是全局的, 就会read错误. 解决方法是使用pread, 其就是内部封装了lseek和read再使其原子化. </p>
-</li>
-<li><p>多线程程序中不要使用信号, 就算要用也要转换成统一的事件, 推荐用signalfd之间转化为文件描述符事件.</p>
 </li>
 </ul>
 
@@ -397,9 +394,7 @@
     <div class="post-meta">
       <i class="iconfont icon-tags"></i>
       
-        <a href="/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/" class="print-no-link">#多线程</a>
-      
-        <a href="/tags/Muduo/" class="print-no-link">#Muduo</a>
+        <a href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/" class="print-no-link">#分布式系统</a>
       
     </div>
   
@@ -411,8 +406,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>Linux多线程服务端编程 读书笔记1</div>
-      <div>http://example.com/2025/07/12/[Linux多线程服务端编程] 读书笔记(1)/</div>
+      <div>Linux多线程服务端编程 读书笔记3</div>
+      <div>http://example.com/2025/07/16/[Linux多线程服务端编程] 读书笔记(3)/</div>
     </div>
     <div class="license-meta">
       
@@ -424,7 +419,7 @@
       
         <div class="license-meta-item license-meta-date">
           <div>发布于</div>
-          <div>2025年7月12日</div>
+          <div>2025年7月16日</div>
         </div>
       
       
@@ -456,9 +451,9 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2025/07/14/%5BLinux%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%9C%8D%E5%8A%A1%E7%AB%AF%E7%BC%96%E7%A8%8B%5D%20%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0(2)/" title="Linux多线程服务端编程 读书笔记2">
+                      <a href="/2025/07/20/HTTP1/" title="HTTP/1">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">Linux多线程服务端编程 读书笔记2</span>
+                        <span class="hidden-mobile">HTTP/1</span>
                         <span class="visible-mobile">上一篇</span>
                       </a>
                     
@@ -466,8 +461,8 @@
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2025/07/11/libuv%E7%BD%91%E7%BB%9C%E5%BA%93/" title="libuv事件库">
-                        <span class="hidden-mobile">libuv事件库</span>
+                      <a href="/2025/07/14/%5BLinux%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%9C%8D%E5%8A%A1%E7%AB%AF%E7%BC%96%E7%A8%8B%5D%20%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0(2)/" title="Linux多线程服务端编程 读书笔记2">
+                        <span class="hidden-mobile">Linux多线程服务端编程 读书笔记2</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>

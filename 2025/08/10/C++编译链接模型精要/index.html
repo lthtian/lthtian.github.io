@@ -28,15 +28,15 @@
 <meta property="og:site_name" content="天目中云">
 <meta property="og:description" content="C编译链接系统 先来回顾C语言的编译流程 : 预处理 -&gt; 编译 -&gt; 汇编 -&gt; 链接  Preprocessor 预处理 输入  .c &#x2F; .cc 文件 输出  .i (intermediate 中间) 文件 工作 :  将include字段用对应的.h文件替换 替换define字段 处理条件编译 删除注释    Compiler 编译 输入 .i 文件 输出 .s">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="c:\Users\ASUS\AppData\Roaming\Typora\typora-user-images\image-20250808110147021.png">
-<meta property="og:image" content="c:\Users\ASUS\AppData\Roaming\Typora\typora-user-images\image-20250808112355184.png">
+<meta property="og:image" content="http://example.com/img/image/5.png">
+<meta property="og:image" content="http://example.com/img/image/6.png">
 <meta property="article:published_time" content="2025-08-10T12:40:00.000Z">
-<meta property="article:modified_time" content="2025-08-22T09:39:28.153Z">
+<meta property="article:modified_time" content="2025-08-22T09:58:50.504Z">
 <meta property="article:author" content="天目中云">
 <meta property="article:tag" content="编译链接">
 <meta property="article:tag" content="C++20模块">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="c:\Users\ASUS\AppData\Roaming\Typora\typora-user-images\image-20250808110147021.png">
+<meta name="twitter:image" content="http://example.com/img/image/5.png">
   
   
     <meta name="referrer" content="no-referrer-when-downgrade">
@@ -450,7 +450,7 @@
 <p>我们会发现, 虽然在<code>person.h</code>中<strong>用到了Name的指针</strong>, 但我们只需要前向声明保证有这个类型, 就无需再包含对应的头文件.</p>
 <p>相应的, 我们会<strong>在源文件中包含对应的头文件</strong>, 在源文件中实现对Name的使用.</p>
 <p>为了深入理解前向声明的作用, 我们用一个图来解释 : </p>
-<p><img src="C:\Users\ASUS\AppData\Roaming\Typora\typora-user-images\image-20250808110147021.png" srcset="/img/loading.gif" lazyload alt="image-20250808110147021"></p>
+<p><img src="/../img/image/5.png" srcset="/img/loading.gif" lazyload></p>
 <p>这里我们用实线代表包含, 虚线代表前向声明. </p>
 <ul>
 <li><code>1.h</code>包含于当前头文件, 那么如果该文件发生修改, 那么源文件1234就都要重新编译.</li>
@@ -478,7 +478,7 @@
 <li>在源文件<code>.cpp</code>中, 同时包含这两个类, <strong>让接口类(如 <code>Person</code>)的成员函数调用实现类(如 <code>PersonImpl</code>)的对应函数</strong>.</li>
 </ul>
 <p>可以通过下图加深理解 : </p>
-<p><img src="C:\Users\ASUS\AppData\Roaming\Typora\typora-user-images\image-20250808112355184.png" srcset="/img/loading.gif" lazyload alt="image-20250808112355184"></p>
+<p><img src="/../img/image/6.png" srcset="/img/loading.gif" lazyload></p>
 <p>这种手法相比于最初的前向声明使用方法, 界限划分更加明显, 并且接口类的修改频率可以进一步降低, 因为<strong>其内部只前向声明了实现类</strong>, 无需前向声明其他类. 同时依旧保证了对实现类的修改不会影响包含了的接口类的源文件.</p>
 <blockquote>
 <p>下面介绍各种C++特性引发的编译过程变化 :</p>
