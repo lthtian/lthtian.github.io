@@ -288,6 +288,46 @@
     <article class="col-12 col-md-12 mx-auto index-info">
       <h2 class="index-header">
         
+        <a href="/2025/08/05/HTTP3/" target="_self">
+          HTTP/3
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/08/05/HTTP3/" target="_self">
+        <div>
+          生态分析TCP队头阻塞这是HTTP&#x2F;2所拥有的根本性通病, 注意这里的队头阻塞不是指排队造成的阻塞, 而是指丢包造成的阻塞. TCP为了实现可靠有序, 采用了超时重传机制, 该机制可以确保可靠有序, 但是对于现代网络却有严重缺陷. TCP中如果发送出现丢包, 必须要依靠超时重传等到当前包再次发来, 后面的包才能生效, 即使已经发来了, 后面的包也不能及时处理和使用, 这是在内核中就强制决
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2025-08-05 17:00" pubdate>
+              2025-08-05
+            </time>
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/HTTP/">#HTTP</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
         <a href="/2025/08/01/HTTP2/" target="_self">
           HTTP/2
         </a>
@@ -355,6 +395,48 @@
             <i class="iconfont icon-tags"></i>
             
               <a href="/tags/HTTP/">#HTTP</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2025/07/14/%5BLinux%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%9C%8D%E5%8A%A1%E7%AB%AF%E7%BC%96%E7%A8%8B%5D%20%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B02/" target="_self">
+          Linux多线程服务端编程 读书笔记2
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/07/14/%5BLinux%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%9C%8D%E5%8A%A1%E7%AB%AF%E7%BC%96%E7%A8%8B%5D%20%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B02/" target="_self">
+        <div>
+          第二部分 Muduo网络库  文件传输 如何完整高效地传输一个文件?  文件传输过程一般如下 :   磁盘 -&gt; 内核页缓冲 -&gt; 用户缓冲区 -&gt; Tcp发送缓冲区 -&gt; 网卡等  最简单的传输方式当然就是fread + send 一口气传出, 但是这样如果文件非常大的话, 服务器扛不住几个连接, 因为这样的内存消耗非常大.  书中提出了一种解决内存占用过多的方法 :
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2025-07-14 17:00" pubdate>
+              2025-07-14
+            </time>
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/%E6%96%87%E4%BB%B6%E4%BC%A0%E8%BE%93/">#文件传输</a>
+            
+              <a href="/tags/io-uring/">#io_uring</a>
             
           </div>
         
@@ -564,91 +646,11 @@
     </article>
   </div>
 
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h2 class="index-header">
-        
-        <a href="/2025/06/28/FFmpeg%E9%9F%B3%E8%A7%86%E9%A2%91%E5%AD%A6%E4%B9%A0(2)%20QtAPI/" target="_self">
-          FFmpeg音视频学习(2) QtAPI
-        </a>
-      </h2>
-
-      
-      <a class="index-excerpt index-excerpt__noimg" href="/2025/06/28/FFmpeg%E9%9F%B3%E8%A7%86%E9%A2%91%E5%AD%A6%E4%B9%A0(2)%20QtAPI/" target="_self">
-        <div>
-          本章介绍部分Qt中用于音视频解码的api  本章我们将会在qtcreator中写一段代码实现对一个mp4文件的解码, 所谓解码就是把其中存储的每个视频帧和音频帧取出, 本章先不做展示界面, 只是先读取这些帧的数据. 环境准备 qtcreator 安装ffmpeg  在.pro文件中加入相关依赖 :  12INCLUDEPATH += /usr/includeLIBS += -lavformat
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2025-06-28 19:00" pubdate>
-              2025-06-28
-            </time>
-          </div>
-        
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/ffmpeg/">#ffmpeg</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h2 class="index-header">
-        
-        <a href="/2025/06/27/FFmpeg%E9%9F%B3%E8%A7%86%E9%A2%91%E5%AD%A6%E4%B9%A0(1)%20%E7%90%86%E8%AE%BA%E5%87%86%E5%A4%87/" target="_self">
-          FFmpeg音视频学习(1) 理论准备
-        </a>
-      </h2>
-
-      
-      <a class="index-excerpt index-excerpt__noimg" href="/2025/06/27/FFmpeg%E9%9F%B3%E8%A7%86%E9%A2%91%E5%AD%A6%E4%B9%A0(1)%20%E7%90%86%E8%AE%BA%E5%87%86%E5%A4%87/" target="_self">
-        <div>
-          理论准备  PCM — Pulse-Code Modulation 脉冲调制编码一种用数字表示采样模拟信号的方法. 要将一段音频模拟信号转换为数字表示，包含如下三个步骤：  1、Sampling(采样) 2、Quantization(量化) 3、Coding(编码)  PCM常用指标 :  采样率(Sample rate)：每秒钟采样多少次，以Hz为单位。  位深度(Bit-depth)：表示用
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2025-06-27 19:00" pubdate>
-              2025-06-27
-            </time>
-          </div>
-        
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/ffmpeg/">#ffmpeg</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
 
 
   <nav aria-label="navigation">
     <span class="pagination" id="pagination">
-      <span class="page-number current">1</span><a class="page-number" href="/page/2/#board">2</a><a class="page-number" href="/page/3/#board">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/9/#board">9</a><a class="extend next" rel="next" href="/page/2/#board"><i class="iconfont icon-arrowright"></i></a>
+      <span class="page-number current">1</span><a class="page-number" href="/page/2/#board">2</a><a class="page-number" href="/page/3/#board">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/10/#board">10</a><a class="extend next" rel="next" href="/page/2/#board"><i class="iconfont icon-arrowright"></i></a>
     </span>
   </nav>
 

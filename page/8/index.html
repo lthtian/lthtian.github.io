@@ -246,6 +246,86 @@
     <article class="col-12 col-md-12 mx-auto index-info">
       <h2 class="index-header">
         
+        <a href="/2024/12/06/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE27%20%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2/" target="_self">
+          Effective C++ 条款27 类型转换
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2024/12/06/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE27%20%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2/" target="_self">
+        <div>
+          条款27 : 尽量少做转型动作 优良的C++代码很少使用转型, 但是要完全摆脱它们又太过不切实际, 我们应当保证”类型错误”绝无可能发生. 本条款在了解各种转型动作的前提下, 指出了一些有风险的转型操作及其解决方法.  我们先来回顾一下类型转换 :  旧式C风格转型12(T)expression;T(experssion);  新式转型1234static_cast&lt;T&gt;(expres
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2024-12-06 19:57" pubdate>
+              2024-12-06
+            </time>
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/Effective-C/">#Effective C++</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2024/12/05/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE26%20%E5%B0%BD%E5%8F%AF%E8%83%BD%E5%BB%B6%E5%90%8E%E5%8F%98%E9%87%8F%E5%AE%9A%E4%B9%89%E5%BC%8F%E7%9A%84%E5%87%BA%E7%8E%B0%E6%97%B6%E9%97%B4/" target="_self">
+          Effective C++ 条款26 尽可能延后变量定义式的出现时间
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2024/12/05/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE26%20%E5%B0%BD%E5%8F%AF%E8%83%BD%E5%BB%B6%E5%90%8E%E5%8F%98%E9%87%8F%E5%AE%9A%E4%B9%89%E5%BC%8F%E7%9A%84%E5%87%BA%E7%8E%B0%E6%97%B6%E9%97%B4/" target="_self">
+        <div>
+          条款26 : 尽可能延后变量定义式的出现时间只要你定义了一个变量, 并且其类型带有构造函数或析构函数, 那么当程序控制流到达变量定义式时, 你便得承担构造成本; 当变量离开作用域时, 你便得承担析构成本. 本条款希望我们避免定义变量但最终并未使用的情况, 不要白白浪费构造和析构的成本. 先来看看什么情况下会出现定义变量但最终并未使用 :  这是一个密码加密的函数, 由于密码本身不能修改, 所以要定
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2024-12-05 16:17" pubdate>
+              2024-12-05
+            </time>
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/Effective-C/">#Effective C++</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
         <a href="/2024/12/04/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE25%20%E8%80%83%E8%99%91%E5%86%99%E5%87%BA%E4%B8%80%E4%B8%AA%E4%B8%8D%E6%8A%9B%E5%BC%82%E5%B8%B8%E7%9A%84swap%E5%87%BD%E6%95%B0/" target="_self">
           Effective C++ 条款25 考虑写出一个不抛异常的swap函数
         </a>
@@ -562,91 +642,11 @@
     </article>
   </div>
 
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h2 class="index-header">
-        
-        <a href="/2024/11/30/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE16-17%20new%20%E5%92%8C%20delete/" target="_self">
-          Effective C++ 条款16-17 new 和 delete
-        </a>
-      </h2>
-
-      
-      <a class="index-excerpt index-excerpt__noimg" href="/2024/11/30/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE16-17%20new%20%E5%92%8C%20delete/" target="_self">
-        <div>
-          条款16 : 成对使用new和delete时要采用相同形式直接看代码 :  12345std::string *stringPtr1 = new std::string;std::string *stringPtr2 = new std::string[100];...delete stringPtr1;                     delete [] stringPtr2;  这个其
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2024-11-30 22:06" pubdate>
-              2024-11-30
-            </time>
-          </div>
-        
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/Effective-C/">#Effective C++</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h2 class="index-header">
-        
-        <a href="/2024/11/30/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE15%20%E5%9C%A8%E8%B5%84%E6%BA%90%E7%AE%A1%E7%90%86%E7%B1%BB%E4%B8%AD%E6%8F%90%E4%BE%9B%E5%AF%B9%E5%8E%9F%E5%A7%8B%E8%B5%84%E6%BA%90%E7%9A%84%E8%AE%BF%E9%97%AE/" target="_self">
-          Effective C++ 条款15 在资源管理类中提供对原始资源的访问
-        </a>
-      </h2>
-
-      
-      <a class="index-excerpt index-excerpt__noimg" href="/2024/11/30/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE15%20%E5%9C%A8%E8%B5%84%E6%BA%90%E7%AE%A1%E7%90%86%E7%B1%BB%E4%B8%AD%E6%8F%90%E4%BE%9B%E5%AF%B9%E5%8E%9F%E5%A7%8B%E8%B5%84%E6%BA%90%E7%9A%84%E8%AE%BF%E9%97%AE/" target="_self">
-        <div>
-          条款15 : 在资源管理类中提供对原始资源的访问 我们将资源存入资源管理类, 为的是可以免去资源管理的麻烦, 但同时我们也希望可以正常合理地通过资源管理类来使用资源, 就像直接使用资源一样, 为此我们一定需要在资源管理类中提供对原始资源的访问;  我们先来解答一些疑问 :   为什么要对原始资源进行访问(为什么要获取原始资源的指针)?有时候需要我们传递原始资源的指针, 因为很多C API都是要求传
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2024-11-30 22:06" pubdate>
-              2024-11-30
-            </time>
-          </div>
-        
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/Effective-C/">#Effective C++</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
 
 
   <nav aria-label="navigation">
     <span class="pagination" id="pagination">
-      <a class="extend prev" rel="prev" href="/page/7/#board"><i class="iconfont icon-arrowleft"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/#board">6</a><a class="page-number" href="/page/7/#board">7</a><span class="page-number current">8</span><a class="page-number" href="/page/9/#board">9</a><a class="extend next" rel="next" href="/page/9/#board"><i class="iconfont icon-arrowright"></i></a>
+      <a class="extend prev" rel="prev" href="/page/7/#board"><i class="iconfont icon-arrowleft"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/#board">6</a><a class="page-number" href="/page/7/#board">7</a><span class="page-number current">8</span><a class="page-number" href="/page/9/#board">9</a><a class="page-number" href="/page/10/#board">10</a><a class="extend next" rel="next" href="/page/9/#board"><i class="iconfont icon-arrowright"></i></a>
     </span>
   </nav>
 

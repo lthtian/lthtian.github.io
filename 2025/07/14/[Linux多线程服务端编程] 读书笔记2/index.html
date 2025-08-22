@@ -1,0 +1,923 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/head.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="天目中云">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="第二部分 Muduo网络库  文件传输 如何完整高效地传输一个文件?  文件传输过程一般如下 :   磁盘 -&gt; 内核页缓冲 -&gt; 用户缓冲区 -&gt; Tcp发送缓冲区 -&gt; 网卡等  最简单的传输方式当然就是fread + send 一口气传出, 但是这样如果文件非常大的话, 服务器扛不住几个连接, 因为这样的内存消耗非常大.  书中提出了一种解决内存占用过多的方法 :">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux多线程服务端编程 读书笔记2">
+<meta property="og:url" content="http://example.com/2025/07/14/[Linux%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%9C%8D%E5%8A%A1%E7%AB%AF%E7%BC%96%E7%A8%8B]%20%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B02/index.html">
+<meta property="og:site_name" content="天目中云">
+<meta property="og:description" content="第二部分 Muduo网络库  文件传输 如何完整高效地传输一个文件?  文件传输过程一般如下 :   磁盘 -&gt; 内核页缓冲 -&gt; 用户缓冲区 -&gt; Tcp发送缓冲区 -&gt; 网卡等  最简单的传输方式当然就是fread + send 一口气传出, 但是这样如果文件非常大的话, 服务器扛不住几个连接, 因为这样的内存消耗非常大.  书中提出了一种解决内存占用过多的方法 :">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-07-14T09:00:00.000Z">
+<meta property="article:modified_time" content="2025-08-22T09:50:44.039Z">
+<meta property="article:author" content="天目中云">
+<meta property="article:tag" content="文件传输">
+<meta property="article:tag" content="io_uring">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>Linux多线程服务端编程 读书笔记2 - 天目中云</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":"NhgfDy2CEByjwxuxPM1Le2t6-MdYXbMMI","app_key":"nvGMdqKfKbpkVnojLSbwmasv","server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>TianMu</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/03.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Linux多线程服务端编程 读书笔记2"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-07-14 17:00" pubdate>
+          2025年7月14日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.8k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          32 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Linux多线程服务端编程 读书笔记2</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <blockquote>
+<p>第二部分 Muduo网络库</p>
+</blockquote>
+<h3 id="文件传输"><a href="#文件传输" class="headerlink" title="文件传输"></a>文件传输</h3><ul>
+<li>如何完整高效地传输一个文件?</li>
+</ul>
+<p>文件传输过程一般如下 : </p>
+<ul>
+<li>磁盘 -&gt; 内核页缓冲 -&gt; 用户缓冲区 -&gt; Tcp发送缓冲区 -&gt; 网卡等</li>
+</ul>
+<p>最简单的传输方式当然就是fread + send 一口气传出, 但是这样如果文件非常大的话, 服务器扛不住几个连接, 因为这样的内存消耗非常大. </p>
+<p>书中提出了一种解决内存占用过多的方法 : <strong>流水线 — 分块传输</strong>.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;muduo/net/TcpConnection.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;muduo/base/Logging.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;boost/any.hpp&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;memory&gt;</span></span><br><br><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> muduo;<br><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> muduo::net;<br><br><span class="hljs-comment">// 自定义删除器，用于自动 fclose</span><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">customDeleter</span><span class="hljs-params">(FILE* fp)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">if</span> (fp)<br>    &#123;<br>        ::<span class="hljs-built_in">fclose</span>(fp);<br>        LOG_INFO &lt;&lt; <span class="hljs-string">&quot;FILE* closed&quot;</span>;<br>    &#125;<br>&#125;<br><br><span class="hljs-keyword">using</span> FilePtr = std::shared_ptr&lt;FILE&gt;;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">onConnection</span><span class="hljs-params">(<span class="hljs-type">const</span> TcpConnectionPtr&amp; conn)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">if</span> (conn-&gt;<span class="hljs-built_in">connected</span>())<br>    &#123;<br>        <span class="hljs-type">const</span> <span class="hljs-type">char</span>* filename = <span class="hljs-string">&quot;example.txt&quot;</span>;  <span class="hljs-comment">// 假设传输该文件</span><br>        FILE* fp = ::<span class="hljs-built_in">fopen</span>(filename, <span class="hljs-string">&quot;rb&quot;</span>);<br><br>        <span class="hljs-keyword">if</span> (fp)<br>        &#123;<br>            <span class="hljs-comment">// 使用 shared_ptr + 自定义 deleter 管理 FILE*</span><br>            <span class="hljs-function">FilePtr <span class="hljs-title">ctx</span><span class="hljs-params">(fp, customDeleter)</span></span>;<br>            conn-&gt;<span class="hljs-built_in">setContext</span>(ctx);<br><br>            <span class="hljs-type">char</span> buf[<span class="hljs-number">64</span> * <span class="hljs-number">1024</span>];<br>            <span class="hljs-type">size_t</span> nread = ::<span class="hljs-built_in">fread</span>(buf, <span class="hljs-number">1</span>, <span class="hljs-keyword">sizeof</span> buf, fp);<br>            <span class="hljs-keyword">if</span> (nread &gt; <span class="hljs-number">0</span>)<br>            &#123;<br>                conn-&gt;<span class="hljs-built_in">send</span>(buf, nread);<br>            &#125;<br>        &#125;<br>        <span class="hljs-keyword">else</span><br>        &#123;<br>            LOG_INFO &lt;&lt; <span class="hljs-string">&quot;FileServer - no such file&quot;</span>;<br>            conn-&gt;<span class="hljs-built_in">shutdown</span>();<br>        &#125;<br>    &#125;<br>    <span class="hljs-keyword">else</span><br>    &#123;<br>        LOG_INFO &lt;&lt; <span class="hljs-string">&quot;FileServer - connection closed&quot;</span>;<br>    &#125;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">onWriteComplete</span><span class="hljs-params">(<span class="hljs-type">const</span> TcpConnectionPtr&amp; conn)</span></span><br><span class="hljs-function"></span>&#123;<br>    FilePtr fp = boost::<span class="hljs-built_in">any_cast</span>&lt;FilePtr&gt;(conn-&gt;<span class="hljs-built_in">getContext</span>());<br><br>    <span class="hljs-keyword">if</span> (fp &amp;&amp; *fp)<br>    &#123;<br>        <span class="hljs-type">char</span> buf[<span class="hljs-number">64</span> * <span class="hljs-number">1024</span>];<br>        <span class="hljs-type">size_t</span> nread = ::<span class="hljs-built_in">fread</span>(buf, <span class="hljs-number">1</span>, <span class="hljs-keyword">sizeof</span> buf, fp.<span class="hljs-built_in">get</span>());<br><br>        <span class="hljs-keyword">if</span> (nread &gt; <span class="hljs-number">0</span>)<br>        &#123;<br>            conn-&gt;<span class="hljs-built_in">send</span>(buf, nread);  <span class="hljs-comment">// 下一块数据</span><br>        &#125;<br>        <span class="hljs-keyword">else</span><br>        &#123;<br>            <span class="hljs-comment">// 自动关闭 FILE*（shared_ptr 析构时调用 fclose）</span><br>            conn-&gt;<span class="hljs-built_in">setContext</span>(<span class="hljs-built_in">FilePtr</span>());  <span class="hljs-comment">// 清空 context，触发析构</span><br>            conn-&gt;<span class="hljs-built_in">shutdown</span>();             <span class="hljs-comment">// 主动关闭连接</span><br>            LOG_INFO &lt;&lt; <span class="hljs-string">&quot;FileServer - done&quot;</span>;<br>        &#125;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>这里在建立连接时, 我们只读发了一个64kb, 在写完后才会自动调用Muduo的写完回调, 写完回调中还会继续发送64kb, 发完又会执行写完回调, 直到发完为止. 这是一个很典型的异步循环事件, 可以减少线程阻塞时间与内存占用.</p>
+<p>流水线传输的优势 : </p>
+<ul>
+<li>内存占用少</li>
+<li>防止长时间阻塞等待, 除非你用了非阻塞 + epoll</li>
+<li>可以配合流控动态调整(HighWaterMark)</li>
+<li>可以便于实现限速 &#x2F; 动态生成内容 &#x2F; 生成日志等操作</li>
+</ul>
+<p>当然这是最普遍的跨平台做法, 如果目光放在Linux平台上就有更快捷的方法 : </p>
+<ul>
+<li><p><strong>sendfile</strong> : </p>
+<p>这是专门用来发送文件到socket的内核态函数, 也就是说可以直接跳过内核页缓存到用户缓冲区的拷贝, 直接发给socket, 这样直接砍掉了大部分的内存消耗并且效率极高. 当然sendfile也不是说就可以直接全读全发了, 例如Nginx就还是采取了流水线分块的方式使用sendfile, 这主要还是因为除了内存占用, 其还有其他优势.</p>
+</li>
+<li><p>io_uring : 后面详解.</p>
+</li>
+</ul>
+<h3 id="TCP分包"><a href="#TCP分包" class="headerlink" title="TCP分包"></a>TCP分包</h3><ul>
+<li>针对短连接TCP(需求可靠传输少量数据)的情况, 一般不用考虑分包, 只要等待对方关闭连接, 我方返回0时就可以确定拿到所有数据.</li>
+<li>针对长连接TCP, 有四种方法 : <ul>
+<li>消息长度固定</li>
+<li>用特殊的字符或字符串为边界, 如HTTP</li>
+<li>每个消息都加入一个长度字段, 表示之后要发来的消息长度</li>
+<li>消息本身就有自己的格式 : json &#x2F; protobuf</li>
+</ul>
+</li>
+</ul>
+<h3 id="Buffer设计"><a href="#Buffer设计" class="headerlink" title="Buffer设计"></a>Buffer设计</h3><ul>
+<li>非阻塞 + IO复用 的网络编程中, 应用层的Buffer是必须的 : <ul>
+<li>output buffer : 因为程序最好不要在write时阻塞, 这种情况受限于网络传输状态, 必须要配置输出缓存, 其作用是在一次write无法全部写出去时, 将剩余的部分存到buffer中, 并且设置回调, 当TCP发送缓冲区可写时再调用回调, 也许可以调用io_uring异步IO提高效率. <strong>可加强</strong></li>
+</ul>
+</li>
+</ul>
+<h3 id="Protobuf使用"><a href="#Protobuf使用" class="headerlink" title="Protobuf使用"></a>Protobuf使用</h3><ul>
+<li>特性 : <ul>
+<li>protobuf是一个内容格式, 并非传输协议, 因此其并为封装消息长度, 消息类型之类的东西.</li>
+<li>便捷的是, 如果我们不要Tcp长连接, 需求类型单一, 就可以直接凭借字段解析, 无需依靠长度和类型, 就可以拿到我们想要的数据.</li>
+<li>如果需要Tcp长连接, 可以考虑追加header, 其中包含服务名和方法名&#x2F;类型名, 我们接收到可以利用Descriptor加这些名字自动构建对应的服务方法类型.</li>
+</ul>
+</li>
+<li>ProtobufCodec</li>
+<li>ProtobufDispatcher</li>
+</ul>
+<h3 id="限制服务器的最大并发连接数"><a href="#限制服务器的最大并发连接数" class="headerlink" title="限制服务器的最大并发连接数"></a>限制服务器的最大并发连接数</h3><ul>
+<li><p>可以通过调高进程的文件描述符数目缓解, 但是不宜过多会拖慢进程.</p>
+</li>
+<li><p>最方便快捷的就是设置一个最大连接数, 这个数据在多线程情况下应当线程安全, 当连接数超过这个数, 就直接把连接断掉, 不继续处理.</p>
+</li>
+<li><p>不这样做会发生什么?  </p>
+<p>新连接一直不会得到处理, epoll_wait会被极频繁触发, 极大提高cpu占有率.</p>
+</li>
+</ul>
+<h3 id="检测并清理无效连接"><a href="#检测并清理无效连接" class="headerlink" title="检测并清理无效连接"></a>检测并清理无效连接</h3><p>方法一般就是两大类 : 踢掉空闲连接 和 设置心跳协议.</p>
+<p>前者可以当作权益之计, 但是够轻量, 够便捷, 基本思路就是维护一些桶, 将超时桶中的连接关闭, 一旦有新连接就更新所在桶.</p>
+<p>后者更加稳定有效, 虽然内部会比较冗杂, 但是又很多现代的优化方式, 比如操作系统内核层的心跳机制, 用io_uring + kqueue直接实现精准定时发送.</p>
+<h3 id="io-uring"><a href="#io-uring" class="headerlink" title="io_uring"></a>io_uring</h3><h4 id="简易理解"><a href="#简易理解" class="headerlink" title="简易理解"></a>简易理解</h4><ul>
+<li>目的 : 减少系统调用(减少状态转换开销), 减少无效拷贝, 异步实现接口.</li>
+<li>实现 : 内部维护一个请求队列和一个结果队列, 会利用mmap申请一块共享内存, 系统存放数据和用户取出数据都在这块内存上进行, 可以有效减少内核函数调用, 并且纯异步可以有效提高并发.</li>
+<li>使用 : 在此实现上, io_uring提供了很多便利各种服务的接口, 支持读、写、accept、connect、send、recv、splice、sendfile 等统一异步接口, 也就是它们的异步高效版.</li>
+</ul>
+<h4 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h4><ul>
+<li><p>初始化与销毁 : </p>
+<table>
+<thead>
+<tr>
+<th>函数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>io_uring_queue_init()</code></td>
+<td>初始化 io_uring（内核分配 SQ&#x2F;CQ）</td>
+</tr>
+<tr>
+<td><code>io_uring_queue_exit()</code></td>
+<td>清理资源，解除映射</td>
+</tr>
+</tbody></table>
+</li>
+<li><p>提交请求(提交异步事件) : </p>
+<table>
+<thead>
+<tr>
+<th>函数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>io_uring_get_sqe()</code></td>
+<td>获取一个空的提交项（SQE）指针</td>
+</tr>
+<tr>
+<td><code>io_uring_prep_*()</code></td>
+<td>填充 SQE，不同操作有不同函数，如 <code>io_uring_prep_read()</code>、<code>io_uring_prep_accept()</code></td>
+</tr>
+<tr>
+<td><code>io_uring_sqe_set_data()</code></td>
+<td>给 SQE 绑定用户数据（上下文结构体）</td>
+</tr>
+<tr>
+<td><code>io_uring_submit()</code></td>
+<td>将 SQE 正式提交到内核队列</td>
+</tr>
+<tr>
+<td><code>io_uring_submit_and_wait()</code></td>
+<td>提交并等待至少 N 个事件完成（阻塞）</td>
+</tr>
+</tbody></table>
+<p>sqe简单来说就是一个请求句柄, 我们可以用其注册不同的事件, 当然如果有需要的资源(如buf, fd)我们需要填入, 当然在获取对应cqe的时候我们会希望获取一些上下文信息, 可以利用<code>io_uring_sqe_set_data()</code>传入我们自定义结构体的指针, 之后我们就可以利用<code>io_uring_cqe_get_data()</code>获取.</p>
+</li>
+<li><p>获取完成结果 :</p>
+<table>
+<thead>
+<tr>
+<th>函数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>io_uring_wait_cqe()</code></td>
+<td>阻塞直到有一个 CQE 可用</td>
+</tr>
+<tr>
+<td><code>io_uring_peek_cqe()</code></td>
+<td>非阻塞地获取一个 CQE，如果没有返回 NULL</td>
+</tr>
+<tr>
+<td><code>io_uring_cqe_get_data()</code></td>
+<td>获取你当初绑定的上下文指针（通过 <code>io_uring_sqe_set_data</code> 传入）</td>
+</tr>
+<tr>
+<td><code>io_uring_cqe_seen()</code></td>
+<td>标记这个 CQE 已处理完毕，释放 CQ 空间</td>
+</tr>
+</tbody></table>
+<p><code>io_uring_wait_cqe()</code>会返回cqe对象, cqe-&gt;res中存储的是你在sqe中请求任务函数的返回值, 比如read就会返回int表明是否读取成功与读取长度, accept就会返回新连接的fd.</p>
+</li>
+</ul>
+<h4 id="文件读取"><a href="#文件读取" class="headerlink" title="文件读取"></a>文件读取</h4><p>以下是最简使用io_uring读取一个文件的代码 :</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;liburing.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;fcntl.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;unistd.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;string.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iostream&gt;</span></span><br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-type">const</span> <span class="hljs-type">char</span> *path = <span class="hljs-string">&quot;testconf.txt&quot;</span>;<br>    <span class="hljs-type">char</span> buffer[<span class="hljs-number">4096</span>] = &#123;<span class="hljs-number">0</span>&#125;;<br><br>    <span class="hljs-comment">// 打开文件</span><br>    <span class="hljs-type">int</span> fd = <span class="hljs-built_in">open</span>(path, O_RDONLY);<br>    <span class="hljs-keyword">if</span> (fd &lt; <span class="hljs-number">0</span>)<br>    &#123;<br>        <span class="hljs-built_in">perror</span>(<span class="hljs-string">&quot;open&quot;</span>);<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">1</span>;<br>    &#125;<br><br>    <span class="hljs-comment">// 初始化 io_uring（默认 8 项）</span><br>    io_uring ring;<br>    <span class="hljs-built_in">io_uring_queue_init</span>(<span class="hljs-number">8</span>, &amp;ring, <span class="hljs-number">0</span>);<br><br>    <span class="hljs-comment">// 准备提交一个 read 操作</span><br>    <span class="hljs-keyword">struct</span> <span class="hljs-title class_">io_uring_sqe</span> *sqe = <span class="hljs-built_in">io_uring_get_sqe</span>(&amp;ring);<br>    <span class="hljs-built_in">io_uring_prep_read</span>(sqe, fd, buffer, <span class="hljs-built_in">sizeof</span>(buffer) - <span class="hljs-number">1</span>, <span class="hljs-number">0</span>); <span class="hljs-comment">// 类似 read(fd, buf, 4096, offset=0)</span><br>    <span class="hljs-built_in">io_uring_submit</span>(&amp;ring);                                     <span class="hljs-comment">// 通知内核提交任务</span><br><br>    <span class="hljs-comment">// 等待结果</span><br>    <span class="hljs-keyword">struct</span> <span class="hljs-title class_">io_uring_cqe</span> *cqe;<br>    <span class="hljs-built_in">io_uring_wait_cqe</span>(&amp;ring, &amp;cqe);<br>    <span class="hljs-keyword">if</span> (cqe-&gt;res &lt; <span class="hljs-number">0</span>)<br>    &#123;<br>        std::cerr &lt;&lt; <span class="hljs-string">&quot;read failed: &quot;</span> &lt;&lt; <span class="hljs-built_in">strerror</span>(-cqe-&gt;res) &lt;&lt; std::endl;<br>    &#125;<br>    <span class="hljs-keyword">else</span><br>    &#123;<br>        std::cout &lt;&lt; <span class="hljs-string">&quot;Read success, bytes: &quot;</span> &lt;&lt; cqe-&gt;res &lt;&lt; std::endl;<br>        std::cout &lt;&lt; <span class="hljs-string">&quot;Content: \n&quot;</span><br>                  &lt;&lt; buffer &lt;&lt; std::endl;<br>    &#125;<br><br>    <span class="hljs-built_in">io_uring_cqe_seen</span>(&amp;ring, cqe);<br>    <span class="hljs-built_in">io_uring_queue_exit</span>(&amp;ring);<br>    <span class="hljs-built_in">close</span>(fd);<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h4 id="回显服务器"><a href="#回显服务器" class="headerlink" title="回显服务器"></a>回显服务器</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;liburing.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;string.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;unistd.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;netinet/in.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;fcntl.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;sys/socket.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iostream&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;errno.h&gt;</span></span><br><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> PORT 8888</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> BACKLOG 512</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> BUFFER_SIZE 2048</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> QUEUE_DEPTH  256</span><br><br><span class="hljs-keyword">enum</span> &#123;<br>    ACCEPT,<br>    READ,<br>    WRITE<br>&#125;;<br><br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">conn_info</span> &#123;<br>    <span class="hljs-type">int</span> fd;<br>    <span class="hljs-type">int</span> type;<br>&#125;;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">add_accept</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> io_uring* ring, <span class="hljs-type">int</span> server_fd, sockaddr_in* client_addr, <span class="hljs-type">socklen_t</span>* client_len)</span> </span>&#123;<br>    io_uring_sqe* sqe = <span class="hljs-built_in">io_uring_get_sqe</span>(ring);<br><br>    <span class="hljs-keyword">auto</span>* ci = <span class="hljs-keyword">new</span> conn_info&#123;server_fd, ACCEPT&#125;;<br><br>    <span class="hljs-built_in">io_uring_prep_accept</span>(sqe, server_fd, (sockaddr*)client_addr, client_len, <span class="hljs-number">0</span>);<br>    <span class="hljs-built_in">io_uring_sqe_set_data</span>(sqe, ci);<br>    <span class="hljs-built_in">io_uring_submit</span>(ring);<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">add_read</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> io_uring* ring, <span class="hljs-type">int</span> client_fd, <span class="hljs-type">char</span>* buf)</span> </span>&#123;<br>    io_uring_sqe* sqe = <span class="hljs-built_in">io_uring_get_sqe</span>(ring);<br><br>    <span class="hljs-keyword">auto</span>* ci = <span class="hljs-keyword">new</span> conn_info&#123;client_fd, READ&#125;;<br><br>    <span class="hljs-built_in">io_uring_prep_recv</span>(sqe, client_fd, buf, BUFFER_SIZE, <span class="hljs-number">0</span>);<br>    <span class="hljs-built_in">io_uring_sqe_set_data</span>(sqe, ci);<br>    <span class="hljs-built_in">io_uring_submit</span>(ring);<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">add_write</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> io_uring* ring, <span class="hljs-type">int</span> client_fd, <span class="hljs-type">char</span>* buf, <span class="hljs-type">size_t</span> len)</span> </span>&#123;<br>    io_uring_sqe* sqe = <span class="hljs-built_in">io_uring_get_sqe</span>(ring);<br><br>    <span class="hljs-keyword">auto</span>* ci = <span class="hljs-keyword">new</span> conn_info&#123;client_fd, WRITE&#125;;<br><br>    <span class="hljs-built_in">io_uring_prep_send</span>(sqe, client_fd, buf, len, <span class="hljs-number">0</span>);<br>    <span class="hljs-built_in">io_uring_sqe_set_data</span>(sqe, ci);<br>    <span class="hljs-built_in">io_uring_submit</span>(ring);<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">make_socket_non_blocking</span><span class="hljs-params">(<span class="hljs-type">int</span> fd)</span> </span>&#123;<br>    <span class="hljs-type">int</span> flags = <span class="hljs-built_in">fcntl</span>(fd, F_GETFL, <span class="hljs-number">0</span>);<br>    <span class="hljs-keyword">return</span> <span class="hljs-built_in">fcntl</span>(fd, F_SETFL, flags | O_NONBLOCK);<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-type">int</span> server_fd = <span class="hljs-built_in">socket</span>(AF_INET, SOCK_STREAM, <span class="hljs-number">0</span>);<br>    sockaddr_in addr&#123;&#125;;<br>    addr.sin_family = AF_INET;<br>    addr.sin_port = <span class="hljs-built_in">htons</span>(PORT);<br>    addr.sin_addr.s_addr = INADDR_ANY;<br><br>    <span class="hljs-built_in">bind</span>(server_fd, (sockaddr*)&amp;addr, <span class="hljs-built_in">sizeof</span>(addr));<br>    <span class="hljs-built_in">listen</span>(server_fd, BACKLOG);<br>    <span class="hljs-built_in">make_socket_non_blocking</span>(server_fd);<br><br>    io_uring ring;<br>    <span class="hljs-built_in">io_uring_queue_init</span>(QUEUE_DEPTH, &amp;ring, <span class="hljs-number">0</span>);<br><br>    sockaddr_in client_addr&#123;&#125;;<br>    <span class="hljs-type">socklen_t</span> client_len = <span class="hljs-built_in">sizeof</span>(client_addr);<br>    <span class="hljs-built_in">add_accept</span>(&amp;ring, server_fd, &amp;client_addr, &amp;client_len);<br><br>    <span class="hljs-type">char</span>* buffers[QUEUE_DEPTH] = &#123;<span class="hljs-literal">nullptr</span>&#125;;<br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; QUEUE_DEPTH; ++i)<br>        buffers[i] = <span class="hljs-keyword">new</span> <span class="hljs-type">char</span>[BUFFER_SIZE];<br><br>    <span class="hljs-keyword">while</span> (<span class="hljs-literal">true</span>) &#123;<br>        io_uring_cqe* cqe;<br>        <span class="hljs-type">int</span> ret = <span class="hljs-built_in">io_uring_wait_cqe</span>(&amp;ring, &amp;cqe);<br>        <span class="hljs-keyword">if</span> (ret &lt; <span class="hljs-number">0</span>) &#123;<br>            std::cerr &lt;&lt; <span class="hljs-string">&quot;wait_cqe failed: &quot;</span> &lt;&lt; <span class="hljs-built_in">strerror</span>(-ret) &lt;&lt; <span class="hljs-string">&quot;\n&quot;</span>;<br>            <span class="hljs-keyword">break</span>;<br>        &#125;<br><br>        <span class="hljs-keyword">auto</span>* ci = <span class="hljs-built_in">static_cast</span>&lt;conn_info*&gt;(<span class="hljs-built_in">io_uring_cqe_get_data</span>(cqe));<br>        <span class="hljs-type">int</span> client_fd = ci-&gt;fd;<br>        <span class="hljs-type">int</span> type = ci-&gt;type;<br>        <span class="hljs-type">int</span> res = cqe-&gt;res;<br><br>        <span class="hljs-keyword">if</span> (type == ACCEPT) &#123;<br>            <span class="hljs-keyword">if</span> (res &gt;= <span class="hljs-number">0</span>) &#123;<br>                <span class="hljs-built_in">make_socket_non_blocking</span>(res);<br>                <span class="hljs-built_in">add_read</span>(&amp;ring, res, buffers[res % QUEUE_DEPTH]);<br>            &#125;<br>            <span class="hljs-built_in">add_accept</span>(&amp;ring, server_fd, &amp;client_addr, &amp;client_len);<br>        &#125;<br>        <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (type == READ) &#123;<br>            <span class="hljs-keyword">if</span> (res &lt;= <span class="hljs-number">0</span>) &#123;<br>                <span class="hljs-built_in">close</span>(client_fd);<br>            &#125; <span class="hljs-keyword">else</span> &#123;<br>                <span class="hljs-built_in">add_write</span>(&amp;ring, client_fd, buffers[client_fd % QUEUE_DEPTH], res);<br>            &#125;<br>        &#125;<br>        <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (type == WRITE) &#123;<br>            <span class="hljs-built_in">add_read</span>(&amp;ring, client_fd, buffers[client_fd % QUEUE_DEPTH]);<br>        &#125;<br><br>        <span class="hljs-keyword">delete</span> ci;<br>        <span class="hljs-built_in">io_uring_cqe_seen</span>(&amp;ring, cqe);<br>    &#125;<br><br>    <span class="hljs-built_in">io_uring_queue_exit</span>(&amp;ring);<br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; QUEUE_DEPTH; ++i)<br>        <span class="hljs-keyword">delete</span>[] buffers[i];<br><br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>我们可以看到其中循环读取cqe, 其实和epoll_wait非常像, 但是本质不一样, cqe得到的是已经通过异步完成的结果, 而epoll_wait得到是事件发送的通知. 不过io_uring_wait_cqe只能读取一个完成事件, 如果想一次性像epoll_wait多个读取事件集的话, 可以使用<code>io_uring_peek_batch_cqe()</code>非阻塞地获取ceq集.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-type">unsigned</span> count = <span class="hljs-built_in">io_uring_peek_batch_cqe</span>(&amp;ring, cqe_array, max_count);<br></code></pre></td></tr></table></figure>
+
+<h4 id="Buffer相关"><a href="#Buffer相关" class="headerlink" title="Buffer相关"></a>Buffer相关</h4><p>我们可以将自己申请的buffer提前注册到io_uring服务中, 这样io_uring就会将我们用户态的缓冲区注册到内核中, 人话说就是, <strong>io_uring会把我们的申请的用户态缓冲区当作内核缓冲区来用.</strong> 这样就可以省去内核态缓冲区到用户缓冲区的拷贝, 可以提高效率, 甚至部分操作还可以实现零拷贝.</p>
+<ul>
+<li><p>首先我们需要自己把需要注册的缓冲区new出来并注册 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs cpp">std::vector&lt;<span class="hljs-type">char</span> *&gt; buffers;<br>iovec iovecs[QUEUE_DEPTH];<br><br><span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; QUEUE_DEPTH; ++i)<br>&#123;<br>    <span class="hljs-type">char</span> *buf = <span class="hljs-keyword">new</span> <span class="hljs-type">char</span>[BUFFER_SIZE];<br>    buffers.<span class="hljs-built_in">push_back</span>(buf);<br>    iovecs[i].iov_base = buf;<br>    iovecs[i].iov_len = BUFFER_SIZE;<br>&#125;<br><span class="hljs-built_in">io_uring_register_buffers</span>(&amp;ring, iovecs, QUEUE_DEPTH);<br></code></pre></td></tr></table></figure>
+
+<p>需要注意的是, io_uring要求绑定的缓冲区必须是iovec数组, 这个结构体常用于readv&#x2F;writev中, 其中存放指向缓冲区的指针和大小.</p>
+</li>
+<li><p>那么在之后的<code>io_uring_prep_*</code>各种操作中就可以直接使用我们注册的缓冲区.</p>
+</li>
+<li><p>对于缓冲区的使用有两种使用模式 : </p>
+<ul>
+<li><p>Fixed Buffer 模式 : 由用户选择注册缓冲区中的那块buf(其实就是iovec数组的哪个下标), 便于用户细化控制.</p>
+</li>
+<li><p>Buffer Selection 模式 : 内部将用户注册的内存投放到内存池中, 由系统自动随机选择未被使用的buf, 用户可以从cqe中提取出系统的选择结果, 代码更加方便, 并且内存分配更有效, 适合高并发场景. </p>
+</li>
+<li><p>可以通过seq请求句柄设置我们使用哪个buffer模式 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs cpp">sqe-&gt;flags |= IOSQE_BUFFER_FIXED;<br>sqe-&gt;flags |= IOSQE_BUFFER_SELECT;<br></code></pre></td></tr></table></figure></li>
+</ul>
+<p>后面提供两种版本的回显服务器优化.</p>
+</li>
+</ul>
+<h4 id="Fixed-Buffer优化的回显服务器"><a href="#Fixed-Buffer优化的回显服务器" class="headerlink" title="Fixed Buffer优化的回显服务器"></a>Fixed Buffer优化的回显服务器</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;liburing.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;string.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;unistd.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;netinet/in.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;fcntl.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;sys/socket.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iostream&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;errno.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;vector&gt;</span></span><br><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> PORT 8888</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> BACKLOG 512</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> BUFFER_SIZE 2048</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> QUEUE_DEPTH 256</span><br><br><span class="hljs-keyword">enum</span><br>&#123;<br>    ACCEPT,<br>    READ,<br>    WRITE<br>&#125;;<br><br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">conn_info</span><br>&#123;<br>    <span class="hljs-type">int</span> fd;<br>    <span class="hljs-type">int</span> type;<br>    <span class="hljs-type">int</span> buf_index;<br>&#125;;<br><br><span class="hljs-comment">// 全局缓冲区信息</span><br>std::vector&lt;<span class="hljs-type">char</span> *&gt; buffers;<br>iovec iovecs[QUEUE_DEPTH];<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">make_socket_non_blocking</span><span class="hljs-params">(<span class="hljs-type">int</span> fd)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-type">int</span> flags = <span class="hljs-built_in">fcntl</span>(fd, F_GETFL, <span class="hljs-number">0</span>);<br>    <span class="hljs-keyword">return</span> <span class="hljs-built_in">fcntl</span>(fd, F_SETFL, flags | O_NONBLOCK);<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">add_accept</span><span class="hljs-params">(io_uring *ring, <span class="hljs-type">int</span> server_fd, sockaddr_in *client_addr, <span class="hljs-type">socklen_t</span> *client_len)</span></span><br><span class="hljs-function"></span>&#123;<br>    io_uring_sqe *sqe = <span class="hljs-built_in">io_uring_get_sqe</span>(ring);<br>    <span class="hljs-keyword">auto</span> *ci = <span class="hljs-keyword">new</span> conn_info&#123;server_fd, ACCEPT, <span class="hljs-number">-1</span>&#125;;<br>    <span class="hljs-built_in">io_uring_prep_accept</span>(sqe, server_fd, (sockaddr *)client_addr, client_len, <span class="hljs-number">0</span>);<br>    <span class="hljs-built_in">io_uring_sqe_set_data</span>(sqe, ci);<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">add_read</span><span class="hljs-params">(io_uring *ring, <span class="hljs-type">int</span> client_fd, <span class="hljs-type">int</span> buf_index)</span></span><br><span class="hljs-function"></span>&#123;<br>    io_uring_sqe *sqe = <span class="hljs-built_in">io_uring_get_sqe</span>(ring);<br>    <span class="hljs-keyword">auto</span> *ci = <span class="hljs-keyword">new</span> conn_info&#123;client_fd, READ, buf_index&#125;;<br><br>    <span class="hljs-built_in">io_uring_prep_read_fixed</span>(sqe, client_fd, iovecs[buf_index].iov_base, BUFFER_SIZE, <span class="hljs-number">0</span>, buf_index);<br>    <span class="hljs-built_in">io_uring_sqe_set_data</span>(sqe, ci);<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">add_write</span><span class="hljs-params">(io_uring *ring, <span class="hljs-type">int</span> client_fd, <span class="hljs-type">int</span> buf_index, <span class="hljs-type">size_t</span> len)</span></span><br><span class="hljs-function"></span>&#123;<br>    io_uring_sqe *sqe = <span class="hljs-built_in">io_uring_get_sqe</span>(ring);<br>    <span class="hljs-keyword">auto</span> *ci = <span class="hljs-keyword">new</span> conn_info&#123;client_fd, WRITE, buf_index&#125;;<br><br>    <span class="hljs-built_in">io_uring_prep_write_fixed</span>(sqe, client_fd, iovecs[buf_index].iov_base, len, <span class="hljs-number">0</span>, buf_index);<br>    <span class="hljs-built_in">io_uring_sqe_set_data</span>(sqe, ci);<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-type">int</span> server_fd = <span class="hljs-built_in">socket</span>(AF_INET, SOCK_STREAM, <span class="hljs-number">0</span>);<br>    sockaddr_in addr&#123;&#125;;<br>    addr.sin_family = AF_INET;<br>    addr.sin_port = <span class="hljs-built_in">htons</span>(PORT);<br>    addr.sin_addr.s_addr = INADDR_ANY;<br><br>    <span class="hljs-built_in">bind</span>(server_fd, (sockaddr *)&amp;addr, <span class="hljs-built_in">sizeof</span>(addr));<br>    <span class="hljs-built_in">listen</span>(server_fd, BACKLOG);<br>    <span class="hljs-built_in">make_socket_non_blocking</span>(server_fd);<br><br>    io_uring ring;<br>    <span class="hljs-built_in">io_uring_queue_init</span>(QUEUE_DEPTH, &amp;ring, <span class="hljs-number">0</span>);<br><br>    <span class="hljs-comment">// 注册固定缓冲区</span><br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; QUEUE_DEPTH; ++i)<br>    &#123;<br>        <span class="hljs-type">char</span> *buf = <span class="hljs-keyword">new</span> <span class="hljs-type">char</span>[BUFFER_SIZE];<br>        buffers.<span class="hljs-built_in">push_back</span>(buf);<br>        iovecs[i].iov_base = buf;<br>        iovecs[i].iov_len = BUFFER_SIZE;<br>    &#125;<br>    <span class="hljs-built_in">io_uring_register_buffers</span>(&amp;ring, iovecs, QUEUE_DEPTH);<br><br>    sockaddr_in client_addr&#123;&#125;;<br>    <span class="hljs-type">socklen_t</span> client_len = <span class="hljs-built_in">sizeof</span>(client_addr);<br>    <span class="hljs-built_in">add_accept</span>(&amp;ring, server_fd, &amp;client_addr, &amp;client_len);<br>    <span class="hljs-built_in">io_uring_submit</span>(&amp;ring);<br><br>    <span class="hljs-keyword">while</span> (<span class="hljs-literal">true</span>)<br>    &#123;<br>        io_uring_cqe *cqe;<br>        <span class="hljs-type">int</span> ret = <span class="hljs-built_in">io_uring_wait_cqe</span>(&amp;ring, &amp;cqe);<br>        <span class="hljs-keyword">if</span> (ret &lt; <span class="hljs-number">0</span>)<br>        &#123;<br>            std::cerr &lt;&lt; <span class="hljs-string">&quot;wait_cqe failed: &quot;</span> &lt;&lt; <span class="hljs-built_in">strerror</span>(-ret) &lt;&lt; <span class="hljs-string">&quot;\n&quot;</span>;<br>            <span class="hljs-keyword">break</span>;<br>        &#125;<br><br>        <span class="hljs-keyword">auto</span> *ci = <span class="hljs-built_in">static_cast</span>&lt;conn_info *&gt;(<span class="hljs-built_in">io_uring_cqe_get_data</span>(cqe));<br>        <span class="hljs-type">int</span> client_fd = ci-&gt;fd;<br>        <span class="hljs-type">int</span> type = ci-&gt;type;<br>        <span class="hljs-type">int</span> res = cqe-&gt;res;<br><br>        <span class="hljs-keyword">if</span> (type == ACCEPT)<br>        &#123;<br>            <span class="hljs-keyword">if</span> (res &gt;= <span class="hljs-number">0</span>)<br>            &#123;<br>                <span class="hljs-built_in">make_socket_non_blocking</span>(res);<br>                <span class="hljs-type">int</span> buf_index = res % QUEUE_DEPTH;<br>                <span class="hljs-built_in">add_read</span>(&amp;ring, res, buf_index);<br>            &#125;<br>            <span class="hljs-built_in">add_accept</span>(&amp;ring, server_fd, &amp;client_addr, &amp;client_len);<br>        &#125;<br>        <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (type == READ)<br>        &#123;<br>            <span class="hljs-keyword">if</span> (res &lt;= <span class="hljs-number">0</span>)<br>            &#123;<br>                <span class="hljs-built_in">close</span>(client_fd);<br>            &#125;<br>            <span class="hljs-keyword">else</span><br>            &#123;<br>                <span class="hljs-type">int</span> buf_index = ci-&gt;buf_index;<br>                <span class="hljs-built_in">add_write</span>(&amp;ring, client_fd, buf_index, res);<br>            &#125;<br>        &#125;<br>        <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (type == WRITE)<br>        &#123;<br>            <span class="hljs-type">int</span> buf_index = ci-&gt;buf_index;<br>            <span class="hljs-built_in">add_read</span>(&amp;ring, client_fd, buf_index);<br>        &#125;<br><br>        <span class="hljs-keyword">delete</span> ci;<br>        <span class="hljs-built_in">io_uring_cqe_seen</span>(&amp;ring, cqe);<br>        <span class="hljs-built_in">io_uring_submit</span>(&amp;ring);<br>    &#125;<br><br>    <span class="hljs-built_in">io_uring_queue_exit</span>(&amp;ring);<br>    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">auto</span> *buf : buffers)<br>        <span class="hljs-keyword">delete</span>[] buf;<br><br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><p>io_uring_prep_read_fixed : </p>
+<p>这是一个便利函数, 其内部相当于调用了原函数, 设置使用Fixed Buffer模式, 设定使用的buffer_index.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-built_in">io_uring_prep_read</span>(sqe, fd, my_buffer, BUF_SIZE, <span class="hljs-number">0</span>);<br>sqe-&gt;flags |= IOSQE_BUFFER_FIXED;  <span class="hljs-comment">// 告诉内核这个 buffer 是固定注册的</span><br>sqe-&gt;buf_index = <span class="hljs-number">0</span>; <br></code></pre></td></tr></table></figure>
+</li>
+<li><p>分析代码可以看出, 这里每次accept接收到新连接后都会为每个连接分配一个新的缓冲区下标, 以此做到每个连接对应一个缓冲区, 彼此不会相互影响.</p>
+</li>
+<li><p>当然我们发送的消息有可能一个缓冲区接收不了, 那么就只会读满缓冲区然后返回, 剩下的都会留在内核接收缓冲区中. 因此如果想解决这种情况, 可以判断接收大小是否等于BUF_SIZE, 如果等于就再提交一次异步读任务.</p>
+</li>
+</ul>
+<h3 id="细碎知识"><a href="#细碎知识" class="headerlink" title="细碎知识"></a>细碎知识</h3><ul>
+<li><p>使用前向声明可以简化头文件之间的依赖关系, 避免将内部类暴露给用户.</p>
+</li>
+<li><p>流复用 + 均衡控制</p>
+</li>
+<li><p>TLS加密&#x2F;压缩</p>
+</li>
+<li><p>定时器内部使用gettimeofday(2)获取当前时间, 使用timerfd_*系列函数处理定时任务, 将定时器转化为fd, 可以用处理IO的方式处理超时事件.</p>
+</li>
+<li><p>往返时间 &#x3D; round trip time &#x3D; RTT.</p>
+<p>往返时间 &#x2F; 2 一般不可代表单程延迟, 因为时间域不同, 双方发送路径可能不同.</p>
+</li>
+<li><p>基于 io_uring &#x2F; kqueue 的高效超时检测</p>
+</li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E6%96%87%E4%BB%B6%E4%BC%A0%E8%BE%93/" class="print-no-link">#文件传输</a>
+      
+        <a href="/tags/io-uring/" class="print-no-link">#io_uring</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Linux多线程服务端编程 读书笔记2</div>
+      <div>http://example.com/2025/07/14/[Linux多线程服务端编程] 读书笔记2/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>天目中云</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年7月14日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/07/20/HTTP1/" title="HTTP/1">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">HTTP/1</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/07/12/%5BLinux%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%9C%8D%E5%8A%A1%E7%AB%AF%E7%BC%96%E7%A8%8B%5D%20%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0(1)/" title="Linux多线程服务端编程 读书笔记1">
+                        <span class="hidden-mobile">Linux多线程服务端编程 读书笔记1</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"NhgfDy2CEByjwxuxPM1Le2t6-MdYXbMMI","appKey":"nvGMdqKfKbpkVnojLSbwmasv","path":"window.location.pathname","placeholder":null,"avatar":"retro","meta":["nick","mail","link"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":false,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":false},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

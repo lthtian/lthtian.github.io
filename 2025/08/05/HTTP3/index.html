@@ -1,0 +1,1258 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/head.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="天目中云">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="生态分析TCP队头阻塞这是HTTP&#x2F;2所拥有的根本性通病, 注意这里的队头阻塞不是指排队造成的阻塞, 而是指丢包造成的阻塞. TCP为了实现可靠有序, 采用了超时重传机制, 该机制可以确保可靠有序, 但是对于现代网络却有严重缺陷. TCP中如果发送出现丢包, 必须要依靠超时重传等到当前包再次发来, 后面的包才能生效, 即使已经发来了, 后面的包也不能及时处理和使用, 这是在内核中就强制决">
+<meta property="og:type" content="article">
+<meta property="og:title" content="HTTP&#x2F;3">
+<meta property="og:url" content="http://example.com/2025/08/05/HTTP3/index.html">
+<meta property="og:site_name" content="天目中云">
+<meta property="og:description" content="生态分析TCP队头阻塞这是HTTP&#x2F;2所拥有的根本性通病, 注意这里的队头阻塞不是指排队造成的阻塞, 而是指丢包造成的阻塞. TCP为了实现可靠有序, 采用了超时重传机制, 该机制可以确保可靠有序, 但是对于现代网络却有严重缺陷. TCP中如果发送出现丢包, 必须要依靠超时重传等到当前包再次发来, 后面的包才能生效, 即使已经发来了, 后面的包也不能及时处理和使用, 这是在内核中就强制决">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-08-05T09:00:00.000Z">
+<meta property="article:modified_time" content="2025-08-22T09:43:06.562Z">
+<meta property="article:author" content="天目中云">
+<meta property="article:tag" content="HTTP">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>HTTP/3 - 天目中云</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":"NhgfDy2CEByjwxuxPM1Le2t6-MdYXbMMI","app_key":"nvGMdqKfKbpkVnojLSbwmasv","server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>TianMu</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/03.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="HTTP/3"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-08-05 17:00" pubdate>
+          2025年8月5日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          6k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          51 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">HTTP/3</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h2 id="生态分析"><a href="#生态分析" class="headerlink" title="生态分析"></a>生态分析</h2><h3 id="TCP队头阻塞"><a href="#TCP队头阻塞" class="headerlink" title="TCP队头阻塞"></a>TCP队头阻塞</h3><p>这是HTTP&#x2F;2所拥有的根本性通病, 注意这里的队头阻塞<strong>不是指排队造成的阻塞</strong>, <strong>而是指丢包造成的阻塞</strong>. TCP为了实现可靠有序, 采用了超时重传机制, 该机制可以确保可靠有序, 但是对于现代网络却有严重缺陷.</p>
+<p>TCP中如果发送出现丢包, <strong>必须要依靠超时重传等到当前包再次发来</strong>, 后面的包才能生效, 即使已经发来了, 后面的包也不能及时处理和使用, 这是在内核中就强制决定的事情, 上层根本无法干预, 其根本在于TCP”<strong>面向字节流</strong>“的本质.</p>
+<p>因此HTTP&#x2F;2的根本问题在于TCP队头阻塞, 也就是TCP本身, 而TCP想要升级是非常艰难的.</p>
+<h3 id="UDP-vs-TCP"><a href="#UDP-vs-TCP" class="headerlink" title="UDP vs TCP"></a>UDP vs TCP</h3><p>HTTP&#x2F;3最终选择了使用QUIC+UDP, QUIC先不详述, 可以理解为其可以利用UDP对TCP实现了约等于上位替代的效果. 下面将详述其原因 : </p>
+<ul>
+<li><p>升级因素 : </p>
+<ul>
+<li>UDP是极简的协议, 在各个操作系统中的底层实现很少, “留白”非常多, 在<strong>应用层可以主导UDP协议的用户态升级</strong>.</li>
+<li>TCP协议相对复杂, 有很多定死的规则, 这些是在操作系统中实现的, 应用层无法触及, 但是不同操作系统在底层的实现既庞杂又不尽相同, 很难实现操作系统层面统一的升级.</li>
+</ul>
+</li>
+<li><p>商业因素 : </p>
+<p>基于上面的升级因素, TCP的升级会牵扯到整个操作系统社区, 基本无法有什么人来主导升级. 而UDP在不同操作系统中几乎统一, 不存在操作系统上的影响, 其大头始终在应用层的处理, 因此体量较大的公司就可以主导基于UDP的升级, QUIC就是谷歌主导开发的,  这种方式更受当下商业模式的青睐.</p>
+</li>
+<li><p>设计局限 : </p>
+<p>也许这个才算最重要的原因, 就像上面说的TCP的问题导向可以简化如下 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cpp">TCP队头阻塞 -&gt; 超时重传低效 -&gt; 面向字节流避无可避<br></code></pre></td></tr></table></figure>
+
+<p>面向字节流这种无边界的设计必须要用这种类似超时重传的机制来补足, 效率必须为此让步, 这是设计上的局限.</p>
+<ul>
+<li><p>所以为什么一开始要使用TCP这种面向字节流的协议?</p>
+<p>因为设计者一开始的目的是为了设计一种<strong>既通用又安全可靠</strong>的通信协议, 面向字节流完美匹配了通用的特性, 因为字节是计算机铁打不动的特性, 可以适应所有的通信任务, 就算会在效率上做出让步, 也在很多地方可以做到一劳永逸, 减少特殊结构体的设计. 现在出现的QUIC完全是因为当下社会对于通信的效率要求迅速提高导致, 其虽然确实可以做到上位替代, 但编码成本,复杂度都会提高, 通用性也会降低. 这里补充一条ai出来的评价 “QUIC 是高性能系统通信中针对效率、低延迟、抗队头阻塞设计的现代方案，牺牲的是实现成本、通用性与对中间设备的透明兼容. “.</p>
+</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="TLS-1-3-安全加密协议"><a href="#TLS-1-3-安全加密协议" class="headerlink" title="TLS 1.3 (安全加密协议)"></a>TLS 1.3 (安全加密协议)</h2><h3 id="TLS-1-2"><a href="#TLS-1-2" class="headerlink" title="TLS 1.2"></a>TLS 1.2</h3><p>这是最基础最广泛的加密协议版本.</p>
+<ul>
+<li><p>为了实现机密性, 其使用了 <strong>非对称密钥交换 + 对称加密</strong> , 简单理解是使用了一些算法, 前者是通过公私钥使得双方在开始确定一个后期只有双方拥有的密钥, 后者则是利用这个密钥进行双方的交流.</p>
+</li>
+<li><p>非对称密钥交换 : </p>
+<p>这里介绍最主流的<code>ECDHE</code>算法, 里面使用了椭圆曲线点乘.</p>
+<ul>
+<li>d为私钥, Q为公钥, G为公开可知的一个生成点, 通信双方都会生成一份自己的公私钥(a 和 b).</li>
+<li>da &#x2F; db 都是1-n内的随机数.</li>
+<li><code>Qa = da * G / Qb = db * G</code> , 公钥将会发给双方.</li>
+<li><code>k = Qa * db = Qb * da = da * db * G</code>, k便是双方的共同密钥.</li>
+</ul>
+<p>至于为什么不可破解, 因为这里的 ***** 并非普通的乘法, 是<strong>椭圆曲线上的标量乘法</strong>, 肤浅理解就是 存在一种循环, 使得这种计算如果不知道对面的私钥, 仅凭计算破解可以有近乎无限的可能性, 是不可能的.</p>
+<ul>
+<li>前向保密 : <code>ECDHE</code>保证每次握手使用的私钥都是<strong>新的随机生成的私钥</strong>, 就算以前的私钥暴露也不会影响后面的通信.</li>
+</ul>
+</li>
+<li><p>对称加密 : </p>
+<p>简单来说就是用先前获得的共享密钥实现双方信息的快速加解密.</p>
+<p>最主流的是<code>AEAD</code>模式, 不细究, 其实现了<strong>加密 + 完整性认证</strong>的一体原子化, 防止先解密再认证过程中可能出现的漏洞.</p>
+</li>
+<li><p>握手流程 : </p>
+<p>握手建立连接共需<strong>2RTT</strong>.</p>
+<ul>
+<li>第一个RTT客户端发出请求, 服务端发出公钥给客户端.</li>
+<li>第二个RTT客户端进入加密态, 发出公钥, 服务端接受后匹配成功也进入加密态, 发送匹配成功的字段.</li>
+</ul>
+</li>
+</ul>
+<h3 id="具体变动"><a href="#具体变动" class="headerlink" title="具体变动"></a>具体变动</h3><p>TLS1.3在TLS1.2的基础上主要是进行了简化和安全性的提升.</p>
+<ul>
+<li><p>将握手时间缩短到了<strong>1RTT</strong> : </p>
+<p>具体是客户端在请求同时直接发出自己的公钥, 服务端接收进行匹配并发出自己的公钥及各种证书签名, 随后进入加密态, 客户端在接收匹配成功后也进入加密态. 这样就实现了1RTT实现连接建立.</p>
+</li>
+<li><p>会话恢复与0-RTT: </p>
+<p>在以往每次握手与结束都是独立的, 但是TLS1.3要求可<strong>对过往的共享密钥与各种状态在会话层进行记录</strong>, 假如支持对旧密钥的使用, 客户端可以直接向服务端发出使用旧密钥的请求, 并直接进行加密数据的发送, 这种形式被称为”0-RTT”. 当然也是有一定风险的, 其<strong>与前向保密机制本质相悖</strong>, 越长久地记录与使用旧密钥, 被外部盗取的可能就越大, 需要对安全性做出妥协.</p>
+</li>
+<li><p>HKDF(密钥派生函数) : </p>
+<p>ECDHE 负责“生成共享密钥”，HKDF 负责“把这个共享密钥变成一系列真正能加密通信的数据密钥”.</p>
+</li>
+<li><p>重放攻击 : </p>
+<p>其本质在于<strong>欺诈服务器进行重复操作</strong>, 手段是重发截获的密文, 不去破解, 而是再次发送.</p>
+</li>
+</ul>
+<hr>
+<h2 id="QUIC-Quick-UDP-Internet-Connections"><a href="#QUIC-Quick-UDP-Internet-Connections" class="headerlink" title="QUIC (Quick UDP Internet Connections)"></a>QUIC (Quick UDP Internet Connections)</h2><p>QUIC重构了一个效果和TCP相近的以UDP为底层的网络通信协议, 抛去了TCP的缺点, 并且设计中与http&#x2F;2有很多相似的地方, 可以理解为其整合了TCP + HTTP&#x2F;2.</p>
+<h3 id="QUIC报文"><a href="#QUIC报文" class="headerlink" title="QUIC报文"></a>QUIC报文</h3><ul>
+<li><p>QUIC的报文以<strong>包</strong>为单位, 与UDP面向数据报的性质匹配.</p>
+</li>
+<li><p>一个包分为 Header 和 Payload(data).</p>
+</li>
+<li><p>Header 分为两种基础类, Long Header 和 Short Header, <strong>分别用于早期连接建立和数据传输</strong>.</p>
+</li>
+<li><p>Long Header : 下面是Long Header对应包的整体结构</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs cpp">+--------+--------+----------------------+--------------+------------------+--------------+<br>| <span class="hljs-number">1</span>B     | <span class="hljs-number">4</span>B     | DCID Len + DCID      | SCID Len + SCID | Packet Number   | Payload    |<br>| Flags  | Version| Destination Conn ID  | Source Conn ID  | (<span class="hljs-number">1</span><span class="hljs-number">-4</span> bytes)     | (frames)   |<br>+--------+--------+----------------------+--------------+------------------+--------------+<br></code></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>字段名称</th>
+<th>长度</th>
+<th>类型说明</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Flags（首字节）</strong></td>
+<td>1 byte</td>
+<td>Bit 字段，包含包类型、包号长度等信息</td>
+<td>指定包头类型、包号长度等</td>
+</tr>
+<tr>
+<td><strong>Version</strong></td>
+<td>4 bytes</td>
+<td>uint32</td>
+<td>指定使用的 QUIC 协议版本</td>
+</tr>
+<tr>
+<td><strong>DCID Len + DCID</strong></td>
+<td>1B + 可变</td>
+<td>Length + byte[]</td>
+<td>目标连接 ID（Destination Connection ID）</td>
+</tr>
+<tr>
+<td><strong>SCID Len + SCID</strong></td>
+<td>1B + 可变</td>
+<td>Length + byte[]</td>
+<td>源连接 ID（Source Connection ID）</td>
+</tr>
+<tr>
+<td><strong>Packet Number</strong></td>
+<td>1-4 bytes</td>
+<td>uint8~uint32（根据Flag中指定）</td>
+<td>包序号，用于重传与流控</td>
+</tr>
+<tr>
+<td><strong>Payload</strong></td>
+<td>可变</td>
+<td>多个 Frame 的组合</td>
+<td>包含握手数据（如 ClientHello）或流数据</td>
+</tr>
+</tbody></table>
+<ul>
+<li><p>Flags : 下面是在这个比特位中记录的信息 </p>
+<table>
+<thead>
+<tr>
+<th>比特位</th>
+<th>名称</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>bits 7-6</td>
+<td>固定 <code>11</code></td>
+<td>表示是 Long Header</td>
+</tr>
+<tr>
+<td>bits 5-4</td>
+<td><strong>Packet Type</strong></td>
+<td>包类型，决定是 Initial &#x2F; 0-RTT &#x2F; Handshake &#x2F; Retry</td>
+</tr>
+<tr>
+<td>bits 3-2</td>
+<td><strong>Packet Number Length (PNLen)</strong></td>
+<td>Packet Number 字段的长度（0<del>3 表示 1</del>4 字节）</td>
+</tr>
+<tr>
+<td>bits 1-0</td>
+<td>Reserved</td>
+<td>保留位，当前未使用（应设置为 0，接收方忽略）</td>
+</tr>
+</tbody></table>
+<p>包类型后续详述, 包序号长度用于解析后面的包序号字段.</p>
+</li>
+<li><p>DCID(目标连接id) &#x2F; SCID(源连接id) : </p>
+<p>其作用为标识唯一的一个连接, 在握手阶段还可以确立双向连接. 需要明确的是, UDP本身是<strong>无连接</strong>的, 这个连接机制是QUIC在上层为UDP额外设计的, 目的是为了在上层监视控制连接状态, 使其可以像TCP一样随时获取连接信息.</p>
+<p>在握手阶段中, 客户端发送的SCID(随机生成)将被服务端用作连接的DCID, 服务端发送的SCID也会被客户端用作DCID, 以此实现连接的建立.</p>
+<p>一个服务器可以和多个客户端有多条QUIC层面上的连接, 但是一对一情况下只能有一条连接.</p>
+</li>
+<li><p>Packet Number 相关的重传流控机制后面详述.</p>
+</li>
+<li><p>Payload 就是存放数据的字段,  但其中的单位为frame, frame有不同的类型, 后面详述.</p>
+</li>
+</ul>
+</li>
+<li><p>Short Header : 下面是Long Header对应包的整体结构</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs cpp">+--------+----------------------+--------------+--------------+<br>|  Flags | Destination Conn ID  | Packet Number| Payload      |<br>|   <span class="hljs-number">1</span>B   |        <span class="hljs-number">8</span>B            | (<span class="hljs-number">1</span><span class="hljs-number">-4</span> bytes)  | (frames)     |<br>+--------+----------------------+--------------+--------------+<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><p>Flags : Short Heder中的Flags和前者中的Flags有所不同.</p>
+<table>
+<thead>
+<tr>
+<th>比特位</th>
+<th>名称</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>bit 7</td>
+<td>固定为 <code>0</code></td>
+<td>表示 Short Header</td>
+</tr>
+<tr>
+<td>bit 6</td>
+<td><strong>Key Phase (K)</strong></td>
+<td>用于密钥轮换：表示当前是否需要密钥轮换</td>
+</tr>
+<tr>
+<td>bit 5</td>
+<td>固定为 <code>0</code></td>
+<td>保持格式一致（保留）</td>
+</tr>
+<tr>
+<td>bit 4</td>
+<td><strong>Spin Bit (S)</strong></td>
+<td>可用于 RTT 测量，非加密，中间设备可观测</td>
+</tr>
+<tr>
+<td>bits 3-2</td>
+<td><strong>PNLen</strong></td>
+<td>Packet Number 长度（00 ~ 11 表示 1 ~ 4 字节）</td>
+</tr>
+<tr>
+<td>bits 1-0</td>
+<td><strong>Reserved</strong></td>
+<td>保留位，应随机设置，接收端忽略</td>
+</tr>
+</tbody></table>
+</li>
+</ul>
+</li>
+<li><p>Frame(帧)</p>
+<p>这就是payload字段中的基本单元, 也可以近似为数据传输的基本单元.</p>
+<ul>
+<li><p>形式通常为 <code>Frame Type(1B)</code> + <code>根据type追加的各种对应字段(如stream_id, length, data等)</code>.</p>
+</li>
+<li><p>Frame Type : 下面是各种类型对应的编码和说明</p>
+<table>
+<thead>
+<tr>
+<th>十六进制</th>
+<th>帧名（Frame Name）</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>0x00</code></td>
+<td>PADDING</td>
+<td>填充，无内容</td>
+</tr>
+<tr>
+<td><code>0x01</code></td>
+<td>PING</td>
+<td>心跳，调试用</td>
+</tr>
+<tr>
+<td><code>0x02</code></td>
+<td>ACK</td>
+<td>确认包，用于确认对方 packet</td>
+</tr>
+<tr>
+<td><code>0x03</code></td>
+<td>ACK + ECN</td>
+<td>带显式拥塞通知</td>
+</tr>
+<tr>
+<td><code>0x04</code></td>
+<td>RESET_STREAM</td>
+<td>中断某个流</td>
+</tr>
+<tr>
+<td><code>0x05</code></td>
+<td>STOP_SENDING</td>
+<td>请求对方停止发送某流</td>
+</tr>
+<tr>
+<td><code>0x06</code></td>
+<td>CRYPTO</td>
+<td>用于 TLS 握手数据的传输</td>
+</tr>
+<tr>
+<td><code>0x07</code></td>
+<td>NEW_TOKEN</td>
+<td>地址验证相关</td>
+</tr>
+<tr>
+<td><code>0x08</code>+</td>
+<td>STREAM（流帧）</td>
+<td>实际的数据帧（带 Stream ID）</td>
+</tr>
+<tr>
+<td><code>0x1c</code></td>
+<td>MAX_STREAMS</td>
+<td>通知对方允许更多流</td>
+</tr>
+<tr>
+<td><code>0x1e</code></td>
+<td>DATA_BLOCKED</td>
+<td>数据流被流控阻塞</td>
+</tr>
+<tr>
+<td><code>0x1f</code></td>
+<td>STREAMS_BLOCKED</td>
+<td>流的数量受限</td>
+</tr>
+</tbody></table>
+</li>
+<li><p>CRYPTO 帧 : 其具体结构如下 </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs cpp">[<span class="hljs-function">Frame <span class="hljs-title">Type</span> <span class="hljs-params">(<span class="hljs-number">1</span>B)</span>]</span><br><span class="hljs-function">[<span class="hljs-title">Offset</span> <span class="hljs-params">(varint)</span>]         <span class="hljs-comment">// TLS 数据在整个 crypto stream 中的偏移</span></span><br><span class="hljs-function">[<span class="hljs-title">Length</span> <span class="hljs-params">(varint)</span>]         <span class="hljs-comment">// 本次数据长度</span></span><br><span class="hljs-function">[Crypto <span class="hljs-title">Data</span> <span class="hljs-params">(Length 字节)</span>]</span><br></code></pre></td></tr></table></figure>
+</li>
+<li><p>STREAM 帧 : 该帧是最基础的数据帧</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs cpp">[<span class="hljs-function">Frame <span class="hljs-title">Type</span> <span class="hljs-params">(<span class="hljs-number">1</span>B)</span>]</span><br><span class="hljs-function">[Stream <span class="hljs-title">ID</span> <span class="hljs-params">(varint)</span>]</span><br><span class="hljs-function">[<span class="hljs-title">Offset</span> <span class="hljs-params">(varint, optional)</span>]</span><br><span class="hljs-function">[<span class="hljs-title">Length</span> <span class="hljs-params">(varint, optional)</span>]</span><br><span class="hljs-function">[<span class="hljs-title">Data</span> <span class="hljs-params">(length 指定的字节数)</span>]</span><br></code></pre></td></tr></table></figure>
+
+<p>需要注意的是, stream帧相比于其他帧, 其<code>Frame Type</code>字段除了表明帧类型之外, 其前三位还有<strong>标记位</strong>的作用 : </p>
+<table>
+<thead>
+<tr>
+<th>位名</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>FIN(0)</td>
+<td>1 表示这是该流的最后一块</td>
+</tr>
+<tr>
+<td>LEN(1)</td>
+<td>1 表示帧中包含 Length 字段</td>
+</tr>
+<tr>
+<td>OFF(2)</td>
+<td>1 表示帧中包含 Offset 字段</td>
+</tr>
+</tbody></table>
+</li>
+</ul>
+</li>
+<li><p>Packet Type : </p>
+<p>在Long Header中的flags中我们可以发现<code>Packet Type</code>字段, 而Short Header中没有. 因为前者有四种包类型, 后者只有一种<code>1-RTT</code>. 因此包类型这个机制主要是为了<strong>控制握手阶段的各种机制</strong>而创造的.</p>
+<ul>
+<li><strong>不同的包类型有不同的可用frame类型, 不同的密钥, 不同的加密方式</strong>.</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>包类型</th>
+<th>可用 frame 类型</th>
+<th>是否加密</th>
+<th>使用密钥类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Initial</strong></td>
+<td><code>CRYPTO</code>, <code>PADDING</code>, <code>ACK</code></td>
+<td>❌（初始密钥）</td>
+<td>Initial Secret</td>
+<td>主要用于传输 ClientHello</td>
+</tr>
+<tr>
+<td><strong>Handshake</strong></td>
+<td><code>CRYPTO</code>, <code>ACK</code>, <code>CONNECTION_CLOSE</code></td>
+<td>✅</td>
+<td>Handshake Secret</td>
+<td>ServerHello、Finished 等</td>
+</tr>
+<tr>
+<td><strong>0-RTT</strong></td>
+<td><code>STREAM</code>, <code>ACK</code>, <code>PADDING</code></td>
+<td>✅</td>
+<td>0-RTT Secret（缓存）</td>
+<td>客户端早发应用数据，不可靠</td>
+</tr>
+<tr>
+<td><strong>Retry</strong></td>
+<td>❌ 无 frame</td>
+<td>❌</td>
+<td>明文</td>
+<td>特殊包，用于拒绝连接请求并附带 token</td>
+</tr>
+<tr>
+<td><strong>1-RTT</strong></td>
+<td>所有 frame（包括 STREAM）</td>
+<td>✅</td>
+<td>Application Secret（1-RTT）</td>
+<td>应用数据正式传输阶段</td>
+</tr>
+</tbody></table>
+<p>这里我们需要结合前面学习的<strong>帧类型和TLS1.3中的握手机制</strong>加以理解, 不同的帧类型会被用在不同的包中, <code>Initial</code>和<code>Handshake</code>分别被用来1RTT建立连接的来去程中, 而<code>0-RTT</code>则被用在0RTT恢复连接的过程中. 我们可以看见<strong>QUIC已经在底层将TLS1.3的机制融入到了设计</strong>中.</p>
+</li>
+<li><p>加密相关 : </p>
+<p>QUIC几乎所有包和包中的帧都进行了加密, 但是<code>Initial</code>包并非, 毕竟还没有共享密钥, 虽然确实会加密, 但也是简易加密, 可以很快破解, 其核心作用更多是在于<strong>保证完整性</strong>. 直到回程服务器开始发送<code>Handshake</code>帧, 在确立了共享密钥之后, 连接才正式进入了完全加密阶段.</p>
+<p>另外在<code>Short Header</code>包头中的<code>Flags</code>中, 还有<code>Key Phase</code>标志位用于是否进行<strong>密钥轮换</strong>. 所谓密钥轮换, 其目的是<strong>防止长期使用同一个密钥所带来的泄露风险</strong>, 只要变更该标志位, 就代表需要进行密钥轮换, 降低泄露风险.</p>
+</li>
+</ul>
+<h3 id="Stream管理与数据传输"><a href="#Stream管理与数据传输" class="headerlink" title="Stream管理与数据传输"></a>Stream管理与数据传输</h3><p>QUIC的Stream机制和HTTP&#x2F;2的流机制一脉相承, 但是使用UDP解决了HTTP&#x2F;2 TCP队头阻塞的核心痛点, 并且QUIC在此基础上实现了更细粒度的控制.</p>
+<p>为什么可以解决队头阻塞问题? 这里再细化一下最初对于TCP队头阻塞的理解, <strong>只要发生丢包, 后面的包都要等丢的包重发完毕才可生效</strong>, 这就产生一个现象, 就算包是属于不同流的, 但是在HTTP&#x2F;2底层仍属于同一个TCP连接, 也就是说<strong>不同流的丢包是会相互影响</strong>的. QUIC的设计<strong>将连接的有序细化为了流的有序</strong>, 也就是说<strong>一个流的丢包只会影响所属流, 流之间没有影响</strong>.</p>
+<p>简单理解中, QUIC依旧依据stream_id进行每个流的单独管理, 但在很多机制上有所改变或细化 : </p>
+<ul>
+<li><p>stream id : </p>
+<p>在HTTP&#x2F;2中stream_id是根据双方按奇偶划分的, 但在QUIC中, stream_id一般大小被设置为62bit, 分为两个标志位和编码部分 : </p>
+<table>
+<thead>
+<tr>
+<th>比特位</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>bit 0</td>
+<td>发起者：0 &#x3D; client, 1 &#x3D; server</td>
+</tr>
+<tr>
+<td>bit 1</td>
+<td>类型：0 &#x3D; bidirectional(单向), 1 &#x3D; unidirectional(双向)</td>
+</tr>
+<tr>
+<td>bits 2-61</td>
+<td><strong>编号部分（严格递增）</strong></td>
+</tr>
+</tbody></table>
+<p>也就是说流有了明确的发起者和方向类型的定义, 编号的递增规则会根据前面标志位有所变化, 这里不再细究.</p>
+</li>
+<li><p>流的方向 : </p>
+<p>在stream_id中就需要声明流的方向,  我们可以自己设置流的流向.</p>
+<ul>
+<li>在HTTP&#x2F;2中, 流向是固定双向的, 因为TCP本身固定双向, 两边都要设置流控资源和状态机.</li>
+<li>在QUIC协议中, <strong>流向可单可双</strong>, 因为UDP是无方向的, 单向可只在接收方设置流控资源和状态机, 可以做到更细粒度的控制.</li>
+</ul>
+</li>
+<li><p>流控手段 : </p>
+<p>和HTTP&#x2F;2几乎相同, 都可以控制连接流量和单一流的流量, 存在特殊的帧类型<code>MAX_DATA / MAX_STREAMS</code>来控制流量. </p>
+<p>但是QUIC<strong>可以控制流的断开</strong> : </p>
+<ul>
+<li><p><code>STOP_SENDING</code> : 这是一个特殊的帧类型, 用于中断对方在该流上的数据传输. </p>
+<p>主要用于接收方出于某些原因取消资源接收的情况, 在HTTP&#x2F;2中没有办法中途取消, 只能将对方发来的包直接抛弃掉, 这会让服务端浪费很多资源, 而QUIC可以中断单独流并且不影响其他流.</p>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="重传-ACK-管理机制"><a href="#重传-ACK-管理机制" class="headerlink" title="重传&#x2F;ACK 管理机制"></a>重传&#x2F;ACK 管理机制</h3><p>核心就是实现类似TCP的<strong>保序 + 丢包重传</strong>机制.</p>
+<ul>
+<li><p>Packet Number : </p>
+<p>每个包都会被分配到自己的包序号, 序号严格递增, 用来配合重传机制. 并且这个参数由于每包独立, 其还被用作<code>AEAD</code>加密算法进行密钥派生的参数, 可以确保密钥不被破解.</p>
+</li>
+<li><p><code>ACK</code>帧 : </p>
+<p>这也是一个特殊的帧类型, 由接收方发送, 让发送方进行确认和丢包判断.</p>
+<ul>
+<li>只要收到对应包的ACK帧, 就代表该包已接收. </li>
+<li>ACK帧中还会描述在当前包之前<strong>未收到的包序号范围</strong>(Range), 也就是说QUIC采用范围判断.</li>
+<li>一个ACK帧<strong>可以一次性ACK多个包</strong>, 不像TCP需要按序且一对一.</li>
+<li><code>ack_delay</code>字段是ACK帧的必带字段, 用于描述ACK帧故意延迟发送了多久. <strong>延迟发送机制</strong>是为了配合上一条特性, 累计一定的ACK一并发出, 可以<strong>有效降低ACK帧的发送频率</strong>.</li>
+</ul>
+</li>
+<li><p>丢包检测机制 : </p>
+<p>总共由两种丢包检测机制, 一种基于时间, 一种基于包序号.</p>
+<ul>
+<li><p>基于时间的超时检测 : 超过一定RTT的时间未收到ACK帧自动重传.</p>
+</li>
+<li><p>基于包序号的检测 : 可以设置一个值k, 通过接收到的未到包序号范围, 只要包序号小于<code>最大包序号 - k</code>的包, 将直接重传.</p>
+<p>该检测对标TCP的快速重传机制, 判断更加简单且敏感.</p>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="拥塞控制"><a href="#拥塞控制" class="headerlink" title="拥塞控制"></a>拥塞控制</h3><p>思想内核与TCP一致, 依旧是维护一个拥塞窗口, 即<strong>已发送但未被确认的字节值</strong>. 不过QUIC有以下三个额外的特点 : </p>
+<ul>
+<li><p>QUIC规定下的拥塞控制算法是可拔插的, 也就是可以据情况随时更换拥塞控制算法, 这里不细究算法内核.</p>
+</li>
+<li><p>所有拥塞控制算法离不开使用RTT, 因此为了计算准确的RTT, 会获取ACK帧中的<code>ack_delay</code>字段来辅助计算.</p>
+</li>
+<li><p>由于QUIC的流有流向机制, 所以只需要在发送方设置拥塞控制机制, 接收方无需设置.</p>
+</li>
+</ul>
+<h3 id="连接迁移与路径验证"><a href="#连接迁移与路径验证" class="headerlink" title="连接迁移与路径验证"></a>连接迁移与路径验证</h3><p>QUIC<strong>允许客户端随时变更网络</strong>, 而不需要重新建立连接, 可以在原连接上进行. 经典例子就是wifi网络的替换(wifi1 -&gt; wifi2 或 移动网络 -&gt; wifi).</p>
+<ul>
+<li><p>IP 欺骗攻击（Address Spoofing）</p>
+<p>简单来说就是攻击方可以伪造变更ip的数据包, 欺诈攻击方进行无用的传输, 也有可能带来更深层次的数据泄露.</p>
+</li>
+<li><p>路径验证 : </p>
+<p>QUIC会<strong>在连接发生迁移时通过发送特殊帧的方式确立对迁移连接的重新信任</strong>, 以此防IP欺诈攻击.</p>
+<ul>
+<li>虽然在QUIC在设计上把连接用CID表示, 不再依赖于ip&#x2F;port, 但是其内部依旧会存储CID对应的ip&#x2F;port, 当发生实际迁移时, 就可以迅速感知到这种变化.</li>
+<li><code>PATH_CHALLENGE</code>帧 : 在服务器注意到连接迁移时向目标客户端发送, 用于确认.</li>
+<li><code>PATH_RESPONSE</code>帧 : 接收到<code>PATH_CHALLENGE</code>帧后发送, 只有拥有先前的共同密钥才能进行正确的响应, 服务器收到后确立信任.</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="HTTP-3-内核"><a href="#HTTP-3-内核" class="headerlink" title="HTTP&#x2F;3 内核"></a>HTTP&#x2F;3 内核</h2><p>HTTP&#x2F;3完全基于QUIC协议设计, 可以理解为QUIC的<strong>完全上层建筑</strong>.</p>
+<p>但是HTTP&#x2F;3 是 HTTP&#x2F;2 的语义继承者：方法、状态码、字段等基本一致, 各种设计理念一脉相承, 只在个别情况会有实际差别, 如果想要学习每个帧类型的作用可以看我HTTP&#x2F;2的讲解.</p>
+<h3 id="QUIC是如何承载HTTP-3的"><a href="#QUIC是如何承载HTTP-3的" class="headerlink" title="QUIC是如何承载HTTP&#x2F;3的?"></a>QUIC是如何承载HTTP&#x2F;3的?</h3><ul>
+<li>QUIC实现的是传输层的工作.</li>
+<li>HTTP&#x2F;3也有自己的帧概念, 和HTTP&#x2F;2基本一致, <strong>HTTP&#x2F;3 所有帧都是“间接”地存在于 QUIC Packet 的 STREAM 帧内部的</strong>.</li>
+<li><strong>每个 HTTP 请求&#x2F;响应都使用一个 QUIC Stream, 多个流可以并发交错发送</strong>.</li>
+</ul>
+<h3 id="HTTP-3-与-HTTP-2-的兼容"><a href="#HTTP-3-与-HTTP-2-的兼容" class="headerlink" title="HTTP&#x2F;3 与 HTTP&#x2F;2 的兼容"></a>HTTP&#x2F;3 与 HTTP&#x2F;2 的兼容</h3><ul>
+<li>帧结构, 帧类型, 帧的处理几乎不变.</li>
+<li>流控机制没有变化.</li>
+<li>优先级机制不变, 但是在HTTP&#x2F;3中几乎不再使用, QUIC认为”多帧就是高优先级”.</li>
+</ul>
+<h3 id="基于流向的流类型划分"><a href="#基于流向的流类型划分" class="headerlink" title="基于流向的流类型划分"></a>基于流向的流类型划分</h3><p>HTTP&#x2F;3在QUIC的流向基础上规定了四种流类型 : </p>
+<ul>
+<li>控制流 (Control Stream) : <ul>
+<li><strong>单向</strong>流, <strong>第一帧必须是<code>SETTINGS</code>帧</strong>, 后续帧视情况添加.</li>
+<li>用于<strong>初始连接时协商参数</strong>, 双方<strong>必须</strong>在握手之前各开一条控制流进行交流.</li>
+</ul>
+</li>
+<li>请求&#x2F;响应流 : <ul>
+<li>双向流, 最基础的HTTP流, 包含<code>HEADERS</code>&#x2F;<code>DATA</code>等基础帧.</li>
+<li>一般会并发开很多这样的流进行数据传输.</li>
+</ul>
+</li>
+<li>QPACK encoder stream &#x2F; decoder stream : <ul>
+<li>两条单向流, 分别由客户端 &#x2F; 服务端发起.</li>
+<li>其作用是配合实现报头压缩机制, 后面详述.</li>
+</ul>
+</li>
+<li>还有一种用来配合Server Push机制, 但是该机制已经过时, 被高速缓存取代.</li>
+</ul>
+<p>在实际HTTP&#x2F;3连接中, 各种流的使用逻辑大致如下 : </p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs text">QUIC连接建立成功<br>│<br>├─&gt; 客户端创建控制流（发送 SETTINGS）<br>│<br>├─&gt; 服务端创建控制流（发送 SETTINGS）<br>│<br>├─&gt; 客户端创建 QPACK Encoder Stream（ID=2）<br>│<br>├─&gt; 服务端创建 QPACK Decoder Stream（ID=3）<br>│<br>├─&gt; 客户端创建请求流（ID=0, 4, 8...）<br>│    ├─&gt; HEADERS（请求头）<br>│    ├─&gt; DATA（请求体）<br>│    └─&gt; END_STREAM<br>│<br>└─&gt; 服务端在同一流上响应<br>     ├─&gt; HEADERS（响应头）<br>     ├─&gt; DATA（响应体）<br>     └─&gt; END_STREAM<br></code></pre></td></tr></table></figure>
+
+<h3 id="QPACK报头压缩机制"><a href="#QPACK报头压缩机制" class="headerlink" title="QPACK报头压缩机制"></a>QPACK报头压缩机制</h3><p>其自然对标的是HTTP&#x2F;2的HPACK机制, 相比于其他部分不同, 这一部分有相对大的改动.</p>
+<ul>
+<li><p>为什么不能沿用HPACK机制?</p>
+<p>因为<strong>动态表需要双方完全一致, 需要保证同步</strong>, 而HPACK的同步是<strong>依赖于TCP机制的有序性</strong>实现的, QUIC所依赖的UDP本身是无序的, 所以需要我们设置一定的机制保证动态表的一致性.</p>
+</li>
+<li><p>在HTTP&#x2F;2中, 报头压缩机制是融合在<code>HEADERS</code>帧中的, 可以理解为HTTP&#x2F;2在用<code>HEADERS</code>帧控制动态表, 但在HTTP&#x2F;3中将这一机制从其中拆解出来, 放到了独立的两条单向流中, 更加便于控制管理.</p>
+</li>
+<li><p>QPACK encoder stream &#x2F; decoder stream : </p>
+<p>这是两条单向流, 双方在内核依旧会维护动态表, 会由<code>encoder stream</code>, 也就是客户端主导对于双方动态表的修改, 其会发送要求对端修改动态表的帧, 而<code>decoder stream</code>则用来回复各种修改的回应和动态表的使用情况.</p>
+</li>
+<li><p>但是上面并没有解决动态表要实现双方同步的诉求, 由于UDP是无序的, 客户端修改了自身的动态表并发送对端的修改命令, 对端的修改会有不可避免的时差, 如果提前接收到了使用这个修改的<code>HEADER</code>帧, 就会产生不可逆的错误.</p>
+</li>
+<li><p><code>Required Insert Count</code> : </p>
+<p>这是<code>HEADERS</code>帧中需要表明的一个数值, <strong>代表这个<code>HEADERS</code>帧可使用的最小动态表范围</strong>, 简单来说就是<strong>不再要求双方动态表完全一致, 而是要求双方动态表一定范围内完全一致即可</strong>. </p>
+<p>具体描述就是假设动态表是双方维护的一组的vector(分为E方和D方), 一般都是E方先进行插入, 然后告诉D方进行插入, 假如这期间E方发起请求, <code>HEADERS</code>帧中的<code>Required Insert Count</code>就会记录当前E方vector的最大下标, D方接收到时会查看自己的vector最大下标是否大于等于这个值, 如果大于, 则进行读取, 反之则阻塞等到条件符合.</p>
+<p>至此QPACK解决了QUIC的无序传输动态表更新问题.</p>
+</li>
+</ul>
+<h3 id="升级机制"><a href="#升级机制" class="headerlink" title="升级机制"></a>升级机制</h3><p>客户端可以通过HTTP&#x2F;1或HTTP&#x2F;2探测服务端是否支持HTTP&#x2F;3服务.</p>
+<ul>
+<li><p><code>Alt-Svc</code> : 其可作为字段出现在1&#x2F;2的报头字段中, 用来表示自己支持HTTP&#x2F;3, 也可以附带端口和时间.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cpp">Alt-Svc: h3=<span class="hljs-string">&quot;:443&quot;</span>; ma=<span class="hljs-number">86400</span><br></code></pre></td></tr></table></figure>
+
+<blockquote>
+<p>表示支持 HTTP&#x2F;3（版本 h3），端口是 443，缓存时间为 1 天。</p>
+</blockquote>
+</li>
+<li><p>在接收到此字段后, 客户就可以尝试使用QUIC连接服务器并开始HTTP&#x2F;3传输.</p>
+</li>
+</ul>
+<blockquote>
+<p>这里想要去学习HTTP3在C++中的实际使用, 简单看了ngtcp2和nghttp3库, 使用起来有些复杂, 之后可能会补充学习.</p>
+</blockquote>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/HTTP/" class="print-no-link">#HTTP</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>HTTP/3</div>
+      <div>http://example.com/2025/08/05/HTTP3/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>天目中云</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年8月5日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/08/10/C++%E7%BC%96%E8%AF%91%E9%93%BE%E6%8E%A5%E6%A8%A1%E5%9E%8B%E7%B2%BE%E8%A6%81/" title="C++编译链接模型精要">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">C++编译链接模型精要</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/08/01/HTTP2/" title="HTTP/2">
+                        <span class="hidden-mobile">HTTP/2</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"NhgfDy2CEByjwxuxPM1Le2t6-MdYXbMMI","appKey":"nvGMdqKfKbpkVnojLSbwmasv","path":"window.location.pathname","placeholder":null,"avatar":"retro","meta":["nick","mail","link"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":false,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":false},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
