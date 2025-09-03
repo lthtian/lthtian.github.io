@@ -29,7 +29,7 @@
 <meta property="og:description" content="主要学习asio网络库有关异步方面的使用   这里先给出一个最简便的TCP异步echo服务器 :  12345678910111213141516171819202122232425262728293031323334353637383940414243444546474849505152535455565758596061626364656667686970717273747576777879">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2025-07-08T11:00:00.000Z">
-<meta property="article:modified_time" content="2025-07-09T01:18:56.758Z">
+<meta property="article:modified_time" content="2025-08-24T10:42:34.764Z">
 <meta property="article:author" content="天目中云">
 <meta property="article:tag" content="boost::asio">
 <meta name="twitter:card" content="summary_large_image">
@@ -240,7 +240,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          3.7k 字
+          3.8k 字
         
       </span>
     
@@ -251,7 +251,7 @@
         
         
         
-          31 分钟
+          32 分钟
         
       </span>
     
@@ -334,6 +334,7 @@
 <p>上面的echo就是这样的逻辑, 读完进行处理, 处理完发送, 发送完再注册读事件, 这样就类似于实现了一个天然的状态机, 并且可以使线程资源最大化.</p>
 <h3 id="enable-shared-from-this"><a href="#enable-shared-from-this" class="headerlink" title="enable_shared_from_this"></a>enable_shared_from_this</h3><p>我们可以看到Session类继承了该类, 其作用在于可以使成员函数内部调用<code>shared_from_this()</code>, 该函数会返回当前类对象的智能指针, 其实就是对this进行了封装.</p>
 <p>其作用的核心在于<strong>延长对象的生命周期</strong>. 这里应用到异步中, 就是可以使构建出来的Session对象始终不被析构, 就算没有实际的对象去管理它们. 因为我们的self对象会一直被lambda捕获, 其内部Session对象就不会被析构. 这里要明白一个知识 : <strong>只要 lambda 回调函数中捕获了 <code>shared_ptr</code>(哪怕它还没执行),对象的引用计数就会保持 +1</strong>. </p>
+<p>更进一步理解, 我们可以发现, Session类在accept函数中被make_shared出来, 在离开了这个回调函数后其实shared_ptr计数就会-1. 但是Session并不会析构, 因为已经调用了start, 整个逻辑链路已经开启, 在do_read和do_write中都会在lambda中捕获self, 计数永远不会降到0, 也就是<strong>其生命周期不再和作用域有关, 会一直在这个逻辑链路中存在下去</strong>.</p>
 <h3 id="多线程版本"><a href="#多线程版本" class="headerlink" title="多线程版本"></a>多线程版本</h3><p>上面只是单线程版本的, 但是并发量由于异步存在已经足够高, 几万并发没什么问题, 当然我们也可以写多线程版本的, 其实只要再main函数中做修改就可以了 : </p>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">try</span><br>    &#123;<br>        boost::asio::io_context io_context;<br><br>        <span class="hljs-function">Server <span class="hljs-title">server</span><span class="hljs-params">(io_context, <span class="hljs-number">12345</span>)</span></span>;<br><br>        <span class="hljs-comment">// 获取系统线程数（你也可以写固定值如 4）</span><br>        <span class="hljs-type">int</span> thread_count = std::thread::<span class="hljs-built_in">hardware_concurrency</span>();<br>        std::cout &lt;&lt; <span class="hljs-string">&quot;Start with &quot;</span> &lt;&lt; thread_count &lt;&lt; <span class="hljs-string">&quot; threads\n&quot;</span>;<br><br>        <span class="hljs-comment">// 创建线程池，所有线程调用 io_context.run()</span><br>        std::vector&lt;std::thread&gt; threads;<br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; thread_count; ++i)<br>        &#123;<br>            threads.<span class="hljs-built_in">emplace_back</span>([&amp;io_context]() &#123;<br>                io_context.<span class="hljs-built_in">run</span>();<br>            &#125;);<br>        &#125;<br><br>        <span class="hljs-comment">// 等待所有线程结束（实际永不结束）</span><br>        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">auto</span> &amp;t : threads)<br>            t.<span class="hljs-built_in">join</span>();<br>    &#125;<br>    <span class="hljs-built_in">catch</span> (std::exception &amp;e)<br>    &#123;<br>        std::cerr &lt;&lt; <span class="hljs-string">&quot;Exception: &quot;</span> &lt;&lt; e.<span class="hljs-built_in">what</span>() &lt;&lt; <span class="hljs-string">&quot;\n&quot;</span>;<br>    &#125;<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
 

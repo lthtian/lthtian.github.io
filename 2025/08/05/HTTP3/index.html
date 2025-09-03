@@ -29,7 +29,7 @@
 <meta property="og:description" content="生态分析TCP队头阻塞这是HTTP&#x2F;2所拥有的根本性通病, 注意这里的队头阻塞不是指排队造成的阻塞, 而是指丢包造成的阻塞. TCP为了实现可靠有序, 采用了超时重传机制, 该机制可以确保可靠有序, 但是对于现代网络却有严重缺陷. TCP中如果发送出现丢包, 必须要依靠超时重传等到当前包再次发来, 后面的包才能生效, 即使已经发来了, 后面的包也不能及时处理和使用, 这是在内核中就强制决">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2025-08-05T09:00:00.000Z">
-<meta property="article:modified_time" content="2025-08-22T09:43:06.562Z">
+<meta property="article:modified_time" content="2025-08-26T10:42:12.702Z">
 <meta property="article:author" content="天目中云">
 <meta property="article:tag" content="HTTP">
 <meta name="twitter:card" content="summary_large_image">
@@ -240,7 +240,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          6k 字
+          6.1k 字
         
       </span>
     
@@ -356,6 +356,8 @@
 <li>第一个RTT客户端发出请求, 服务端发出公钥给客户端.</li>
 <li>第二个RTT客户端进入加密态, 发出公钥, 服务端接受后匹配成功也进入加密态, 发送匹配成功的字段.</li>
 </ul>
+</li>
+<li><p>使用证书用来进行身份认证, 确保没有被中间人篡改, 一般是将<strong>私钥</strong>提供给CA进行<strong>数字签名</strong>, 发送过去后再用CA的公钥进行验证, 确保没有被篡改.</p>
 </li>
 </ul>
 <h3 id="具体变动"><a href="#具体变动" class="headerlink" title="具体变动"></a>具体变动</h3><p>TLS1.3在TLS1.2的基础上主要是进行了简化和安全性的提升.</p>
