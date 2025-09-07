@@ -1,0 +1,810 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/head.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="天目中云">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="线程与内存管理  线程相关CreateThread &#x2F; OpenThread通过这两个函数获取线程句柄.  前者可以用C++11的 thread 库代替. 后者传入对应的线程tid, 返回对应的线程句柄.  线程句柄的作用 使用TerminateThread直接终止线程. 使用WaitForSingleObject等待线程结束. 使用 SuspendThread&#x2F;ResumeThrea">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Windows API 学习笔记(2) 线程与内存管理">
+<meta property="og:url" content="http://example.com/2025/09/07/Windows%20API%20%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0(2)%20%E7%BA%BF%E7%A8%8B%E4%B8%8E%E5%86%85%E5%AD%98/index.html">
+<meta property="og:site_name" content="天目中云">
+<meta property="og:description" content="线程与内存管理  线程相关CreateThread &#x2F; OpenThread通过这两个函数获取线程句柄.  前者可以用C++11的 thread 库代替. 后者传入对应的线程tid, 返回对应的线程句柄.  线程句柄的作用 使用TerminateThread直接终止线程. 使用WaitForSingleObject等待线程结束. 使用 SuspendThread&#x2F;ResumeThrea">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="d:\xwechat_files\wxid_0c8qtb27aeen22_9747\temp\RWTemp\2025-09\9e20f478899dc29eb19741386f9343c8\aabfeb69ffa2c26861ee99602b054ae5.png">
+<meta property="article:published_time" content="2025-09-07T02:00:00.000Z">
+<meta property="article:modified_time" content="2025-09-07T02:25:10.471Z">
+<meta property="article:author" content="天目中云">
+<meta property="article:tag" content="WindowsAPI">
+<meta property="article:tag" content="线程">
+<meta property="article:tag" content="内存管理">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="d:\xwechat_files\wxid_0c8qtb27aeen22_9747\temp\RWTemp\2025-09\9e20f478899dc29eb19741386f9343c8\aabfeb69ffa2c26861ee99602b054ae5.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>Windows API 学习笔记(2) 线程与内存管理 - 天目中云</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":"NhgfDy2CEByjwxuxPM1Le2t6-MdYXbMMI","app_key":"nvGMdqKfKbpkVnojLSbwmasv","server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>TianMu</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/03.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Windows API 学习笔记(2) 线程与内存管理"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-09-07 10:00" pubdate>
+          2025年9月7日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.1k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          18 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Windows API 学习笔记(2) 线程与内存管理</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <blockquote>
+<p>线程与内存管理</p>
+</blockquote>
+<h2 id="线程相关"><a href="#线程相关" class="headerlink" title="线程相关"></a>线程相关</h2><h3 id="CreateThread-OpenThread"><a href="#CreateThread-OpenThread" class="headerlink" title="CreateThread &#x2F; OpenThread"></a>CreateThread &#x2F; OpenThread</h3><p>通过这两个函数获取线程句柄.</p>
+<ul>
+<li>前者可以用C++11的 thread 库代替.</li>
+<li>后者传入对应的线程tid, 返回对应的线程句柄.</li>
+</ul>
+<h3 id="线程句柄的作用"><a href="#线程句柄的作用" class="headerlink" title="线程句柄的作用"></a>线程句柄的作用</h3><ul>
+<li>使用<code>TerminateThread</code>直接终止线程.</li>
+<li>使用<code>WaitForSingleObject</code>等待线程结束.</li>
+<li>使用 <code>SuspendThread/ResumeThread</code>随时挂起和唤醒线程, 一般用来配合分析检测.</li>
+<li>使用<code>GetThreadTimes</code>获取时间, 例如创建时间, CPU占用时间.</li>
+</ul>
+<h3 id="SetThreadAffinityMask"><a href="#SetThreadAffinityMask" class="headerlink" title="SetThreadAffinityMask"></a>SetThreadAffinityMask</h3><p><strong>将某个线程任务绑定到某些CPU核上</strong>, 使得这些CPU优先运行这个任务. </p>
+<p>其作用在于 : </p>
+<ul>
+<li><strong>避免频繁的线程切换</strong>.</li>
+<li>可以有效<strong>缓解缓存失效</strong>, 每个CPU核都有自己的缓存, 会缓存过去运行线程的变量&#x2F;指令, 随意改变线程执行的核会让这些缓存失效.</li>
+</ul>
+<p>使用方法就是传入线程句柄, 传入掩码, 掩码中每有一个1, 任务就会被绑定到其对应的核上.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs cpp">DWORD_PTR mask = <span class="hljs-number">0x01</span>; <span class="hljs-comment">// 绑定到核心0</span><br><span class="hljs-built_in">SetThreadAffinityMask</span>(hThread, mask);<br></code></pre></td></tr></table></figure>
+
+<p>适用于<strong>计算密集型&#x2F;低延迟要求</strong>的任务, 比如音视频解码, 金融交易.</p>
+<h3 id="SwitchToThread"><a href="#SwitchToThread" class="headerlink" title="SwitchToThread"></a>SwitchToThread</h3><p>调用该函数, 会使当前线程<strong>主动让出时间片</strong>, 供其他线程使用.</p>
+<ul>
+<li>一些任务如果认为优先级低(就是可以延后执行), 那么可以设置一些节点触发<code>SwitchToThread</code>, 让一些高优先级任务(比如UI界面更新)更有可能拿到时间片.</li>
+</ul>
+<p>自旋锁是让线程自旋一会等待解锁, 可以有效减少线程切换带来的消耗, 用<code>SwitchToThread</code>可以优化其逻辑 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">volatile</span> <span class="hljs-type">bool</span> g_Lock = <span class="hljs-literal">false</span>;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">SpinLockWithYield</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-type">int</span> spinCount = <span class="hljs-number">0</span>;<br>    <span class="hljs-keyword">while</span> (<span class="hljs-built_in">InterlockedCompareExchange</span>(&amp;g_Lock, <span class="hljs-literal">true</span>, <span class="hljs-literal">false</span>) != <span class="hljs-literal">false</span>) &#123;<br>        <span class="hljs-comment">// 自旋100次后让出CPU</span><br>        <span class="hljs-keyword">if</span> (++spinCount &gt; <span class="hljs-number">100</span>) &#123;<br>            <span class="hljs-built_in">SwitchToThread</span>(); <span class="hljs-comment">// 减少空转</span><br>            spinCount = <span class="hljs-number">0</span>;<br>        &#125;<br>        _mm_pause(); <span class="hljs-comment">// CPU指令级优化（降低功耗）</span><br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>原本自选锁会一直在这里自旋, 将持续占用一个CPU核, 我们预计会很快解锁, 但是假如有特殊情况一直拿不到锁, 累计到一定自选次数后, 就可以调用<code>SwitchToThread</code>让出时间片来减少空转.</p>
+<h2 id="内存管理相关"><a href="#内存管理相关" class="headerlink" title="内存管理相关"></a>内存管理相关</h2><p>Windows内存管理也和Linux的那一套非常相似, 进程地址空间 + 分页.</p>
+<h3 id="VirtualAlloc"><a href="#VirtualAlloc" class="headerlink" title="VirtualAlloc"></a>VirtualAlloc</h3><p>这是Windows操作系统底层的内存申请函数, malloc在windows平台底层就会间接调用到该函数. 可以认为是Windows版的mmap.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function">LPVOID <span class="hljs-title">VirtualAlloc</span><span class="hljs-params">(</span></span><br><span class="hljs-params"><span class="hljs-function">  LPVOID lpAddress,       <span class="hljs-comment">// 指定希望分配的虚拟地址（可选）</span></span></span><br><span class="hljs-params"><span class="hljs-function">  SIZE_T dwSize,          <span class="hljs-comment">// 分配大小（按页对齐）</span></span></span><br><span class="hljs-params"><span class="hljs-function">  DWORD flAllocationType, <span class="hljs-comment">// 分配类型（提交/保留）</span></span></span><br><span class="hljs-params"><span class="hljs-function">  DWORD flProtect         <span class="hljs-comment">// 内存保护属性</span></span></span><br><span class="hljs-params"><span class="hljs-function">)</span></span>;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><p><code>lpAddress</code> : 你可以指定分配的地址, 但是该指针必须页对齐, 不然会失败.</p>
+</li>
+<li><p><code>dwSize</code> : 指定分配大小, 最终结果会按页对齐.</p>
+<ul>
+<li>对齐 : 默认页大小为4KB(4096), 因此在每个页开始处进行访问只需要一次指令, 但是其他地方就要多条指令, 因此<strong>我们希望分配地址是4KB的整数倍</strong>, 也就是所谓的页对齐.</li>
+</ul>
+</li>
+<li><p><code>flAllocationType</code> : 指定分配的类型.</p>
+<ul>
+<li><code>MEM_RESERVE</code> : 保留一段虚拟地址空间, 但先不申请内存, 需要时再COMMIT.</li>
+<li><code>MEM_COMMIT</code> : 提交对于物理地址空间的申请, 会做虚拟到物理的映射.</li>
+<li>RESERVE出来的空间不可被使用, <strong>只是占用使用权</strong>, 要使用时必须COMMIT.</li>
+<li>最常见的做法是填入<code>MEM_RESERVE | MEM_COMMIT</code>, 本质就是申请一块物理空间可以随时使用.</li>
+</ul>
+</li>
+<li><p><code>flProtect</code> : 设置内存保护属性, 防止自己对某些重要内存进行修改.</p>
+</li>
+<li><p>平常大多数情况使用malloc申请内存即可, 只是在<strong>申请大块内存, 有延迟映射需求, 有内存对齐需求, 需要控制内存保护权限</strong>的情况下可以选择使用<code>VirtualAlloc</code>.</p>
+</li>
+<li><p>VirtualFree : 需要配套使用.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function">BOOL <span class="hljs-title">VirtualFree</span><span class="hljs-params">(</span></span><br><span class="hljs-params"><span class="hljs-function">  LPVOID lpAddress,</span></span><br><span class="hljs-params"><span class="hljs-function">  SIZE_T dwSize,   <span class="hljs-comment">// 如果 MEM_RELEASE，必须为 0</span></span></span><br><span class="hljs-params"><span class="hljs-function">  DWORD dwFreeType <span class="hljs-comment">// MEM_RELEASE / MEM_DECOMMIT</span></span></span><br><span class="hljs-params"><span class="hljs-function">)</span></span>;<br></code></pre></td></tr></table></figure></li>
+</ul>
+<h3 id="VirtualProtect"><a href="#VirtualProtect" class="headerlink" title="VirtualProtect"></a>VirtualProtect</h3><p>修改已分配内存的保护属性.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function">BOOL <span class="hljs-title">VirtualProtect</span><span class="hljs-params">(</span></span><br><span class="hljs-params"><span class="hljs-function">  LPVOID lpAddress,</span></span><br><span class="hljs-params"><span class="hljs-function">  SIZE_T dwSize,</span></span><br><span class="hljs-params"><span class="hljs-function">  DWORD flNewProtect,</span></span><br><span class="hljs-params"><span class="hljs-function">  PDWORD lpflOldProtect</span></span><br><span class="hljs-params"><span class="hljs-function">)</span></span>;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>建议只使用<code>VirtureAlloc</code>出来的句柄设置, 因为其是按页修改保护属性的, <code>malloc</code>出来的并非页对齐.</li>
+<li>默认是<code>PAGE_READWRITE</code>可读写, 可改为<code>PAGE_READONLY</code>只读和<code>PAGE_NOACCESS</code>禁止访问.</li>
+<li>保护熟悉设置一视同仁, 对本进程和其他进程同样有效, 一般是先读写完, 如果想保护数据在后期通过该函数设置只读或禁读.</li>
+</ul>
+<h3 id="VirtualQuery-VirtualQueryEx"><a href="#VirtualQuery-VirtualQueryEx" class="headerlink" title="VirtualQuery &#x2F; VirtualQueryEx"></a>VirtualQuery &#x2F; VirtualQueryEx</h3><p><strong>查询进程虚拟内存状态&#x2F;属性&#x2F;归属的重要函数(可跨进程).</strong></p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// 当前进程</span><br><span class="hljs-function">SIZE_T <span class="hljs-title">VirtualQuery</span><span class="hljs-params">(</span></span><br><span class="hljs-params"><span class="hljs-function">    LPCVOID lpAddress,</span></span><br><span class="hljs-params"><span class="hljs-function">    PMEMORY_BASIC_INFORMATION lpBuffer, <span class="hljs-comment">// 输出内存信息的缓存区</span></span></span><br><span class="hljs-params"><span class="hljs-function">    SIZE_T dwLength <span class="hljs-comment">// 缓存区结构体的大小</span></span></span><br><span class="hljs-params"><span class="hljs-function">)</span></span>;<br><br><span class="hljs-comment">// 指定进程</span><br><span class="hljs-function">SIZE_T <span class="hljs-title">VirtualQueryEx</span><span class="hljs-params">(</span></span><br><span class="hljs-params"><span class="hljs-function">    HANDLE hProcess, 	<span class="hljs-comment">// 想要查询内存的进程句柄</span></span></span><br><span class="hljs-params"><span class="hljs-function">    LPCVOID lpAddress,</span></span><br><span class="hljs-params"><span class="hljs-function">    PMEMORY_BASIC_INFORMATION lpBuffer,</span></span><br><span class="hljs-params"><span class="hljs-function">    SIZE_T dwLength</span></span><br><span class="hljs-params"><span class="hljs-function">)</span></span>;<br></code></pre></td></tr></table></figure>
+
+<p>主要用来查询指定内存的状态, 在读写自己或其他内存前使用, 可以有效避免崩溃.</p>
+<p>以下是缓存区的结构 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">typedef</span> <span class="hljs-keyword">struct</span> <span class="hljs-title class_">_MEMORY_BASIC_INFORMATION</span> &#123;<br>  PVOID  BaseAddress;       <span class="hljs-comment">// 内存块的起始地址</span><br>  PVOID  AllocationBase;    <span class="hljs-comment">// 内存块保留时的基地址</span><br>  DWORD  AllocationProtect; <span class="hljs-comment">// 分配时的保护属性</span><br>  SIZE_T RegionSize;        <span class="hljs-comment">// 从 BaseAddress 开始的连续区域大小</span><br>  DWORD  State;             <span class="hljs-comment">// MEM_COMMIT / MEM_RESERVE / MEM_FREE</span><br>  DWORD  Protect;           <span class="hljs-comment">// 当前页的保护属性</span><br>  DWORD  Type;              <span class="hljs-comment">// MEM_PRIVATE / MEM_MAPPED / MEM_IMAGE</span><br>&#125; MEMORY_BASIC_INFORMATION, *PMEMORY_BASIC_INFORMATION;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>一般是读取<code>State</code>和<code>Protect</code>, 地址可以用来读取内存, 但是仅限本进程, 跨进程需要<code>ReadProcessMemory</code>.</li>
+</ul>
+<h3 id="ReadProcessMemory-WriteProcessMemory"><a href="#ReadProcessMemory-WriteProcessMemory" class="headerlink" title="ReadProcessMemory &#x2F; WriteProcessMemory"></a>ReadProcessMemory &#x2F; WriteProcessMemory</h3><p><strong>跨进程读写内存</strong>的核心函数.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function">BOOL <span class="hljs-title">ReadProcessMemory</span><span class="hljs-params">(</span></span><br><span class="hljs-params"><span class="hljs-function">    HANDLE  hProcess,       <span class="hljs-comment">// 目标进程句柄</span></span></span><br><span class="hljs-params"><span class="hljs-function">    LPCVOID lpBaseAddress,  <span class="hljs-comment">// 要读取的起始虚拟地址</span></span></span><br><span class="hljs-params"><span class="hljs-function">    LPVOID  lpBuffer,       <span class="hljs-comment">// 存放数据的本地缓冲区</span></span></span><br><span class="hljs-params"><span class="hljs-function">    SIZE_T  nSize,          <span class="hljs-comment">// 要读取的字节数</span></span></span><br><span class="hljs-params"><span class="hljs-function">    SIZE_T* lpNumberOfBytesRead <span class="hljs-comment">// 实际读取字节数（可选）</span></span></span><br><span class="hljs-params"><span class="hljs-function">)</span></span>;<br><br><span class="hljs-function">BOOL <span class="hljs-title">WriteProcessMemory</span><span class="hljs-params">(</span></span><br><span class="hljs-params"><span class="hljs-function">    HANDLE  hProcess,        <span class="hljs-comment">// 目标进程句柄</span></span></span><br><span class="hljs-params"><span class="hljs-function">    LPVOID  lpBaseAddress,   <span class="hljs-comment">// 要写入的起始虚拟地址</span></span></span><br><span class="hljs-params"><span class="hljs-function">    LPCVOID lpBuffer,        <span class="hljs-comment">// 要写入数据的本地缓冲区</span></span></span><br><span class="hljs-params"><span class="hljs-function">    SIZE_T  nSize,           <span class="hljs-comment">// 要写入的字节数</span></span></span><br><span class="hljs-params"><span class="hljs-function">    SIZE_T* lpNumberOfBytesWritten <span class="hljs-comment">// 实际写入字节数（可选）</span></span></span><br><span class="hljs-params"><span class="hljs-function">)</span></span>;<br></code></pre></td></tr></table></figure>
+
+<p>关键就是目标进程句柄+虚拟地址+缓冲区, 但前提是<strong>读写的内存必须已提交, 读必须有可读权限, 写必须有可写权限</strong>, 这点靠<code>VirtualQueryEx</code>查询状态保证.</p>
+<h3 id="跨进程内存读写实操"><a href="#跨进程内存读写实操" class="headerlink" title="跨进程内存读写实操"></a>跨进程内存读写实操</h3><p>这里打算做一个测试 : </p>
+<ul>
+<li>ProcessA构造一个类对象, 内部有一个val, 显示自己的pid和对象地址后进入循环等待.</li>
+<li>ProcessB用进程pid和对象地址访问该对象并进行修改.</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// ProcessA.cpp</span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;windows.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iostream&gt;</span></span><br><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">MyClass</span> &#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-type">int</span> val;<br>    <span class="hljs-built_in">MyClass</span>(<span class="hljs-type">int</span> v) : <span class="hljs-built_in">val</span>(v) &#123;&#125;<br>&#125;;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-function">MyClass <span class="hljs-title">obj</span><span class="hljs-params">(<span class="hljs-number">12345</span>)</span></span>;  <span class="hljs-comment">// 创建对象</span><br>    cout &lt;&lt; <span class="hljs-string">&quot;Process ID: &quot;</span> &lt;&lt; <span class="hljs-built_in">GetCurrentProcessId</span>() &lt;&lt; endl;<br>    cout &lt;&lt; <span class="hljs-string">&quot;Object address: &quot;</span> &lt;&lt; &amp;obj &lt;&lt; endl;<br><br>    <span class="hljs-keyword">while</span> (<span class="hljs-literal">true</span>) &#123;<br>        <span class="hljs-built_in">Sleep</span>(<span class="hljs-number">1000</span>);<br>    &#125;<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// ProcessB.cpp</span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;windows.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iostream&gt;</span></span><br><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;<br>    DWORD pid;<br>    <span class="hljs-type">uintptr_t</span> objAddr;<br><br>    cout &lt;&lt; <span class="hljs-string">&quot;Enter target PID: &quot;</span>;<br>    cin &gt;&gt; pid;<br>    cout &lt;&lt; <span class="hljs-string">&quot;Enter target object address (hex, e.g., 0x12345678): &quot;</span>;<br>    cin &gt;&gt; std::hex &gt;&gt; objAddr;<br><br>    <span class="hljs-comment">// 增加读写查询权限</span><br>    HANDLE hProcess = <span class="hljs-built_in">OpenProcess</span>(PROCESS_VM_READ | PROCESS_VM_WRITE | PROCESS_VM_OPERATION | PROCESS_QUERY_INFORMATION, FALSE, pid);<br>    <span class="hljs-keyword">if</span> (!hProcess) &#123;<br>        cout &lt;&lt; <span class="hljs-string">&quot;Failed to open process, error: &quot;</span> &lt;&lt; <span class="hljs-built_in">GetLastError</span>() &lt;&lt; endl;<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>;<br>    &#125;<br><br>    <span class="hljs-comment">// 使用 VirtualQueryEx 确认地址可读写</span><br>    MEMORY_BASIC_INFORMATION mbi;<br>    <span class="hljs-keyword">if</span> (<span class="hljs-built_in">VirtualQueryEx</span>(hProcess, (LPCVOID)objAddr, &amp;mbi, <span class="hljs-built_in">sizeof</span>(mbi)) == <span class="hljs-number">0</span>) &#123;<br>        cout &lt;&lt; <span class="hljs-string">&quot;VirtualQueryEx failed, error: &quot;</span> &lt;&lt; <span class="hljs-built_in">GetLastError</span>() &lt;&lt; endl;<br>        <span class="hljs-built_in">CloseHandle</span>(hProcess);<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>;<br>    &#125;<br><br>    <span class="hljs-keyword">if</span> (mbi.State != MEM_COMMIT || (mbi.Protect &amp; PAGE_NOACCESS)) &#123;<br>        cout &lt;&lt; <span class="hljs-string">&quot;Memory not accessible&quot;</span> &lt;&lt; endl;<br>        <span class="hljs-built_in">CloseHandle</span>(hProcess);<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>;<br>    &#125;<br><br>    <span class="hljs-comment">// 先读 val</span><br>    <span class="hljs-type">int</span> val = <span class="hljs-number">0</span>;<br>    SIZE_T bytesRead;<br>    <span class="hljs-keyword">if</span> (<span class="hljs-built_in">ReadProcessMemory</span>(hProcess, (LPCVOID)objAddr, &amp;val, <span class="hljs-built_in">sizeof</span>(val), &amp;bytesRead) &amp;&amp; bytesRead == <span class="hljs-built_in">sizeof</span>(val)) &#123;<br>        cout &lt;&lt; <span class="hljs-string">&quot;Before write, val = &quot;</span> &lt;&lt; val &lt;&lt; endl;<br>    &#125;<br>    <span class="hljs-keyword">else</span> &#123;<br>        cout &lt;&lt; <span class="hljs-string">&quot;ReadProcessMemory failed, error: &quot;</span> &lt;&lt; <span class="hljs-built_in">GetLastError</span>() &lt;&lt; endl;<br>        <span class="hljs-built_in">CloseHandle</span>(hProcess);<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>;<br>    &#125;<br><br>    <span class="hljs-comment">// 写 val = 999</span><br>    <span class="hljs-type">int</span> newVal = <span class="hljs-number">999</span>;<br>    SIZE_T bytesWritten;<br>    <span class="hljs-keyword">if</span> (<span class="hljs-built_in">WriteProcessMemory</span>(hProcess, (LPVOID)objAddr, &amp;newVal, <span class="hljs-built_in">sizeof</span>(newVal), &amp;bytesWritten) &amp;&amp; bytesWritten == <span class="hljs-built_in">sizeof</span>(newVal)) &#123;<br>        cout &lt;&lt; <span class="hljs-string">&quot;Successfully wrote val = &quot;</span> &lt;&lt; newVal &lt;&lt; endl;<br>    &#125;<br>    <span class="hljs-keyword">else</span> &#123;<br>        cout &lt;&lt; <span class="hljs-string">&quot;WriteProcessMemory failed, error: &quot;</span> &lt;&lt; <span class="hljs-built_in">GetLastError</span>() &lt;&lt; endl;<br>        <span class="hljs-built_in">CloseHandle</span>(hProcess);<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>;<br>    &#125;<br><br>    <span class="hljs-comment">// 再读 val</span><br>    <span class="hljs-keyword">if</span> (<span class="hljs-built_in">ReadProcessMemory</span>(hProcess, (LPCVOID)objAddr, &amp;val, <span class="hljs-built_in">sizeof</span>(val), &amp;bytesRead) &amp;&amp; bytesRead == <span class="hljs-built_in">sizeof</span>(val)) &#123;<br>        cout &lt;&lt; <span class="hljs-string">&quot;After write, val = &quot;</span> &lt;&lt; val &lt;&lt; endl;<br>    &#125;<br>    <span class="hljs-keyword">else</span> &#123;<br>        cout &lt;&lt; <span class="hljs-string">&quot;ReadProcessMemory failed after write, error: &quot;</span> &lt;&lt; <span class="hljs-built_in">GetLastError</span>() &lt;&lt; endl;<br>    &#125;<br><br>    <span class="hljs-built_in">CloseHandle</span>(hProcess);<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>实际效果如下 : </p>
+<p><img src="D:\xwechat_files\wxid_0c8qtb27aeen22_9747\temp\RWTemp\2025-09\9e20f478899dc29eb19741386f9343c8\aabfeb69ffa2c26861ee99602b054ae5.png" srcset="/img/loading.gif" lazyload alt="aabfeb69ffa2c26861ee99602b054ae5"></p>
+<p>需要注意的是, 打开进程句柄时需要传入对应的权限标识, 不然无法使用对应的函数, 我这里就加入了读写和查询的权限.</p>
+<h3 id="跨进程内存读写可行性分析"><a href="#跨进程内存读写可行性分析" class="headerlink" title="跨进程内存读写可行性分析"></a>跨进程内存读写可行性分析</h3><p>实际上在进程运行时<strong>所有用户区堆内存&#x2F;数据段几乎都是可读写</strong>的, 本质是因为<strong>页保护属性对所有进程一视同仁</strong>, 如果设置为不可读写, 那么设置方也无法读写, 这是操作系统内存设计的底层逻辑, 无法改变. 因此跨进程读写还是有可行性的. </p>
+<p>不过许多应用也会有很多反制措施, 比如禁止未授权的进程获取本进程的句柄等等, 但似乎依旧有漏洞可钻, 这点貌似很深就不深入学习了.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/WindowsAPI/" class="print-no-link">#WindowsAPI</a>
+      
+        <a href="/tags/%E7%BA%BF%E7%A8%8B/" class="print-no-link">#线程</a>
+      
+        <a href="/tags/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" class="print-no-link">#内存管理</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Windows API 学习笔记(2) 线程与内存管理</div>
+      <div>http://example.com/2025/09/07/Windows API 学习笔记(2) 线程与内存/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>天目中云</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年9月7日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/09/04/Windows%20API%20%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0(1)%20%E7%B1%BB%E5%9E%8B%E4%B8%8E%E8%BF%9B%E7%A8%8B/" title="Windows API 学习笔记(1) 类型和进程">
+                        <span class="hidden-mobile">Windows API 学习笔记(1) 类型和进程</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"NhgfDy2CEByjwxuxPM1Le2t6-MdYXbMMI","appKey":"nvGMdqKfKbpkVnojLSbwmasv","path":"window.location.pathname","placeholder":null,"avatar":"retro","meta":["nick","mail","link"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":false,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":false},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
