@@ -246,6 +246,48 @@
     <article class="col-12 col-md-12 mx-auto index-info">
       <h2 class="index-header">
         
+        <a href="/2025/09/09/Windows%20API%20%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0(4)%20IOCP/" target="_self">
+          Windows API 学习笔记(4) IOCP
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/09/09/Windows%20API%20%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0(4)%20IOCP/" target="_self">
+        <div>
+          IOCP高性能网络编程  初步理解IOCP(IO Completion Port), IO完成端口, 是可以将网络数据收发异步化的技术. 如果学过Linux的io_uring, 他们的内核思想很相近, 区别在于IOCP专注于网络编程和异步, 而io_uring更加全面, 可以处理并优化各种事务.  内核理解 首先想要使用IOCP, 需要通过CreateIoCompletionPort构造IOCP
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2025-09-09 20:37" pubdate>
+              2025-09-09
+            </time>
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/WindowsAPI/">#WindowsAPI</a>
+            
+              <a href="/tags/IOCP/">#IOCP</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
         <a href="/2025/09/07/Windows%20API%20%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0(2)%20%E7%BA%BF%E7%A8%8B%E4%B8%8E%E5%86%85%E5%AD%98/" target="_self">
           Windows API 学习笔记(2) 线程与内存管理
         </a>
@@ -603,48 +645,6 @@
               <a href="/tags/%E6%96%87%E4%BB%B6%E4%BC%A0%E8%BE%93/">#文件传输</a>
             
               <a href="/tags/io-uring/">#io_uring</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h2 class="index-header">
-        
-        <a href="/2025/07/12/%5BLinux%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%9C%8D%E5%8A%A1%E7%AB%AF%E7%BC%96%E7%A8%8B%5D%20%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0(1)/" target="_self">
-          Linux多线程服务端编程 读书笔记1
-        </a>
-      </h2>
-
-      
-      <a class="index-excerpt index-excerpt__noimg" href="/2025/07/12/%5BLinux%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%9C%8D%E5%8A%A1%E7%AB%AF%E7%BC%96%E7%A8%8B%5D%20%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0(1)/" target="_self">
-        <div>
-          第一部分 C++多线程系统编程  析构所在的线程当share_ptr引用计数归零时, 会在归零的这个线程就地析构, 而这个线程不一定是对象诞生的线程. 这就引发出一个问题 :   如果对象的析构比较耗时, 且经常在关键线程触发析构, 就会拖慢关键线程的速度.  这种情况的解决方案是专门做一个阻塞队列存入要析构的智能指针, 另开一个专门析构的线程从队列中取出进行析构. 多线程适用场景 其核心作用在
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2025-07-12 18:25" pubdate>
-              2025-07-12
-            </time>
-          </div>
-        
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/">#多线程</a>
-            
-              <a href="/tags/Muduo/">#Muduo</a>
             
           </div>
         
