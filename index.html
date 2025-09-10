@@ -246,6 +246,46 @@
     <article class="col-12 col-md-12 mx-auto index-info">
       <h2 class="index-header">
         
+        <a href="/2025/09/10/Windows%20API%20%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0(5)/" target="_self">
+          Windows API 学习笔记(5) 注册表
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/09/10/Windows%20API%20%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0(5)/" target="_self">
+        <div>
+          注册表  初步理解注册表你可以理解为是一个缓存和配置的存储中心, 你可以在这里查到庞杂的信息, 系统信息, 硬件信息, 软件信息都可以查到. 本身是树形结构, 非叶节点都可视为键, 最顶端并列的几个键被视为根键, 叶节点则可视为值, 我们一般都是通过传入一连串键的路径来获取值. 当然注册表只是记录一些偏固定的键值, 一些常变动的数据还要老实用系统API去查. RegOpenKeyEx打开一个根键
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2025-09-10 15:00" pubdate>
+              2025-09-10
+            </time>
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/WindowsAPI/">#WindowsAPI</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
         <a href="/2025/09/09/Windows%20API%20%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0(4)%20IOCP/" target="_self">
           Windows API 学习笔记(4) IOCP
         </a>
@@ -603,48 +643,6 @@
             <i class="iconfont icon-tags"></i>
             
               <a href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/">#分布式系统</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h2 class="index-header">
-        
-        <a href="/2025/07/14/%5BLinux%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%9C%8D%E5%8A%A1%E7%AB%AF%E7%BC%96%E7%A8%8B%5D%20%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0(2)/" target="_self">
-          Linux多线程服务端编程 读书笔记2
-        </a>
-      </h2>
-
-      
-      <a class="index-excerpt index-excerpt__noimg" href="/2025/07/14/%5BLinux%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%9C%8D%E5%8A%A1%E7%AB%AF%E7%BC%96%E7%A8%8B%5D%20%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0(2)/" target="_self">
-        <div>
-          第二部分 Muduo网络库  文件传输 如何完整高效地传输一个文件?  文件传输过程一般如下 :   磁盘 -&gt; 内核页缓冲 -&gt; 用户缓冲区 -&gt; Tcp发送缓冲区 -&gt; 网卡等  最简单的传输方式当然就是fread + send 一口气传出, 但是这样如果文件非常大的话, 服务器扛不住几个连接, 因为这样的内存消耗非常大.  书中提出了一种解决内存占用过多的方法 :
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2025-07-14 17:00" pubdate>
-              2025-07-14
-            </time>
-          </div>
-        
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/%E6%96%87%E4%BB%B6%E4%BC%A0%E8%BE%93/">#文件传输</a>
-            
-              <a href="/tags/io-uring/">#io_uring</a>
             
           </div>
         
