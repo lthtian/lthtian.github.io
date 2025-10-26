@@ -1,0 +1,737 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/head.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="天目中云">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="vcpkg一个安装管理器, 你可以认为类似于ubuntu的apt, 这个安装器跨平台, windows和linux都可以用, 可以一键部署下载很多C&#x2F;C++的核心第三方库. 其对CMake配置的项目有天然助益, 有清单配置之类的功能, 之后可以了解一下在vs上使用CMake + vcpkg的方式写几个demo. 安装&#x2F;配置一般选用hiredis库作为Redis第三方库使用.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Redis深入学习(1) 安装与封装">
+<meta property="og:url" content="http://example.com/2025/10/25/Redis%E6%B7%B1%E5%85%A5%E5%AD%A6%E4%B9%A0(1)%20%E5%AE%89%E8%A3%85%E4%B8%8E%E5%B0%81%E8%A3%85/index.html">
+<meta property="og:site_name" content="天目中云">
+<meta property="og:description" content="vcpkg一个安装管理器, 你可以认为类似于ubuntu的apt, 这个安装器跨平台, windows和linux都可以用, 可以一键部署下载很多C&#x2F;C++的核心第三方库. 其对CMake配置的项目有天然助益, 有清单配置之类的功能, 之后可以了解一下在vs上使用CMake + vcpkg的方式写几个demo. 安装&#x2F;配置一般选用hiredis库作为Redis第三方库使用.">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-25T12:00:00.000Z">
+<meta property="article:modified_time" content="2025-10-26T14:41:25.615Z">
+<meta property="article:author" content="天目中云">
+<meta property="article:tag" content="Redis">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>Redis深入学习(1) 安装与封装 - 天目中云</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":"NhgfDy2CEByjwxuxPM1Le2t6-MdYXbMMI","app_key":"nvGMdqKfKbpkVnojLSbwmasv","server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>TianMu</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/03.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Redis深入学习(1) 安装与封装"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-25 20:00" pubdate>
+          2025年10月25日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          6k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          50 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Redis深入学习(1) 安装与封装</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h3 id="vcpkg"><a href="#vcpkg" class="headerlink" title="vcpkg"></a>vcpkg</h3><p>一个安装管理器, 你可以认为类似于ubuntu的apt, 这个安装器跨平台, windows和linux都可以用, 可以一键部署下载很多C&#x2F;C++的核心第三方库.</p>
+<p>其对CMake配置的项目有天然助益, 有清单配置之类的功能, 之后可以了解一下在vs上使用CMake + vcpkg的方式写几个demo.</p>
+<h3 id="安装-配置"><a href="#安装-配置" class="headerlink" title="安装&#x2F;配置"></a>安装&#x2F;配置</h3><p>一般选用hiredis库作为Redis第三方库使用.</p>
+<ul>
+<li>Linux : 其实直接下载就可以, 不用配置直接就能用.</li>
+<li>Windows : 这里我是用的vcpkg安装的hiredis, 确实很方便, 应该避了很多坑, 但是貌似使用CMake会更加方便, 使用vs自己的配置系统需要设置头目录和库目录.</li>
+</ul>
+<h3 id="Redis封装-连接池-管理类"><a href="#Redis封装-连接池-管理类" class="headerlink" title="Redis封装(连接池 + 管理类)"></a>Redis封装(连接池 + 管理类)</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// RedisMgr.h</span><br><span class="hljs-meta">#<span class="hljs-keyword">pragma</span> once</span><br><span class="hljs-comment">// 在文件顶部添加hiredis头文件</span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;memory&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;string&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;queue&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;atomic&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;mutex&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;condition_variable&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;thread&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;string&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;cstring&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iostream&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;cstdlib&gt;</span></span><br><br><span class="hljs-comment">// 添加hiredis头文件</span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;hiredis/hiredis.h&gt;</span></span><br><br><span class="hljs-comment">// Redis连接池的前置声明</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">RedisConPool</span> &#123;<br><span class="hljs-keyword">public</span>:<br>	<span class="hljs-built_in">RedisConPool</span>(<span class="hljs-type">size_t</span> poolSize, <span class="hljs-type">const</span> <span class="hljs-type">char</span>* host, <span class="hljs-type">int</span> port, <span class="hljs-type">const</span> <span class="hljs-type">char</span>* pwd);<br>	~<span class="hljs-built_in">RedisConPool</span>();<br><br>	<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">ClearConnections</span><span class="hljs-params">()</span></span>;<br>	<span class="hljs-function">redisContext* <span class="hljs-title">getConnection</span><span class="hljs-params">()</span></span>;<br>	<span class="hljs-function">redisContext* <span class="hljs-title">getConNonBlock</span><span class="hljs-params">()</span></span>;<br>	<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">returnConnection</span><span class="hljs-params">(redisContext* context)</span></span>;<br>	<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">Close</span><span class="hljs-params">()</span></span>;<br><br><span class="hljs-keyword">private</span>:<br>	<span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">reconnect</span><span class="hljs-params">()</span></span>;<br>	<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">checkThreadPro</span><span class="hljs-params">()</span></span>;<br>	<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">checkThread</span><span class="hljs-params">()</span></span>;<br><br>	std::atomic&lt;<span class="hljs-type">bool</span>&gt; b_stop_;<br>	<span class="hljs-type">size_t</span> poolSize_;<br>	<span class="hljs-type">const</span> <span class="hljs-type">char</span>* host_;<br>	<span class="hljs-type">const</span> <span class="hljs-type">char</span>* pwd_;<br>	<span class="hljs-type">int</span> port_;<br>	std::queue&lt;redisContext*&gt; connections_;<br>	std::atomic&lt;<span class="hljs-type">int</span>&gt; fail_count_;<br>	std::mutex mutex_;<br>	std::condition_variable cond_;<br>	std::thread  check_thread_;<br>	<span class="hljs-type">int</span> counter_;<br>&#125;;<br><br><span class="hljs-comment">// 简单的单例模板类</span><br><span class="hljs-keyword">namespace</span> &#123;<br>	<span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> T&gt;<br>	<span class="hljs-keyword">class</span> <span class="hljs-title class_">Singleton</span> &#123;<br>	<span class="hljs-keyword">public</span>:<br>		<span class="hljs-function"><span class="hljs-type">static</span> T&amp; <span class="hljs-title">Inst</span><span class="hljs-params">()</span> </span>&#123;<br>			<span class="hljs-type">static</span> T instance;<br>			<span class="hljs-keyword">return</span> instance;<br>		&#125;<br><br>	<span class="hljs-keyword">protected</span>:<br>		<span class="hljs-built_in">Singleton</span>() = <span class="hljs-keyword">default</span>;<br>		~<span class="hljs-built_in">Singleton</span>() = <span class="hljs-keyword">default</span>;<br>		<span class="hljs-built_in">Singleton</span>(<span class="hljs-type">const</span> Singleton&amp;) = <span class="hljs-keyword">delete</span>;<br>		Singleton&amp; <span class="hljs-keyword">operator</span>=(<span class="hljs-type">const</span> Singleton&amp;) = <span class="hljs-keyword">delete</span>;<br>	&#125;;<br>&#125;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">RedisMgr</span>: <span class="hljs-keyword">public</span> Singleton&lt;RedisMgr&gt;, <br>	<span class="hljs-keyword">public</span> std::enable_shared_from_this&lt;RedisMgr&gt;<br>&#123;<br>	<span class="hljs-keyword">friend</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Singleton</span>&lt;RedisMgr&gt;;<br><span class="hljs-keyword">public</span>:<br>	~<span class="hljs-built_in">RedisMgr</span>();<br>	<span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">Get</span><span class="hljs-params">(<span class="hljs-type">const</span> std::string &amp;key, std::string&amp; value)</span></span>;<br>	<span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">Set</span><span class="hljs-params">(<span class="hljs-type">const</span> std::string &amp;key, <span class="hljs-type">const</span> std::string &amp;value)</span></span>;<br>	<span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">LPush</span><span class="hljs-params">(<span class="hljs-type">const</span> std::string &amp;key, <span class="hljs-type">const</span> std::string &amp;value)</span></span>;<br>	<span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">LPop</span><span class="hljs-params">(<span class="hljs-type">const</span> std::string &amp;key, std::string&amp; value)</span></span>;<br>	<span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">RPush</span><span class="hljs-params">(<span class="hljs-type">const</span> std::string&amp; key, <span class="hljs-type">const</span> std::string&amp; value)</span></span>;<br>	<span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">RPop</span><span class="hljs-params">(<span class="hljs-type">const</span> std::string&amp; key, std::string&amp; value)</span></span>;<br>	<span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">HSet</span><span class="hljs-params">(<span class="hljs-type">const</span> std::string &amp;key, <span class="hljs-type">const</span> std::string  &amp;hkey, <span class="hljs-type">const</span> std::string &amp;value)</span></span>;<br>	<span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">HSet</span><span class="hljs-params">(<span class="hljs-type">const</span> <span class="hljs-type">char</span>* key, <span class="hljs-type">const</span> <span class="hljs-type">char</span>* hkey, <span class="hljs-type">const</span> <span class="hljs-type">char</span>* hvalue, <span class="hljs-type">size_t</span> hvaluelen)</span></span>;<br>	<span class="hljs-function">std::string <span class="hljs-title">HGet</span><span class="hljs-params">(<span class="hljs-type">const</span> std::string &amp;key, <span class="hljs-type">const</span> std::string &amp;hkey)</span></span>;<br>	<span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">HDel</span><span class="hljs-params">(<span class="hljs-type">const</span> std::string&amp; key, <span class="hljs-type">const</span> std::string&amp; field)</span></span>;<br>	<span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">Del</span><span class="hljs-params">(<span class="hljs-type">const</span> std::string &amp;key)</span></span>;<br>	<span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">ExistsKey</span><span class="hljs-params">(<span class="hljs-type">const</span> std::string &amp;key)</span></span>;<br>	<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">Close</span><span class="hljs-params">()</span> </span>&#123;<br>		con_pool_-&gt;<span class="hljs-built_in">Close</span>();<br>		con_pool_-&gt;<span class="hljs-built_in">ClearConnections</span>();<br>	&#125;<br><br>	<span class="hljs-function">std::string <span class="hljs-title">acquireLock</span><span class="hljs-params">(<span class="hljs-type">const</span> std::string&amp; lockName,</span></span><br><span class="hljs-params"><span class="hljs-function">		<span class="hljs-type">int</span> lockTimeout, <span class="hljs-type">int</span> acquireTimeout)</span></span>;<br><br>	<span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">releaseLock</span><span class="hljs-params">(<span class="hljs-type">const</span> std::string&amp; lockName,</span></span><br><span class="hljs-params"><span class="hljs-function">		<span class="hljs-type">const</span> std::string&amp; identifier)</span></span>;<br><br>	<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">IncreaseCount</span><span class="hljs-params">(std::string server_name)</span></span>;<br>	<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">DecreaseCount</span><span class="hljs-params">(std::string server_name)</span></span>;<br>	<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">InitCount</span><span class="hljs-params">(std::string server_name)</span></span>;<br>	<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">DelCount</span><span class="hljs-params">(std::string server_name)</span></span>;<br><span class="hljs-keyword">private</span>:<br>	<span class="hljs-built_in">RedisMgr</span>();<br>	std::unique_ptr&lt;RedisConPool&gt;  con_pool_;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br><span class="line">253</span><br><span class="line">254</span><br><span class="line">255</span><br><span class="line">256</span><br><span class="line">257</span><br><span class="line">258</span><br><span class="line">259</span><br><span class="line">260</span><br><span class="line">261</span><br><span class="line">262</span><br><span class="line">263</span><br><span class="line">264</span><br><span class="line">265</span><br><span class="line">266</span><br><span class="line">267</span><br><span class="line">268</span><br><span class="line">269</span><br><span class="line">270</span><br><span class="line">271</span><br><span class="line">272</span><br><span class="line">273</span><br><span class="line">274</span><br><span class="line">275</span><br><span class="line">276</span><br><span class="line">277</span><br><span class="line">278</span><br><span class="line">279</span><br><span class="line">280</span><br><span class="line">281</span><br><span class="line">282</span><br><span class="line">283</span><br><span class="line">284</span><br><span class="line">285</span><br><span class="line">286</span><br><span class="line">287</span><br><span class="line">288</span><br><span class="line">289</span><br><span class="line">290</span><br><span class="line">291</span><br><span class="line">292</span><br><span class="line">293</span><br><span class="line">294</span><br><span class="line">295</span><br><span class="line">296</span><br><span class="line">297</span><br><span class="line">298</span><br><span class="line">299</span><br><span class="line">300</span><br><span class="line">301</span><br><span class="line">302</span><br><span class="line">303</span><br><span class="line">304</span><br><span class="line">305</span><br><span class="line">306</span><br><span class="line">307</span><br><span class="line">308</span><br><span class="line">309</span><br><span class="line">310</span><br><span class="line">311</span><br><span class="line">312</span><br><span class="line">313</span><br><span class="line">314</span><br><span class="line">315</span><br><span class="line">316</span><br><span class="line">317</span><br><span class="line">318</span><br><span class="line">319</span><br><span class="line">320</span><br><span class="line">321</span><br><span class="line">322</span><br><span class="line">323</span><br><span class="line">324</span><br><span class="line">325</span><br><span class="line">326</span><br><span class="line">327</span><br><span class="line">328</span><br><span class="line">329</span><br><span class="line">330</span><br><span class="line">331</span><br><span class="line">332</span><br><span class="line">333</span><br><span class="line">334</span><br><span class="line">335</span><br><span class="line">336</span><br><span class="line">337</span><br><span class="line">338</span><br><span class="line">339</span><br><span class="line">340</span><br><span class="line">341</span><br><span class="line">342</span><br><span class="line">343</span><br><span class="line">344</span><br><span class="line">345</span><br><span class="line">346</span><br><span class="line">347</span><br><span class="line">348</span><br><span class="line">349</span><br><span class="line">350</span><br><span class="line">351</span><br><span class="line">352</span><br><span class="line">353</span><br><span class="line">354</span><br><span class="line">355</span><br><span class="line">356</span><br><span class="line">357</span><br><span class="line">358</span><br><span class="line">359</span><br><span class="line">360</span><br><span class="line">361</span><br><span class="line">362</span><br><span class="line">363</span><br><span class="line">364</span><br><span class="line">365</span><br><span class="line">366</span><br><span class="line">367</span><br><span class="line">368</span><br><span class="line">369</span><br><span class="line">370</span><br><span class="line">371</span><br><span class="line">372</span><br><span class="line">373</span><br><span class="line">374</span><br><span class="line">375</span><br><span class="line">376</span><br><span class="line">377</span><br><span class="line">378</span><br><span class="line">379</span><br><span class="line">380</span><br><span class="line">381</span><br><span class="line">382</span><br><span class="line">383</span><br><span class="line">384</span><br><span class="line">385</span><br><span class="line">386</span><br><span class="line">387</span><br><span class="line">388</span><br><span class="line">389</span><br><span class="line">390</span><br><span class="line">391</span><br><span class="line">392</span><br><span class="line">393</span><br><span class="line">394</span><br><span class="line">395</span><br><span class="line">396</span><br><span class="line">397</span><br><span class="line">398</span><br><span class="line">399</span><br><span class="line">400</span><br><span class="line">401</span><br><span class="line">402</span><br><span class="line">403</span><br><span class="line">404</span><br><span class="line">405</span><br><span class="line">406</span><br><span class="line">407</span><br><span class="line">408</span><br><span class="line">409</span><br><span class="line">410</span><br><span class="line">411</span><br><span class="line">412</span><br><span class="line">413</span><br><span class="line">414</span><br><span class="line">415</span><br><span class="line">416</span><br><span class="line">417</span><br><span class="line">418</span><br><span class="line">419</span><br><span class="line">420</span><br><span class="line">421</span><br><span class="line">422</span><br><span class="line">423</span><br><span class="line">424</span><br><span class="line">425</span><br><span class="line">426</span><br><span class="line">427</span><br><span class="line">428</span><br><span class="line">429</span><br><span class="line">430</span><br><span class="line">431</span><br><span class="line">432</span><br><span class="line">433</span><br><span class="line">434</span><br><span class="line">435</span><br><span class="line">436</span><br><span class="line">437</span><br><span class="line">438</span><br><span class="line">439</span><br><span class="line">440</span><br><span class="line">441</span><br><span class="line">442</span><br><span class="line">443</span><br><span class="line">444</span><br><span class="line">445</span><br><span class="line">446</span><br><span class="line">447</span><br><span class="line">448</span><br><span class="line">449</span><br><span class="line">450</span><br><span class="line">451</span><br><span class="line">452</span><br><span class="line">453</span><br><span class="line">454</span><br><span class="line">455</span><br><span class="line">456</span><br><span class="line">457</span><br><span class="line">458</span><br><span class="line">459</span><br><span class="line">460</span><br><span class="line">461</span><br><span class="line">462</span><br><span class="line">463</span><br><span class="line">464</span><br><span class="line">465</span><br><span class="line">466</span><br><span class="line">467</span><br><span class="line">468</span><br><span class="line">469</span><br><span class="line">470</span><br><span class="line">471</span><br><span class="line">472</span><br><span class="line">473</span><br><span class="line">474</span><br><span class="line">475</span><br><span class="line">476</span><br><span class="line">477</span><br><span class="line">478</span><br><span class="line">479</span><br><span class="line">480</span><br><span class="line">481</span><br><span class="line">482</span><br><span class="line">483</span><br><span class="line">484</span><br><span class="line">485</span><br><span class="line">486</span><br><span class="line">487</span><br><span class="line">488</span><br><span class="line">489</span><br><span class="line">490</span><br><span class="line">491</span><br><span class="line">492</span><br><span class="line">493</span><br><span class="line">494</span><br><span class="line">495</span><br><span class="line">496</span><br><span class="line">497</span><br><span class="line">498</span><br><span class="line">499</span><br><span class="line">500</span><br><span class="line">501</span><br><span class="line">502</span><br><span class="line">503</span><br><span class="line">504</span><br><span class="line">505</span><br><span class="line">506</span><br><span class="line">507</span><br><span class="line">508</span><br><span class="line">509</span><br><span class="line">510</span><br><span class="line">511</span><br><span class="line">512</span><br><span class="line">513</span><br><span class="line">514</span><br><span class="line">515</span><br><span class="line">516</span><br><span class="line">517</span><br><span class="line">518</span><br><span class="line">519</span><br><span class="line">520</span><br><span class="line">521</span><br><span class="line">522</span><br><span class="line">523</span><br><span class="line">524</span><br><span class="line">525</span><br><span class="line">526</span><br><span class="line">527</span><br><span class="line">528</span><br><span class="line">529</span><br><span class="line">530</span><br><span class="line">531</span><br><span class="line">532</span><br><span class="line">533</span><br><span class="line">534</span><br><span class="line">535</span><br><span class="line">536</span><br><span class="line">537</span><br><span class="line">538</span><br><span class="line">539</span><br><span class="line">540</span><br><span class="line">541</span><br><span class="line">542</span><br><span class="line">543</span><br><span class="line">544</span><br><span class="line">545</span><br><span class="line">546</span><br><span class="line">547</span><br><span class="line">548</span><br><span class="line">549</span><br><span class="line">550</span><br><span class="line">551</span><br><span class="line">552</span><br><span class="line">553</span><br><span class="line">554</span><br><span class="line">555</span><br><span class="line">556</span><br><span class="line">557</span><br><span class="line">558</span><br><span class="line">559</span><br><span class="line">560</span><br><span class="line">561</span><br><span class="line">562</span><br><span class="line">563</span><br><span class="line">564</span><br><span class="line">565</span><br><span class="line">566</span><br><span class="line">567</span><br><span class="line">568</span><br><span class="line">569</span><br><span class="line">570</span><br><span class="line">571</span><br><span class="line">572</span><br><span class="line">573</span><br><span class="line">574</span><br><span class="line">575</span><br><span class="line">576</span><br><span class="line">577</span><br><span class="line">578</span><br><span class="line">579</span><br><span class="line">580</span><br><span class="line">581</span><br><span class="line">582</span><br><span class="line">583</span><br><span class="line">584</span><br><span class="line">585</span><br><span class="line">586</span><br><span class="line">587</span><br><span class="line">588</span><br><span class="line">589</span><br><span class="line">590</span><br><span class="line">591</span><br><span class="line">592</span><br><span class="line">593</span><br><span class="line">594</span><br><span class="line">595</span><br><span class="line">596</span><br><span class="line">597</span><br><span class="line">598</span><br><span class="line">599</span><br><span class="line">600</span><br><span class="line">601</span><br><span class="line">602</span><br><span class="line">603</span><br><span class="line">604</span><br><span class="line">605</span><br><span class="line">606</span><br><span class="line">607</span><br><span class="line">608</span><br><span class="line">609</span><br><span class="line">610</span><br><span class="line">611</span><br><span class="line">612</span><br><span class="line">613</span><br><span class="line">614</span><br><span class="line">615</span><br><span class="line">616</span><br><span class="line">617</span><br><span class="line">618</span><br><span class="line">619</span><br><span class="line">620</span><br><span class="line">621</span><br><span class="line">622</span><br><span class="line">623</span><br><span class="line">624</span><br><span class="line">625</span><br><span class="line">626</span><br><span class="line">627</span><br><span class="line">628</span><br><span class="line">629</span><br><span class="line">630</span><br><span class="line">631</span><br><span class="line">632</span><br><span class="line">633</span><br><span class="line">634</span><br><span class="line">635</span><br><span class="line">636</span><br><span class="line">637</span><br><span class="line">638</span><br><span class="line">639</span><br><span class="line">640</span><br><span class="line">641</span><br><span class="line">642</span><br><span class="line">643</span><br><span class="line">644</span><br><span class="line">645</span><br><span class="line">646</span><br><span class="line">647</span><br><span class="line">648</span><br><span class="line">649</span><br><span class="line">650</span><br><span class="line">651</span><br><span class="line">652</span><br><span class="line">653</span><br><span class="line">654</span><br><span class="line">655</span><br><span class="line">656</span><br><span class="line">657</span><br><span class="line">658</span><br><span class="line">659</span><br><span class="line">660</span><br><span class="line">661</span><br><span class="line">662</span><br><span class="line">663</span><br><span class="line">664</span><br><span class="line">665</span><br><span class="line">666</span><br><span class="line">667</span><br><span class="line">668</span><br><span class="line">669</span><br><span class="line">670</span><br><span class="line">671</span><br><span class="line">672</span><br><span class="line">673</span><br><span class="line">674</span><br><span class="line">675</span><br><span class="line">676</span><br><span class="line">677</span><br><span class="line">678</span><br><span class="line">679</span><br><span class="line">680</span><br><span class="line">681</span><br><span class="line">682</span><br><span class="line">683</span><br><span class="line">684</span><br><span class="line">685</span><br><span class="line">686</span><br><span class="line">687</span><br><span class="line">688</span><br><span class="line">689</span><br><span class="line">690</span><br><span class="line">691</span><br><span class="line">692</span><br><span class="line">693</span><br><span class="line">694</span><br><span class="line">695</span><br><span class="line">696</span><br><span class="line">697</span><br><span class="line">698</span><br><span class="line">699</span><br><span class="line">700</span><br><span class="line">701</span><br><span class="line">702</span><br><span class="line">703</span><br><span class="line">704</span><br><span class="line">705</span><br><span class="line">706</span><br><span class="line">707</span><br><span class="line">708</span><br><span class="line">709</span><br><span class="line">710</span><br><span class="line">711</span><br><span class="line">712</span><br><span class="line">713</span><br><span class="line">714</span><br><span class="line">715</span><br><span class="line">716</span><br><span class="line">717</span><br><span class="line">718</span><br><span class="line">719</span><br><span class="line">720</span><br><span class="line">721</span><br><span class="line">722</span><br><span class="line">723</span><br><span class="line">724</span><br><span class="line">725</span><br><span class="line">726</span><br><span class="line">727</span><br><span class="line">728</span><br><span class="line">729</span><br><span class="line">730</span><br><span class="line">731</span><br><span class="line">732</span><br><span class="line">733</span><br><span class="line">734</span><br><span class="line">735</span><br><span class="line">736</span><br><span class="line">737</span><br><span class="line">738</span><br><span class="line">739</span><br><span class="line">740</span><br><span class="line">741</span><br><span class="line">742</span><br><span class="line">743</span><br><span class="line">744</span><br><span class="line">745</span><br><span class="line">746</span><br><span class="line">747</span><br><span class="line">748</span><br><span class="line">749</span><br><span class="line">750</span><br><span class="line">751</span><br><span class="line">752</span><br><span class="line">753</span><br><span class="line">754</span><br><span class="line">755</span><br><span class="line">756</span><br><span class="line">757</span><br><span class="line">758</span><br><span class="line">759</span><br><span class="line">760</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// RedisMgr.cc</span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;RedisMgr.h&quot;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iostream&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;hiredis/hiredis.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;memory&gt;</span></span><br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * RedisConPool类：Redis连接池实现</span><br><span class="hljs-comment"> * 负责管理与Redis服务器的连接池，提供连接获取、归还、健康检查等功能</span><br><span class="hljs-comment"> * 设计目的：避免频繁创建和销毁Redis连接带来的性能开销</span><br><span class="hljs-comment"> */</span><br><span class="hljs-comment">// =========================RedisConPool类===========================================================//</span><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * RedisConPool构造函数</span><br><span class="hljs-comment"> * @param poolSize 连接池大小</span><br><span class="hljs-comment"> * @param host Redis服务器主机地址</span><br><span class="hljs-comment"> * @param port Redis服务器端口号</span><br><span class="hljs-comment"> * @param pwd Redis服务器密码</span><br><span class="hljs-comment"> */</span><br>RedisConPool::<span class="hljs-built_in">RedisConPool</span>(<span class="hljs-type">size_t</span> poolSize, <span class="hljs-type">const</span> <span class="hljs-type">char</span>* host, <span class="hljs-type">int</span> port, <span class="hljs-type">const</span> <span class="hljs-type">char</span>* pwd)<br>	: <span class="hljs-built_in">poolSize_</span>(poolSize), <span class="hljs-built_in">host_</span>(host), <span class="hljs-built_in">port_</span>(port), <span class="hljs-built_in">b_stop_</span>(<span class="hljs-literal">false</span>), <span class="hljs-built_in">pwd_</span>(pwd), <span class="hljs-built_in">counter_</span>(<span class="hljs-number">0</span>), <span class="hljs-built_in">fail_count_</span>(<span class="hljs-number">0</span>)&#123;<br>	<span class="hljs-comment">// 初始化连接池，创建指定数量的连接</span><br>	<span class="hljs-keyword">for</span> (<span class="hljs-type">size_t</span> i = <span class="hljs-number">0</span>; i &lt; poolSize_; ++i) &#123;<br>		<span class="hljs-comment">// 创建Redis连接</span><br>		<span class="hljs-keyword">auto</span>* context = <span class="hljs-built_in">redisConnect</span>(host, port);<br>		<span class="hljs-keyword">if</span> (context == <span class="hljs-literal">nullptr</span> || context-&gt;err != <span class="hljs-number">0</span>) &#123;<br>			<span class="hljs-keyword">if</span> (context != <span class="hljs-literal">nullptr</span>) &#123;<br>				<span class="hljs-built_in">redisFree</span>(context);<br>			&#125;<br>			<span class="hljs-keyword">continue</span>;<br>		&#125;<br><br>		<span class="hljs-comment">// 只有当密码不为空时才进行认证</span><br>		<span class="hljs-keyword">if</span> (pwd != <span class="hljs-literal">nullptr</span> &amp;&amp; <span class="hljs-built_in">strlen</span>(pwd) &gt; <span class="hljs-number">0</span>) &#123;<br>			<span class="hljs-comment">// 认证连接</span><br>			<span class="hljs-keyword">auto</span> reply = (redisReply*)<span class="hljs-built_in">redisCommand</span>(context, <span class="hljs-string">&quot;AUTH %s&quot;</span>, pwd);<br>			<span class="hljs-keyword">if</span> (reply == <span class="hljs-literal">nullptr</span>) &#123;<br>				std::cout &lt;&lt; <span class="hljs-string">&quot;认证命令执行失败&quot;</span> &lt;&lt; std::endl;<br>				<span class="hljs-built_in">redisFree</span>(context);<br>				<span class="hljs-keyword">continue</span>;<br>			&#125;<br>			<span class="hljs-keyword">if</span> (reply-&gt;type == REDIS_REPLY_ERROR) &#123;<br>				std::cout &lt;&lt; <span class="hljs-string">&quot;认证失败: &quot;</span> &lt;&lt; reply-&gt;str &lt;&lt; std::endl;<br>				<span class="hljs-comment">//执行成功 释放redisCommand执行后返回的redisReply所占用的内存</span><br>				<span class="hljs-built_in">freeReplyObject</span>(reply);<br>				<span class="hljs-built_in">redisFree</span>(context);<br>				<span class="hljs-keyword">continue</span>;<br>			&#125;<br><br>			<span class="hljs-comment">//执行成功 释放redisCommand执行后返回的redisReply所占用的内存</span><br>			<span class="hljs-built_in">freeReplyObject</span>(reply);<br>			std::cout &lt;&lt; <span class="hljs-string">&quot;认证成功&quot;</span> &lt;&lt; std::endl;<br>		&#125; <span class="hljs-keyword">else</span> &#123;<br>			std::cout &lt;&lt; <span class="hljs-string">&quot;密码为空，跳过认证&quot;</span> &lt;&lt; std::endl;<br>		&#125;<br>		connections_.<span class="hljs-built_in">push</span>(context);<br>	&#125;<br><br>	<span class="hljs-comment">// 启动连接健康检查线程</span><br>	check_thread_ = std::<span class="hljs-built_in">thread</span>([<span class="hljs-keyword">this</span>]() &#123;<br>		<span class="hljs-keyword">while</span> (!b_stop_) &#123;<br>			counter_++;<br>			<span class="hljs-comment">// 每60秒执行一次连接健康检查</span><br>			<span class="hljs-keyword">if</span> (counter_ &gt;= <span class="hljs-number">60</span>) &#123;<br>				<span class="hljs-built_in">checkThreadPro</span>();<br>				counter_ = <span class="hljs-number">0</span>;<br>			&#125;<br><br>			std::this_thread::<span class="hljs-built_in">sleep_for</span>(std::chrono::<span class="hljs-built_in">seconds</span>(<span class="hljs-number">1</span>)); <span class="hljs-comment">// 每隔1秒检查一次计数器</span><br>		&#125;<br>	&#125;);<br>&#125;<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * RedisConPool析构函数</span><br><span class="hljs-comment"> * 关闭连接池并清理所有连接</span><br><span class="hljs-comment"> */</span><br>RedisConPool::~<span class="hljs-built_in">RedisConPool</span>() &#123;<br>	<span class="hljs-built_in">Close</span>();<br>	<span class="hljs-built_in">ClearConnections</span>();<br>&#125;<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 清理连接池中的所有连接</span><br><span class="hljs-comment"> */</span><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">RedisConPool::ClearConnections</span><span class="hljs-params">()</span> </span>&#123;<br>	<span class="hljs-function">std::lock_guard&lt;std::mutex&gt; <span class="hljs-title">lock</span><span class="hljs-params">(mutex_)</span></span>;<br>	<span class="hljs-keyword">while</span> (!connections_.<span class="hljs-built_in">empty</span>()) &#123;<br>		<span class="hljs-keyword">auto</span>* context = connections_.<span class="hljs-built_in">front</span>();<br>		<span class="hljs-built_in">redisFree</span>(context);<br>		connections_.<span class="hljs-built_in">pop</span>();<br>	&#125;<br>&#125;<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 获取一个Redis连接（阻塞模式）</span><br><span class="hljs-comment"> * 如果连接池为空，则等待直到有可用连接或连接池被关闭</span><br><span class="hljs-comment"> * @return Redis连接上下文指针</span><br><span class="hljs-comment"> */</span><br><span class="hljs-function">redisContext* <span class="hljs-title">RedisConPool::getConnection</span><span class="hljs-params">()</span> </span>&#123;<br>	<span class="hljs-function">std::unique_lock&lt;std::mutex&gt; <span class="hljs-title">lock</span><span class="hljs-params">(mutex_)</span></span>;<br>	cond_.<span class="hljs-built_in">wait</span>(lock, [<span class="hljs-keyword">this</span>] &#123; <br>		<span class="hljs-keyword">if</span> (b_stop_) &#123;<br>			<span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>		&#125;<br>		<span class="hljs-keyword">return</span> !connections_.<span class="hljs-built_in">empty</span>(); <br>	&#125;);<br>	<span class="hljs-comment">//如果停止则直接返回空指针</span><br>	<span class="hljs-keyword">if</span> (b_stop_) &#123;<br>		<span class="hljs-keyword">return</span> <span class="hljs-literal">nullptr</span>;<br>	&#125;<br>	<span class="hljs-keyword">auto</span>* context = connections_.<span class="hljs-built_in">front</span>();<br>	connections_.<span class="hljs-built_in">pop</span>();<br>	<span class="hljs-keyword">return</span> context;<br>&#125;<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 获取一个Redis连接（非阻塞模式）</span><br><span class="hljs-comment"> * 如果连接池为空，直接返回nullptr</span><br><span class="hljs-comment"> * @return Redis连接上下文指针</span><br><span class="hljs-comment"> */</span><br><span class="hljs-function">redisContext* <span class="hljs-title">RedisConPool::getConNonBlock</span><span class="hljs-params">()</span> </span>&#123;<br>	<span class="hljs-function">std::unique_lock&lt;std::mutex&gt; <span class="hljs-title">lock</span><span class="hljs-params">(mutex_)</span></span>;<br>	<span class="hljs-keyword">if</span> (b_stop_) &#123;<br>		<span class="hljs-keyword">return</span> <span class="hljs-literal">nullptr</span>;<br>	&#125;<br><br>	<span class="hljs-keyword">if</span> (connections_.<span class="hljs-built_in">empty</span>()) &#123;<br>		<span class="hljs-keyword">return</span> <span class="hljs-literal">nullptr</span>;<br>	&#125;<br><br>	<span class="hljs-keyword">auto</span>* context = connections_.<span class="hljs-built_in">front</span>();<br>	connections_.<span class="hljs-built_in">pop</span>();<br>	<span class="hljs-keyword">return</span> context;<br>&#125;<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 归还Redis连接到连接池</span><br><span class="hljs-comment"> * @param context Redis连接上下文指针</span><br><span class="hljs-comment"> */</span><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">RedisConPool::returnConnection</span><span class="hljs-params">(redisContext* context)</span> </span>&#123;<br>	<span class="hljs-function">std::lock_guard&lt;std::mutex&gt; <span class="hljs-title">lock</span><span class="hljs-params">(mutex_)</span></span>;<br>	<span class="hljs-keyword">if</span> (b_stop_) &#123;<br>		<span class="hljs-keyword">return</span>;<br>	&#125;<br>	connections_.<span class="hljs-built_in">push</span>(context);<br>	cond_.<span class="hljs-built_in">notify_one</span>(); <span class="hljs-comment">// 通知等待中的线程有新的连接可用</span><br>&#125;<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 关闭连接池</span><br><span class="hljs-comment"> * 设置停止标志，通知所有等待线程，并等待健康检查线程结束</span><br><span class="hljs-comment"> */</span><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">RedisConPool::Close</span><span class="hljs-params">()</span> </span>&#123;<br>	b_stop_ = <span class="hljs-literal">true</span>;<br>	cond_.<span class="hljs-built_in">notify_all</span>(); <span class="hljs-comment">// 通知所有等待的线程</span><br>	<span class="hljs-keyword">if</span> (check_thread_.<span class="hljs-built_in">joinable</span>()) &#123;<br>		check_thread_.<span class="hljs-built_in">join</span>(); <span class="hljs-comment">// 等待健康检查线程结束</span><br>	&#125;<br>&#125;<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 重连Redis服务器</span><br><span class="hljs-comment"> * @return 重连是否成功</span><br><span class="hljs-comment"> */</span><br><span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">RedisConPool::reconnect</span><span class="hljs-params">()</span> </span>&#123;<br>	<span class="hljs-keyword">auto</span> context = <span class="hljs-built_in">redisConnect</span>(host_, port_);<br>	<span class="hljs-keyword">if</span> (context == <span class="hljs-literal">nullptr</span> || context-&gt;err != <span class="hljs-number">0</span>) &#123;<br>		<span class="hljs-keyword">if</span> (context != <span class="hljs-literal">nullptr</span>) &#123;<br>			<span class="hljs-built_in">redisFree</span>(context);<br>		&#125;<br>		<span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>	&#125;<br><br>	<span class="hljs-keyword">auto</span> reply = (redisReply*)<span class="hljs-built_in">redisCommand</span>(context, <span class="hljs-string">&quot;AUTH %s&quot;</span>, pwd_);<br>	<span class="hljs-keyword">if</span> (reply-&gt;type == REDIS_REPLY_ERROR) &#123;<br>		std::cout &lt;&lt; <span class="hljs-string">&quot;认证失败&quot;</span> &lt;&lt; std::endl;<br>		<span class="hljs-comment">//执行成功 释放redisCommand执行后返回的redisReply所占用的内存</span><br>		<span class="hljs-built_in">freeReplyObject</span>(reply);<br>		<span class="hljs-built_in">redisFree</span>(context);<br>		<span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>	&#125;<br><br>	<span class="hljs-comment">//执行成功 释放redisCommand执行后返回的redisReply所占用的内存</span><br>	<span class="hljs-built_in">freeReplyObject</span>(reply);<br>	std::cout &lt;&lt; <span class="hljs-string">&quot;认证成功&quot;</span> &lt;&lt; std::endl;<br>	<span class="hljs-built_in">returnConnection</span>(context);<br>	<span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>&#125;<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 连接池健康检查处理函数</span><br><span class="hljs-comment"> * 检查所有连接的健康状态，对异常连接进行重连</span><br><span class="hljs-comment"> */</span><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">RedisConPool::checkThreadPro</span><span class="hljs-params">()</span> </span>&#123;<br>	<span class="hljs-type">size_t</span> pool_size;<br>	&#123;<br>		<span class="hljs-comment">// 先拿到当前连接数（使用局部作用域减少锁持有时间）</span><br>		<span class="hljs-function">std::lock_guard&lt;std::mutex&gt; <span class="hljs-title">lock</span><span class="hljs-params">(mutex_)</span></span>;<br>		pool_size = connections_.<span class="hljs-built_in">size</span>();<br>	&#125;<br><br>	<span class="hljs-comment">// 检查每个连接的健康状态</span><br>	<span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; pool_size &amp;&amp; !b_stop_; ++i) &#123;<br>		<span class="hljs-comment">// 1) 取出一个连接(持有锁)</span><br>		<span class="hljs-keyword">auto</span> * context = <span class="hljs-built_in">getConNonBlock</span>();<br>		<span class="hljs-keyword">if</span> (context == <span class="hljs-literal">nullptr</span>) &#123;<br>			<span class="hljs-keyword">break</span>;<br>		&#125;<br><br>		redisReply* reply = <span class="hljs-literal">nullptr</span>;<br>		<span class="hljs-keyword">try</span> &#123;<br>			<span class="hljs-comment">// 发送PING命令检查连接健康状态</span><br>			reply = (redisReply*)<span class="hljs-built_in">redisCommand</span>(context, <span class="hljs-string">&quot;PING&quot;</span>);<br>			<span class="hljs-comment">// 2. 先看底层 I/O／协议层有没有错</span><br>			<span class="hljs-keyword">if</span> (context-&gt;err) &#123;<br>				std::cout &lt;&lt; <span class="hljs-string">&quot;Connection error: &quot;</span> &lt;&lt; context-&gt;err &lt;&lt; std::endl;<br>				<span class="hljs-keyword">if</span> (reply) &#123;<br>					<span class="hljs-built_in">freeReplyObject</span>(reply);<br>				&#125;<br>				<span class="hljs-built_in">redisFree</span>(context);<br>				fail_count_++;<br>				<span class="hljs-keyword">continue</span>;<br>			&#125;<br><br>			<span class="hljs-comment">// 3. 再看 Redis 自身返回的是不是 ERROR</span><br>			<span class="hljs-keyword">if</span> (!reply || reply-&gt;type == REDIS_REPLY_ERROR) &#123;<br>				std::cout &lt;&lt; <span class="hljs-string">&quot;reply is null, redis ping failed: &quot;</span> &lt;&lt; std::endl;<br>				<span class="hljs-keyword">if</span> (reply) &#123;<br>					<span class="hljs-built_in">freeReplyObject</span>(reply);<br>				&#125;<br>				<span class="hljs-built_in">redisFree</span>(context);<br>				fail_count_++;<br>				<span class="hljs-keyword">continue</span>;<br>			&#125;<br>			<span class="hljs-comment">// 4. 如果都没问题，则还回去</span><br>			<span class="hljs-built_in">freeReplyObject</span>(reply);<br>			<span class="hljs-built_in">returnConnection</span>(context);<br>		&#125; <span class="hljs-built_in">catch</span> (std::exception&amp; exp) &#123;<br>			<span class="hljs-keyword">if</span> (reply) &#123;<br>				<span class="hljs-built_in">freeReplyObject</span>(reply);<br>			&#125;<br><br>			<span class="hljs-built_in">redisFree</span>(context);<br>			fail_count_++;<br>		&#125;<br>	&#125;<br><br>	<span class="hljs-comment">//执行重连操作，尝试恢复失败的连接</span><br>	<span class="hljs-keyword">while</span> (fail_count_ &gt; <span class="hljs-number">0</span>) &#123;<br>		<span class="hljs-keyword">auto</span> res = <span class="hljs-built_in">reconnect</span>();<br>		<span class="hljs-keyword">if</span>(res)&#123;<br>			fail_count_--;<br>		&#125; <span class="hljs-keyword">else</span> &#123;<br>			<span class="hljs-comment">//留给下次再重试</span><br>			<span class="hljs-keyword">break</span>;<br>		&#125;<br>	&#125;<br>&#125;<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 另一个版本的连接检查函数</span><br><span class="hljs-comment"> * 与checkThreadPro类似，但实现方式略有不同</span><br><span class="hljs-comment"> * 注：该函数当前未被使用，可以考虑移除</span><br><span class="hljs-comment"> */</span><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">RedisConPool::checkThread</span><span class="hljs-params">()</span> </span>&#123;<br>	<span class="hljs-function">std::lock_guard&lt;std::mutex&gt; <span class="hljs-title">lock</span><span class="hljs-params">(mutex_)</span></span>;<br>	<span class="hljs-keyword">if</span> (b_stop_) &#123;<br>		<span class="hljs-keyword">return</span>;<br>	&#125;<br>	<span class="hljs-keyword">auto</span> pool_size = connections_.<span class="hljs-built_in">size</span>();<br>	<span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; pool_size &amp;&amp; !b_stop_; i++) &#123;<br>		<span class="hljs-keyword">auto</span>* context = connections_.<span class="hljs-built_in">front</span>();<br>		connections_.<span class="hljs-built_in">pop</span>();<br>		<span class="hljs-keyword">try</span> &#123;<br>			<span class="hljs-keyword">auto</span> reply = (redisReply*)<span class="hljs-built_in">redisCommand</span>(context, <span class="hljs-string">&quot;PING&quot;</span>);<br>			<span class="hljs-keyword">if</span> (!reply) &#123;<br>				std::cout &lt;&lt; <span class="hljs-string">&quot;reply is null, redis ping failed: &quot;</span> &lt;&lt; std::endl;<br>				connections_.<span class="hljs-built_in">push</span>(context);<br>				<span class="hljs-keyword">continue</span>;<br>			&#125;<br>			<span class="hljs-built_in">freeReplyObject</span>(reply);<br>			connections_.<span class="hljs-built_in">push</span>(context);<br>		&#125; <span class="hljs-built_in">catch</span>(std::exception&amp; exp) &#123;<br>			std::cout &lt;&lt; <span class="hljs-string">&quot;Error keeping connection alive: &quot;</span> &lt;&lt; exp.<span class="hljs-built_in">what</span>() &lt;&lt; std::endl;<br>			<span class="hljs-built_in">redisFree</span>(context);<br>			context = <span class="hljs-built_in">redisConnect</span>(host_, port_);<br>			<span class="hljs-keyword">if</span> (context == <span class="hljs-literal">nullptr</span> || context-&gt;err != <span class="hljs-number">0</span>) &#123;<br>				<span class="hljs-keyword">if</span> (context != <span class="hljs-literal">nullptr</span>) &#123;<br>					<span class="hljs-built_in">redisFree</span>(context);<br>				&#125;<br>				<span class="hljs-keyword">continue</span>;<br>			&#125;<br><br>			<span class="hljs-keyword">auto</span> reply = (redisReply*)<span class="hljs-built_in">redisCommand</span>(context, <span class="hljs-string">&quot;AUTH %s&quot;</span>, pwd_);<br>			<span class="hljs-keyword">if</span> (reply-&gt;type == REDIS_REPLY_ERROR) &#123;<br>				std::cout &lt;&lt; <span class="hljs-string">&quot;认证失败&quot;</span> &lt;&lt; std::endl;<br>				<span class="hljs-comment">//执行成功 释放redisCommand执行后返回的redisReply所占用的内存</span><br>				<span class="hljs-built_in">freeReplyObject</span>(reply);<br>				<span class="hljs-keyword">continue</span>;<br>			&#125;<br><br>			<span class="hljs-comment">//执行成功 释放redisCommand执行后返回的redisReply所占用的内存</span><br>			<span class="hljs-built_in">freeReplyObject</span>(reply);<br>			std::cout &lt;&lt; <span class="hljs-string">&quot;认证成功&quot;</span> &lt;&lt; std::endl;<br>			connections_.<span class="hljs-built_in">push</span>(context);<br>		&#125;<br>	&#125;<br>&#125;<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * RedisMgr类：Redis管理器实现</span><br><span class="hljs-comment"> * 基于单例模式，封装Redis操作，提供各种Redis命令的便捷接口</span><br><span class="hljs-comment"> * 设计目的：统一管理Redis连接和操作，简化Redis的使用</span><br><span class="hljs-comment"> */</span><br><span class="hljs-comment">// =============================RedisMgr类的实现====================================//</span><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * RedisMgr构造函数</span><br><span class="hljs-comment"> * 初始化Redis连接池</span><br><span class="hljs-comment"> */</span><br>RedisMgr::<span class="hljs-built_in">RedisMgr</span>() &#123;<br>	<span class="hljs-comment">// 初始化连接池，这里需要根据实际情况设置参数</span><br>	con_pool_ = std::<span class="hljs-built_in">make_unique</span>&lt;RedisConPool&gt;(<span class="hljs-number">10</span>, <span class="hljs-string">&quot;127.0.0.1&quot;</span>, <span class="hljs-number">6379</span>, <span class="hljs-string">&quot;&quot;</span>);<br>&#125;<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * RedisMgr析构函数</span><br><span class="hljs-comment"> * 关闭Redis连接池</span><br><span class="hljs-comment"> */</span><br>RedisMgr::~<span class="hljs-built_in">RedisMgr</span>() &#123;<br>	<span class="hljs-built_in">Close</span>();<br>&#125;<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 获取Redis中的字符串值</span><br><span class="hljs-comment"> * @param key 键名</span><br><span class="hljs-comment"> * @param value 用于存储返回值的引用</span><br><span class="hljs-comment"> * @return 操作是否成功</span><br><span class="hljs-comment"> */</span><br><span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">RedisMgr::Get</span><span class="hljs-params">(<span class="hljs-type">const</span> std::string &amp;key, std::string&amp; value)</span> </span>&#123;<br>	redisContext* context = con_pool_-&gt;<span class="hljs-built_in">getConnection</span>();<br>	<span class="hljs-keyword">if</span> (!context) &#123;<br>		<span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>	&#125;<br><br>	redisReply* reply = (redisReply*)<span class="hljs-built_in">redisCommand</span>(context, <span class="hljs-string">&quot;GET %s&quot;</span>, key.<span class="hljs-built_in">c_str</span>());<br>	<span class="hljs-keyword">if</span> (!reply) &#123;<br>		con_pool_-&gt;<span class="hljs-built_in">returnConnection</span>(context);<br>		<span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>	&#125;<br><br>	<span class="hljs-comment">// 在释放reply之前保存返回值类型</span><br>	<span class="hljs-type">bool</span> success = (reply-&gt;type == REDIS_REPLY_STRING);<br>	<span class="hljs-keyword">if</span> (success) &#123;<br>		value = reply-&gt;str;<br>	&#125;<br><br>	<span class="hljs-built_in">freeReplyObject</span>(reply);<br>	con_pool_-&gt;<span class="hljs-built_in">returnConnection</span>(context);<br>	<span class="hljs-keyword">return</span> success;<br>&#125;<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 从列表头部弹出元素</span><br><span class="hljs-comment"> * @param key 键名</span><br><span class="hljs-comment"> * @param value 用于存储弹出元素的引用</span><br><span class="hljs-comment"> * @return 操作是否成功</span><br><span class="hljs-comment"> */</span><br><span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">RedisMgr::LPop</span><span class="hljs-params">(<span class="hljs-type">const</span> std::string &amp;key, std::string&amp; value)</span> </span>&#123;<br>	redisContext* context = con_pool_-&gt;<span class="hljs-built_in">getConnection</span>();<br>	<span class="hljs-keyword">if</span> (!context) &#123;<br>		<span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>	&#125;<br><br>	redisReply* reply = (redisReply*)<span class="hljs-built_in">redisCommand</span>(context, <span class="hljs-string">&quot;LPOP %s&quot;</span>, key.<span class="hljs-built_in">c_str</span>());<br>	<span class="hljs-keyword">if</span> (!reply) &#123;<br>		con_pool_-&gt;<span class="hljs-built_in">returnConnection</span>(context);<br>		<span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>	&#125;<br><br>	<span class="hljs-comment">// 在释放reply之前保存返回值类型</span><br>	<span class="hljs-type">bool</span> success = (reply-&gt;type == REDIS_REPLY_STRING);<br>	<span class="hljs-keyword">if</span> (success) &#123;<br>		value = reply-&gt;str;<br>	&#125;<br><br>	<span class="hljs-built_in">freeReplyObject</span>(reply);<br>	con_pool_-&gt;<span class="hljs-built_in">returnConnection</span>(context);<br>	<span class="hljs-keyword">return</span> success;<br>&#125;<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 从列表尾部弹出元素</span><br><span class="hljs-comment"> * @param key 键名</span><br><span class="hljs-comment"> * @param value 用于存储弹出元素的引用</span><br><span class="hljs-comment"> * @return 操作是否成功</span><br><span class="hljs-comment"> */</span><br><span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">RedisMgr::RPop</span><span class="hljs-params">(<span class="hljs-type">const</span> std::string&amp; key, std::string&amp; value)</span> </span>&#123;<br>	redisContext* context = con_pool_-&gt;<span class="hljs-built_in">getConnection</span>();<br>	<span class="hljs-keyword">if</span> (!context) &#123;<br>		<span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>	&#125;<br><br>	redisReply* reply = (redisReply*)<span class="hljs-built_in">redisCommand</span>(context, <span class="hljs-string">&quot;RPOP %s&quot;</span>, key.<span class="hljs-built_in">c_str</span>());<br>	<span class="hljs-keyword">if</span> (!reply) &#123;<br>		con_pool_-&gt;<span class="hljs-built_in">returnConnection</span>(context);<br>		<span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>	&#125;<br><br>	<span class="hljs-comment">// 在释放reply之前保存返回值类型</span><br>	<span class="hljs-type">bool</span> success = (reply-&gt;type == REDIS_REPLY_STRING);<br>	<span class="hljs-keyword">if</span> (success) &#123;<br>		value = reply-&gt;str;<br>	&#125;<br><br>	<span class="hljs-built_in">freeReplyObject</span>(reply);<br>	con_pool_-&gt;<span class="hljs-built_in">returnConnection</span>(context);<br>	<span class="hljs-keyword">return</span> success;<br>&#125;<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 设置Redis中的字符串值</span><br><span class="hljs-comment"> * @param key 键名</span><br><span class="hljs-comment"> * @param value 要设置的值</span><br><span class="hljs-comment"> * @return 操作是否成功</span><br><span class="hljs-comment"> */</span><br><span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">RedisMgr::Set</span><span class="hljs-params">(<span class="hljs-type">const</span> std::string &amp;key, <span class="hljs-type">const</span> std::string &amp;value)</span> </span>&#123;<br>	redisContext* context = con_pool_-&gt;<span class="hljs-built_in">getConnection</span>();<br>	<span class="hljs-keyword">if</span> (!context) &#123;<br>		<span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>	&#125;<br><br>	redisReply* reply = (redisReply*)<span class="hljs-built_in">redisCommand</span>(context, <span class="hljs-string">&quot;SET %s %s&quot;</span>, key.<span class="hljs-built_in">c_str</span>(), value.<span class="hljs-built_in">c_str</span>());<br>	<span class="hljs-keyword">if</span> (!reply || reply-&gt;type != REDIS_REPLY_STATUS || <span class="hljs-built_in">strcmp</span>(reply-&gt;str, <span class="hljs-string">&quot;OK&quot;</span>) != <span class="hljs-number">0</span>) &#123;<br>		<span class="hljs-built_in">freeReplyObject</span>(reply);<br>		con_pool_-&gt;<span class="hljs-built_in">returnConnection</span>(context);<br>		<span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>	&#125;<br><br>	<span class="hljs-built_in">freeReplyObject</span>(reply);<br>	con_pool_-&gt;<span class="hljs-built_in">returnConnection</span>(context);<br>	<span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>&#125;<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 在列表头部添加元素</span><br><span class="hljs-comment"> * @param key 键名</span><br><span class="hljs-comment"> * @param value 要添加的元素</span><br><span class="hljs-comment"> * @return 操作是否成功</span><br><span class="hljs-comment"> */</span><br><span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">RedisMgr::LPush</span><span class="hljs-params">(<span class="hljs-type">const</span> std::string &amp;key, <span class="hljs-type">const</span> std::string &amp;value)</span> </span>&#123;<br>	redisContext* context = con_pool_-&gt;<span class="hljs-built_in">getConnection</span>();<br>	<span class="hljs-keyword">if</span> (!context) &#123;<br>		<span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>	&#125;<br><br>	redisReply* reply = (redisReply*)<span class="hljs-built_in">redisCommand</span>(context, <span class="hljs-string">&quot;LPUSH %s %s&quot;</span>, key.<span class="hljs-built_in">c_str</span>(), value.<span class="hljs-built_in">c_str</span>());<br>	<span class="hljs-keyword">if</span> (!reply || reply-&gt;type != REDIS_REPLY_INTEGER) &#123;<br>		<span class="hljs-built_in">freeReplyObject</span>(reply);<br>		con_pool_-&gt;<span class="hljs-built_in">returnConnection</span>(context);<br>		<span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>	&#125;<br><br>	<span class="hljs-built_in">freeReplyObject</span>(reply);<br>	con_pool_-&gt;<span class="hljs-built_in">returnConnection</span>(context);<br>	<span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>&#125;<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 在列表尾部添加元素</span><br><span class="hljs-comment"> * @param key 键名</span><br><span class="hljs-comment"> * @param value 要添加的元素</span><br><span class="hljs-comment"> * @return 操作是否成功</span><br><span class="hljs-comment"> */</span><br><span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">RedisMgr::RPush</span><span class="hljs-params">(<span class="hljs-type">const</span> std::string&amp; key, <span class="hljs-type">const</span> std::string&amp; value)</span> </span>&#123;<br>	redisContext* context = con_pool_-&gt;<span class="hljs-built_in">getConnection</span>();<br>	<span class="hljs-keyword">if</span> (!context) &#123;<br>		<span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>	&#125;<br><br>	redisReply* reply = (redisReply*)<span class="hljs-built_in">redisCommand</span>(context, <span class="hljs-string">&quot;RPUSH %s %s&quot;</span>, key.<span class="hljs-built_in">c_str</span>(), value.<span class="hljs-built_in">c_str</span>());<br>	<span class="hljs-keyword">if</span> (!reply || reply-&gt;type != REDIS_REPLY_INTEGER) &#123;<br>		<span class="hljs-built_in">freeReplyObject</span>(reply);<br>		con_pool_-&gt;<span class="hljs-built_in">returnConnection</span>(context);<br>		<span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>	&#125;<br><br>	<span class="hljs-built_in">freeReplyObject</span>(reply);<br>	con_pool_-&gt;<span class="hljs-built_in">returnConnection</span>(context);<br>	<span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>&#125;<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 设置哈希表字段值</span><br><span class="hljs-comment"> * @param key 键名</span><br><span class="hljs-comment"> * @param hkey 哈希表字段名</span><br><span class="hljs-comment"> * @param value 要设置的值</span><br><span class="hljs-comment"> * @return 操作是否成功</span><br><span class="hljs-comment"> */</span><br><span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">RedisMgr::HSet</span><span class="hljs-params">(<span class="hljs-type">const</span> std::string &amp;key, <span class="hljs-type">const</span> std::string  &amp;hkey, <span class="hljs-type">const</span> std::string &amp;value)</span> </span>&#123;<br>	redisContext* context = con_pool_-&gt;<span class="hljs-built_in">getConnection</span>();<br>	<span class="hljs-keyword">if</span> (!context) &#123;<br>		<span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>	&#125;<br><br>	redisReply* reply = (redisReply*)<span class="hljs-built_in">redisCommand</span>(context, <span class="hljs-string">&quot;HSET %s %s %s&quot;</span>, key.<span class="hljs-built_in">c_str</span>(), hkey.<span class="hljs-built_in">c_str</span>(), value.<span class="hljs-built_in">c_str</span>());<br>	<span class="hljs-keyword">if</span> (!reply || reply-&gt;type != REDIS_REPLY_INTEGER) &#123;<br>		<span class="hljs-built_in">freeReplyObject</span>(reply);<br>		con_pool_-&gt;<span class="hljs-built_in">returnConnection</span>(context);<br>		<span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>	&#125;<br><br>	<span class="hljs-built_in">freeReplyObject</span>(reply);<br>	con_pool_-&gt;<span class="hljs-built_in">returnConnection</span>(context);<br>	<span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>&#125;<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 设置哈希表字段值（二进制安全版本）</span><br><span class="hljs-comment"> * @param key 键名</span><br><span class="hljs-comment"> * @param hkey 哈希表字段名</span><br><span class="hljs-comment"> * @param hvalue 要设置的二进制值</span><br><span class="hljs-comment"> * @param hvaluelen 二进制值长度</span><br><span class="hljs-comment"> * @return 操作是否成功</span><br><span class="hljs-comment"> */</span><br><span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">RedisMgr::HSet</span><span class="hljs-params">(<span class="hljs-type">const</span> <span class="hljs-type">char</span>* key, <span class="hljs-type">const</span> <span class="hljs-type">char</span>* hkey, <span class="hljs-type">const</span> <span class="hljs-type">char</span>* hvalue, <span class="hljs-type">size_t</span> hvaluelen)</span> </span>&#123;<br>	redisContext* context = con_pool_-&gt;<span class="hljs-built_in">getConnection</span>();<br>	<span class="hljs-keyword">if</span> (!context) &#123;<br>		<span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>	&#125;<br><br>	<span class="hljs-comment">// 使用二进制安全的命令格式</span><br>	redisReply* reply = (redisReply*)<span class="hljs-built_in">redisCommand</span>(context, <span class="hljs-string">&quot;HSET %b %b %b&quot;</span>, key, <span class="hljs-built_in">strlen</span>(key), hkey, <span class="hljs-built_in">strlen</span>(hkey), hvalue, hvaluelen);<br>	<span class="hljs-keyword">if</span> (!reply || reply-&gt;type != REDIS_REPLY_INTEGER) &#123;<br>		<span class="hljs-built_in">freeReplyObject</span>(reply);<br>		con_pool_-&gt;<span class="hljs-built_in">returnConnection</span>(context);<br>		<span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>	&#125;<br><br>	<span class="hljs-built_in">freeReplyObject</span>(reply);<br>	con_pool_-&gt;<span class="hljs-built_in">returnConnection</span>(context);<br>	<span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>&#125;<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 获取哈希表字段值</span><br><span class="hljs-comment"> * @param key 键名</span><br><span class="hljs-comment"> * @param hkey 哈希表字段名</span><br><span class="hljs-comment"> * @return 字段值，如果不存在返回空字符串</span><br><span class="hljs-comment"> */</span><br><span class="hljs-function">std::string <span class="hljs-title">RedisMgr::HGet</span><span class="hljs-params">(<span class="hljs-type">const</span> std::string &amp;key, <span class="hljs-type">const</span> std::string &amp;hkey)</span> </span>&#123;<br>	redisContext* context = con_pool_-&gt;<span class="hljs-built_in">getConnection</span>();<br>	<span class="hljs-keyword">if</span> (!context) &#123;<br>		<span class="hljs-keyword">return</span> <span class="hljs-string">&quot;&quot;</span>;<br>	&#125;<br><br>	redisReply* reply = (redisReply*)<span class="hljs-built_in">redisCommand</span>(context, <span class="hljs-string">&quot;HGET %s %s&quot;</span>, key.<span class="hljs-built_in">c_str</span>(), hkey.<span class="hljs-built_in">c_str</span>());<br>	std::string result = <span class="hljs-string">&quot;&quot;</span>;<br>	<span class="hljs-keyword">if</span> (reply &amp;&amp; reply-&gt;type == REDIS_REPLY_STRING) &#123;<br>		result = reply-&gt;str;<br>	&#125;<br><br>	<span class="hljs-built_in">freeReplyObject</span>(reply);<br>	con_pool_-&gt;<span class="hljs-built_in">returnConnection</span>(context);<br>	<span class="hljs-keyword">return</span> result;<br>&#125;<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 删除哈希表字段</span><br><span class="hljs-comment"> * @param key 键名</span><br><span class="hljs-comment"> * @param field 要删除的字段名</span><br><span class="hljs-comment"> * @return 操作是否成功</span><br><span class="hljs-comment"> */</span><br><span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">RedisMgr::HDel</span><span class="hljs-params">(<span class="hljs-type">const</span> std::string&amp; key, <span class="hljs-type">const</span> std::string&amp; field)</span> </span>&#123;<br>	redisContext* context = con_pool_-&gt;<span class="hljs-built_in">getConnection</span>();<br>	<span class="hljs-keyword">if</span> (!context) &#123;<br>		<span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>	&#125;<br><br>	redisReply* reply = (redisReply*)<span class="hljs-built_in">redisCommand</span>(context, <span class="hljs-string">&quot;HDEL %s %s&quot;</span>, key.<span class="hljs-built_in">c_str</span>(), field.<span class="hljs-built_in">c_str</span>());<br>	<span class="hljs-keyword">if</span> (!reply || reply-&gt;type != REDIS_REPLY_INTEGER) &#123;<br>		<span class="hljs-built_in">freeReplyObject</span>(reply);<br>		con_pool_-&gt;<span class="hljs-built_in">returnConnection</span>(context);<br>		<span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>	&#125;<br><br>	<span class="hljs-built_in">freeReplyObject</span>(reply);<br>	con_pool_-&gt;<span class="hljs-built_in">returnConnection</span>(context);<br>	<span class="hljs-keyword">return</span> reply-&gt;integer &gt; <span class="hljs-number">0</span>;<br>&#125;<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 删除键</span><br><span class="hljs-comment"> * @param key 要删除的键名</span><br><span class="hljs-comment"> * @return 操作是否成功</span><br><span class="hljs-comment"> */</span><br><span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">RedisMgr::Del</span><span class="hljs-params">(<span class="hljs-type">const</span> std::string &amp;key)</span> </span>&#123;<br>	redisContext* context = con_pool_-&gt;<span class="hljs-built_in">getConnection</span>();<br>	<span class="hljs-keyword">if</span> (!context) &#123;<br>		<span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>	&#125;<br><br>	redisReply* reply = (redisReply*)<span class="hljs-built_in">redisCommand</span>(context, <span class="hljs-string">&quot;DEL %s&quot;</span>, key.<span class="hljs-built_in">c_str</span>());<br>	<span class="hljs-keyword">if</span> (!reply || reply-&gt;type != REDIS_REPLY_INTEGER) &#123;<br>		<span class="hljs-built_in">freeReplyObject</span>(reply);<br>		con_pool_-&gt;<span class="hljs-built_in">returnConnection</span>(context);<br>		<span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>	&#125;<br><br>	<span class="hljs-built_in">freeReplyObject</span>(reply);<br>	con_pool_-&gt;<span class="hljs-built_in">returnConnection</span>(context);<br>	<span class="hljs-keyword">return</span> reply-&gt;integer &gt; <span class="hljs-number">0</span>;<br>&#125;<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 检查键是否存在</span><br><span class="hljs-comment"> * @param key 要检查的键名</span><br><span class="hljs-comment"> * @return 键是否存在</span><br><span class="hljs-comment"> */</span><br><span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">RedisMgr::ExistsKey</span><span class="hljs-params">(<span class="hljs-type">const</span> std::string &amp;key)</span> </span>&#123;<br>	redisContext* context = con_pool_-&gt;<span class="hljs-built_in">getConnection</span>();<br>	<span class="hljs-keyword">if</span> (!context) &#123;<br>		<span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>	&#125;<br><br>	redisReply* reply = (redisReply*)<span class="hljs-built_in">redisCommand</span>(context, <span class="hljs-string">&quot;EXISTS %s&quot;</span>, key.<span class="hljs-built_in">c_str</span>());<br>	<span class="hljs-keyword">if</span> (!reply || reply-&gt;type != REDIS_REPLY_INTEGER) &#123;<br>		<span class="hljs-built_in">freeReplyObject</span>(reply);<br>		con_pool_-&gt;<span class="hljs-built_in">returnConnection</span>(context);<br>		<span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>	&#125;<br><br>	<span class="hljs-type">bool</span> exists = reply-&gt;integer &gt; <span class="hljs-number">0</span>;<br>	<span class="hljs-built_in">freeReplyObject</span>(reply);<br>	con_pool_-&gt;<span class="hljs-built_in">returnConnection</span>(context);<br>	<span class="hljs-keyword">return</span> exists;<br>&#125;<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 获取分布式锁</span><br><span class="hljs-comment"> * @param lockName 锁名称</span><br><span class="hljs-comment"> * @param lockTimeout 锁超时时间（毫秒）</span><br><span class="hljs-comment"> * @param acquireTimeout 获取锁的超时时间（毫秒）</span><br><span class="hljs-comment"> * @return 锁标识符，如果获取失败返回空字符串</span><br><span class="hljs-comment"> */</span><br><span class="hljs-function">std::string <span class="hljs-title">RedisMgr::acquireLock</span><span class="hljs-params">(<span class="hljs-type">const</span> std::string&amp; lockName, <span class="hljs-type">int</span> lockTimeout, <span class="hljs-type">int</span> acquireTimeout)</span> </span>&#123;<br>	<span class="hljs-comment">// 实现分布式锁获取逻辑</span><br>	std::string identifier = <span class="hljs-string">&quot;lock_&quot;</span> + std::<span class="hljs-built_in">to_string</span>(<span class="hljs-built_in">rand</span>());<br>	<span class="hljs-type">const</span> <span class="hljs-type">char</span>* key = lockName.<span class="hljs-built_in">c_str</span>();<br>	<span class="hljs-type">const</span> <span class="hljs-type">char</span>* value = identifier.<span class="hljs-built_in">c_str</span>();<br>	<span class="hljs-type">int</span> retryCount = <span class="hljs-number">0</span>;<br>	<span class="hljs-type">int</span> maxRetries = acquireTimeout / <span class="hljs-number">100</span>; <span class="hljs-comment">// 每100ms重试一次</span><br><br>	redisContext* context = con_pool_-&gt;<span class="hljs-built_in">getConnection</span>();<br>	<span class="hljs-keyword">if</span> (!context) &#123;<br>		<span class="hljs-keyword">return</span> <span class="hljs-string">&quot;&quot;</span>;<br>	&#125;<br><br>	<span class="hljs-keyword">while</span> (retryCount &lt; maxRetries) &#123;<br>		<span class="hljs-comment">// 使用SET命令的NX和PX选项实现分布式锁</span><br>		redisReply* reply = (redisReply*)<span class="hljs-built_in">redisCommand</span>(context, <span class="hljs-string">&quot;SET %s %s NX PX %d&quot;</span>, key, value, lockTimeout);<br>		<span class="hljs-keyword">if</span> (reply &amp;&amp; reply-&gt;type == REDIS_REPLY_STATUS &amp;&amp; <span class="hljs-built_in">strcmp</span>(reply-&gt;str, <span class="hljs-string">&quot;OK&quot;</span>) == <span class="hljs-number">0</span>) &#123;<br>			<span class="hljs-built_in">freeReplyObject</span>(reply);<br>			con_pool_-&gt;<span class="hljs-built_in">returnConnection</span>(context);<br>			<span class="hljs-keyword">return</span> identifier;<br>		&#125;<br>		<span class="hljs-built_in">freeReplyObject</span>(reply);<br>		retryCount++;<br>		std::this_thread::<span class="hljs-built_in">sleep_for</span>(std::chrono::<span class="hljs-built_in">milliseconds</span>(<span class="hljs-number">100</span>));<br>	&#125;<br><br>	con_pool_-&gt;<span class="hljs-built_in">returnConnection</span>(context);<br>	<span class="hljs-keyword">return</span> <span class="hljs-string">&quot;&quot;</span>;<br>&#125;<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 释放分布式锁</span><br><span class="hljs-comment"> * @param lockName 锁名称</span><br><span class="hljs-comment"> * @param identifier 锁标识符</span><br><span class="hljs-comment"> * @return 释放是否成功</span><br><span class="hljs-comment"> */</span><br><span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">RedisMgr::releaseLock</span><span class="hljs-params">(<span class="hljs-type">const</span> std::string&amp; lockName, <span class="hljs-type">const</span> std::string&amp; identifier)</span> </span>&#123;<br>	<span class="hljs-comment">// 实现分布式锁释放逻辑</span><br>	<span class="hljs-type">const</span> <span class="hljs-type">char</span>* key = lockName.<span class="hljs-built_in">c_str</span>();<br>	<span class="hljs-type">const</span> <span class="hljs-type">char</span>* value = identifier.<span class="hljs-built_in">c_str</span>();<br><br>	redisContext* context = con_pool_-&gt;<span class="hljs-built_in">getConnection</span>();<br>	<span class="hljs-keyword">if</span> (!context) &#123;<br>		<span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>	&#125;<br><br>	<span class="hljs-comment">// 使用Lua脚本确保原子性，防止误删其他客户端的锁</span><br>	<span class="hljs-type">const</span> <span class="hljs-type">char</span>* script = <br>		<span class="hljs-string">&quot;if redis.call(&#x27;get&#x27;, KEYS[1]) == ARGV[1] then &quot;</span><br>		<span class="hljs-string">&quot;return redis.call(&#x27;del&#x27;, KEYS[1]) &quot;</span><br>		<span class="hljs-string">&quot;else &quot;</span><br>		<span class="hljs-string">&quot;return 0 &quot;</span><br>		<span class="hljs-string">&quot;end&quot;</span>;<br><br>	redisReply* reply = (redisReply*)<span class="hljs-built_in">redisCommand</span>(context, <span class="hljs-string">&quot;EVAL %s 1 %s %s&quot;</span>, script, key, value);<br>	<span class="hljs-keyword">if</span> (!reply || reply-&gt;type != REDIS_REPLY_INTEGER || reply-&gt;integer == <span class="hljs-number">0</span>) &#123;<br>		<span class="hljs-built_in">freeReplyObject</span>(reply);<br>		con_pool_-&gt;<span class="hljs-built_in">returnConnection</span>(context);<br>		<span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>	&#125;<br><br>	<span class="hljs-built_in">freeReplyObject</span>(reply);<br>	con_pool_-&gt;<span class="hljs-built_in">returnConnection</span>(context);<br>	<span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>&#125;<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 增加计数器值</span><br><span class="hljs-comment"> * @param server_name 计数器名称</span><br><span class="hljs-comment"> */</span><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">RedisMgr::IncreaseCount</span><span class="hljs-params">(std::string server_name)</span> </span>&#123;<br>	redisContext* context = con_pool_-&gt;<span class="hljs-built_in">getConnection</span>();<br>	<span class="hljs-keyword">if</span> (!context) &#123;<br>		<span class="hljs-keyword">return</span>;<br>	&#125;<br><br>	<span class="hljs-built_in">redisCommand</span>(context, <span class="hljs-string">&quot;INCR %s&quot;</span>, server_name.<span class="hljs-built_in">c_str</span>());<br>	con_pool_-&gt;<span class="hljs-built_in">returnConnection</span>(context);<br>&#125;<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 减少计数器值</span><br><span class="hljs-comment"> * @param server_name 计数器名称</span><br><span class="hljs-comment"> */</span><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">RedisMgr::DecreaseCount</span><span class="hljs-params">(std::string server_name)</span> </span>&#123;<br>	redisContext* context = con_pool_-&gt;<span class="hljs-built_in">getConnection</span>();<br>	<span class="hljs-keyword">if</span> (!context) &#123;<br>		<span class="hljs-keyword">return</span>;<br>	&#125;<br><br>	<span class="hljs-built_in">redisCommand</span>(context, <span class="hljs-string">&quot;DECR %s&quot;</span>, server_name.<span class="hljs-built_in">c_str</span>());<br>	con_pool_-&gt;<span class="hljs-built_in">returnConnection</span>(context);<br>&#125;<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 初始化计数器</span><br><span class="hljs-comment"> * @param server_name 计数器名称</span><br><span class="hljs-comment"> */</span><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">RedisMgr::InitCount</span><span class="hljs-params">(std::string server_name)</span> </span>&#123;<br>	redisContext* context = con_pool_-&gt;<span class="hljs-built_in">getConnection</span>();<br>	<span class="hljs-keyword">if</span> (!context) &#123;<br>		<span class="hljs-keyword">return</span>;<br>	&#125;<br><br>	<span class="hljs-built_in">redisCommand</span>(context, <span class="hljs-string">&quot;SET %s 0&quot;</span>, server_name.<span class="hljs-built_in">c_str</span>());<br>	con_pool_-&gt;<span class="hljs-built_in">returnConnection</span>(context);<br>&#125;<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 删除计数器</span><br><span class="hljs-comment"> * @param server_name 计数器名称</span><br><span class="hljs-comment"> */</span><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">RedisMgr::DelCount</span><span class="hljs-params">(std::string server_name)</span> </span>&#123;<br>	<span class="hljs-built_in">Del</span>(server_name);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>连接池的意义显而易见, 就是减少建立销毁连接的开销.</li>
+<li>管理类就是封装了大部分的Redis操作, 本质还是一个<strong>超大型独立Map管理器</strong>.</li>
+<li>有关分布式锁的以后详说.</li>
+<li>剩下要说的可能就是在连接器建立同时会开辟线程执行连接的健康检查, 会取出每个连接发PING, 如果失败就再建立一个健康的连接放进去.</li>
+</ul>
+<h3 id="测试代码"><a href="#测试代码" class="headerlink" title="测试代码"></a>测试代码</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iostream&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;string&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;thread&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;chrono&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;RedisMgr.h&quot;</span></span><br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * RedisMgr和RedisConPool功能测试程序</span><br><span class="hljs-comment"> * 测试内容包括：</span><br><span class="hljs-comment"> * 1. 基本连接和字符串操作（Get/Set）</span><br><span class="hljs-comment"> * 2. 列表操作（LPush/LPop/RPush/RPop）</span><br><span class="hljs-comment"> * 3. 哈希操作（HSet/HGet/HDel）</span><br><span class="hljs-comment"> * 4. 键操作（ExistsKey/Del）</span><br><span class="hljs-comment"> * 5. 计数器操作（InitCount/IncreaseCount/DecreaseCount）</span><br><span class="hljs-comment"> * 6. 分布式锁操作（acquireLock/releaseLock）</span><br><span class="hljs-comment"> */</span><br><br><span class="hljs-comment">// 测试基本的字符串操作</span><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">testStringOperations</span><span class="hljs-params">()</span> </span>&#123;<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;===== 测试字符串操作 ======&quot;</span> &lt;&lt; std::endl;<br>    <br>    <span class="hljs-comment">// 设置键值对</span><br>    <span class="hljs-type">bool</span> setResult = RedisMgr::<span class="hljs-built_in">Inst</span>().<span class="hljs-built_in">Set</span>(<span class="hljs-string">&quot;test_key&quot;</span>, <span class="hljs-string">&quot;Hello Redis!&quot;</span>);<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;Set操作结果: &quot;</span> &lt;&lt; (setResult ? <span class="hljs-string">&quot;成功&quot;</span> : <span class="hljs-string">&quot;失败&quot;</span>) &lt;&lt; std::endl;<br>    <br>    <span class="hljs-comment">// 获取键值</span><br>    std::string value;<br>    <span class="hljs-type">bool</span> getResult = RedisMgr::<span class="hljs-built_in">Inst</span>().<span class="hljs-built_in">Get</span>(<span class="hljs-string">&quot;test_key&quot;</span>, value);<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;Get操作结果: &quot;</span> &lt;&lt; (getResult ? <span class="hljs-string">&quot;成功&quot;</span> : <span class="hljs-string">&quot;失败&quot;</span>) &lt;&lt; std::endl;<br>    <span class="hljs-keyword">if</span> (getResult) &#123;<br>        std::cout &lt;&lt; <span class="hljs-string">&quot;获取的值: &quot;</span> &lt;&lt; value &lt;&lt; std::endl;<br>    &#125;<br>    <br>    <span class="hljs-comment">// 检查键是否存在</span><br>    <span class="hljs-type">bool</span> existsResult = RedisMgr::<span class="hljs-built_in">Inst</span>().<span class="hljs-built_in">ExistsKey</span>(<span class="hljs-string">&quot;test_key&quot;</span>);<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;ExistsKey操作结果: &quot;</span> &lt;&lt; (existsResult ? <span class="hljs-string">&quot;存在&quot;</span> : <span class="hljs-string">&quot;不存在&quot;</span>) &lt;&lt; std::endl;<br>    <br>    <span class="hljs-comment">// 删除键</span><br>    <span class="hljs-type">bool</span> delResult = RedisMgr::<span class="hljs-built_in">Inst</span>().<span class="hljs-built_in">Del</span>(<span class="hljs-string">&quot;test_key&quot;</span>);<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;Del操作结果: &quot;</span> &lt;&lt; (delResult ? <span class="hljs-string">&quot;成功&quot;</span> : <span class="hljs-string">&quot;失败&quot;</span>) &lt;&lt; std::endl;<br>    <br>    <span class="hljs-comment">// 再次检查键是否存在</span><br>    existsResult = RedisMgr::<span class="hljs-built_in">Inst</span>().<span class="hljs-built_in">ExistsKey</span>(<span class="hljs-string">&quot;test_key&quot;</span>);<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;删除后检查键是否存在: &quot;</span> &lt;&lt; (existsResult ? <span class="hljs-string">&quot;存在&quot;</span> : <span class="hljs-string">&quot;不存在&quot;</span>) &lt;&lt; std::endl;<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;&quot;</span> &lt;&lt; std::endl;<br>&#125;<br><br><span class="hljs-comment">// 测试列表操作</span><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">testListOperations</span><span class="hljs-params">()</span> </span>&#123;<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;===== 测试列表操作 ======&quot;</span> &lt;&lt; std::endl;<br>    std::string listKey = <span class="hljs-string">&quot;test_list&quot;</span>;<br>    <br>    <span class="hljs-comment">// 清空列表（如果存在）</span><br>    RedisMgr::<span class="hljs-built_in">Inst</span>().<span class="hljs-built_in">Del</span>(listKey);<br>    <br>    <span class="hljs-comment">// 从左侧插入元素</span><br>    <span class="hljs-type">bool</span> lpResult1 = RedisMgr::<span class="hljs-built_in">Inst</span>().<span class="hljs-built_in">LPush</span>(listKey, <span class="hljs-string">&quot;item1&quot;</span>);<br>    <span class="hljs-type">bool</span> lpResult2 = RedisMgr::<span class="hljs-built_in">Inst</span>().<span class="hljs-built_in">LPush</span>(listKey, <span class="hljs-string">&quot;item2&quot;</span>);<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;LPush操作结果: &quot;</span> &lt;&lt; (lpResult1 &amp;&amp; lpResult2 ? <span class="hljs-string">&quot;成功&quot;</span> : <span class="hljs-string">&quot;失败&quot;</span>) &lt;&lt; std::endl;<br>    <br>    <span class="hljs-comment">// 从右侧插入元素</span><br>    <span class="hljs-type">bool</span> rpResult = RedisMgr::<span class="hljs-built_in">Inst</span>().<span class="hljs-built_in">RPush</span>(listKey, <span class="hljs-string">&quot;item3&quot;</span>);<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;RPush操作结果: &quot;</span> &lt;&lt; (rpResult ? <span class="hljs-string">&quot;成功&quot;</span> : <span class="hljs-string">&quot;失败&quot;</span>) &lt;&lt; std::endl;<br>    <br>    <span class="hljs-comment">// 从左侧弹出元素</span><br>    std::string lpopValue;<br>    <span class="hljs-type">bool</span> lpopResult = RedisMgr::<span class="hljs-built_in">Inst</span>().<span class="hljs-built_in">LPop</span>(listKey, lpopValue);<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;LPop操作结果: &quot;</span> &lt;&lt; (lpopResult ? <span class="hljs-string">&quot;成功&quot;</span> : <span class="hljs-string">&quot;失败&quot;</span>) &lt;&lt; std::endl;<br>    <span class="hljs-keyword">if</span> (lpopResult) &#123;<br>        std::cout &lt;&lt; <span class="hljs-string">&quot;LPop弹出的值: &quot;</span> &lt;&lt; lpopValue &lt;&lt; std::endl;<br>    &#125;<br>    <br>    <span class="hljs-comment">// 从右侧弹出元素</span><br>    std::string rpopValue;<br>    <span class="hljs-type">bool</span> rpopResult = RedisMgr::<span class="hljs-built_in">Inst</span>().<span class="hljs-built_in">RPop</span>(listKey, rpopValue);<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;RPop操作结果: &quot;</span> &lt;&lt; (rpopResult ? <span class="hljs-string">&quot;成功&quot;</span> : <span class="hljs-string">&quot;失败&quot;</span>) &lt;&lt; std::endl;<br>    <span class="hljs-keyword">if</span> (rpopResult) &#123;<br>        std::cout &lt;&lt; <span class="hljs-string">&quot;RPop弹出的值: &quot;</span> &lt;&lt; rpopValue &lt;&lt; std::endl;<br>    &#125;<br>    <br>    <span class="hljs-comment">// 清理测试数据</span><br>    RedisMgr::<span class="hljs-built_in">Inst</span>().<span class="hljs-built_in">Del</span>(listKey);<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;&quot;</span> &lt;&lt; std::endl;<br>&#125;<br><br><span class="hljs-comment">// 测试哈希操作</span><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">testHashOperations</span><span class="hljs-params">()</span> </span>&#123;<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;===== 测试哈希操作 ======&quot;</span> &lt;&lt; std::endl;<br>    std::string hashKey = <span class="hljs-string">&quot;test_hash&quot;</span>;<br>    <br>    <span class="hljs-comment">// 清空哈希表（如果存在）</span><br>    RedisMgr::<span class="hljs-built_in">Inst</span>().<span class="hljs-built_in">Del</span>(hashKey);<br>    <br>    <span class="hljs-comment">// 设置哈希字段</span><br>    <span class="hljs-type">bool</span> hsetResult1 = RedisMgr::<span class="hljs-built_in">Inst</span>().<span class="hljs-built_in">HSet</span>(hashKey, <span class="hljs-string">&quot;field1&quot;</span>, <span class="hljs-string">&quot;value1&quot;</span>);<br>    <span class="hljs-type">bool</span> hsetResult2 = RedisMgr::<span class="hljs-built_in">Inst</span>().<span class="hljs-built_in">HSet</span>(hashKey, <span class="hljs-string">&quot;field2&quot;</span>, <span class="hljs-string">&quot;value2&quot;</span>);<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;HSet操作结果: &quot;</span> &lt;&lt; (hsetResult1 &amp;&amp; hsetResult2 ? <span class="hljs-string">&quot;成功&quot;</span> : <span class="hljs-string">&quot;失败&quot;</span>) &lt;&lt; std::endl;<br>    <br>    <span class="hljs-comment">// 获取哈希字段值</span><br>    std::string hgetResult1 = RedisMgr::<span class="hljs-built_in">Inst</span>().<span class="hljs-built_in">HGet</span>(hashKey, <span class="hljs-string">&quot;field1&quot;</span>);<br>    std::string hgetResult2 = RedisMgr::<span class="hljs-built_in">Inst</span>().<span class="hljs-built_in">HGet</span>(hashKey, <span class="hljs-string">&quot;field3&quot;</span>); <span class="hljs-comment">// 不存在的字段</span><br>    std::cout &lt;&lt; <span class="hljs-string">&quot;HGet field1结果: &quot;</span> &lt;&lt; hgetResult1 &lt;&lt; std::endl;<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;HGet field3结果: &quot;</span> &lt;&lt; (hgetResult<span class="hljs-number">2.</span><span class="hljs-built_in">empty</span>() ? <span class="hljs-string">&quot;(空，字段不存在)&quot;</span> : hgetResult2) &lt;&lt; std::endl;<br>    <br>    <span class="hljs-comment">// 删除哈希字段</span><br>    <span class="hljs-type">bool</span> hdelResult = RedisMgr::<span class="hljs-built_in">Inst</span>().<span class="hljs-built_in">HDel</span>(hashKey, <span class="hljs-string">&quot;field1&quot;</span>);<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;HDel操作结果: &quot;</span> &lt;&lt; (hdelResult ? <span class="hljs-string">&quot;成功&quot;</span> : <span class="hljs-string">&quot;失败&quot;</span>) &lt;&lt; std::endl;<br>    <br>    <span class="hljs-comment">// 再次获取已删除的字段</span><br>    std::string hgetAfterDel = RedisMgr::<span class="hljs-built_in">Inst</span>().<span class="hljs-built_in">HGet</span>(hashKey, <span class="hljs-string">&quot;field1&quot;</span>);<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;删除后HGet field1结果: &quot;</span> &lt;&lt; (hgetAfterDel.<span class="hljs-built_in">empty</span>() ? <span class="hljs-string">&quot;(空，字段已被删除)&quot;</span> : hgetAfterDel) &lt;&lt; std::endl;<br>    <br>    <span class="hljs-comment">// 清理测试数据</span><br>    RedisMgr::<span class="hljs-built_in">Inst</span>().<span class="hljs-built_in">Del</span>(hashKey);<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;&quot;</span> &lt;&lt; std::endl;<br>&#125;<br><br><span class="hljs-comment">// 测试计数器操作</span><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">testCounterOperations</span><span class="hljs-params">()</span> </span>&#123;<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;===== 测试计数器操作 ======&quot;</span> &lt;&lt; std::endl;<br>    std::string counterKey = <span class="hljs-string">&quot;test_counter&quot;</span>;<br>    <br>    <span class="hljs-comment">// 初始化计数器</span><br>    RedisMgr::<span class="hljs-built_in">Inst</span>().<span class="hljs-built_in">InitCount</span>(counterKey);<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;InitCount操作完成&quot;</span> &lt;&lt; std::endl;<br>    <br>    <span class="hljs-comment">// 增加计数</span><br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">5</span>; ++i) &#123;<br>        RedisMgr::<span class="hljs-built_in">Inst</span>().<span class="hljs-built_in">IncreaseCount</span>(counterKey);<br>    &#125;<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;IncreaseCount操作完成（+5）&quot;</span> &lt;&lt; std::endl;<br>    <br>    <span class="hljs-comment">// 获取当前计数值</span><br>    std::string countValue;<br>    RedisMgr::<span class="hljs-built_in">Inst</span>().<span class="hljs-built_in">Get</span>(counterKey, countValue);<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;当前计数值: &quot;</span> &lt;&lt; countValue &lt;&lt; std::endl;<br>    <br>    <span class="hljs-comment">// 减少计数</span><br>    RedisMgr::<span class="hljs-built_in">Inst</span>().<span class="hljs-built_in">DecreaseCount</span>(counterKey);<br>    RedisMgr::<span class="hljs-built_in">Inst</span>().<span class="hljs-built_in">DecreaseCount</span>(counterKey);<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;DecreaseCount操作完成（-2）&quot;</span> &lt;&lt; std::endl;<br>    <br>    <span class="hljs-comment">// 再次获取计数值</span><br>    RedisMgr::<span class="hljs-built_in">Inst</span>().<span class="hljs-built_in">Get</span>(counterKey, countValue);<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;减少后计数值: &quot;</span> &lt;&lt; countValue &lt;&lt; std::endl;<br>    <br>    <span class="hljs-comment">// 删除计数器</span><br>    RedisMgr::<span class="hljs-built_in">Inst</span>().<span class="hljs-built_in">DelCount</span>(counterKey);<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;DelCount操作完成&quot;</span> &lt;&lt; std::endl;<br>    <br>    <span class="hljs-comment">// 检查计数器是否存在</span><br>    <span class="hljs-type">bool</span> exists = RedisMgr::<span class="hljs-built_in">Inst</span>().<span class="hljs-built_in">ExistsKey</span>(counterKey);<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;删除后计数器是否存在: &quot;</span> &lt;&lt; (exists ? <span class="hljs-string">&quot;存在&quot;</span> : <span class="hljs-string">&quot;不存在&quot;</span>) &lt;&lt; std::endl;<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;&quot;</span> &lt;&lt; std::endl;<br>&#125;<br><br><span class="hljs-comment">// 测试分布式锁操作</span><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">testLockOperations</span><span class="hljs-params">()</span> </span>&#123;<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;===== 测试分布式锁操作 ======&quot;</span> &lt;&lt; std::endl;<br>    std::string lockName = <span class="hljs-string">&quot;test_lock&quot;</span>;<br>    <br>    <span class="hljs-comment">// 获取锁（超时时间5000ms，获取超时时间1000ms）</span><br>    std::string lockId = RedisMgr::<span class="hljs-built_in">Inst</span>().<span class="hljs-built_in">acquireLock</span>(lockName, <span class="hljs-number">5000</span>, <span class="hljs-number">1000</span>);<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;acquireLock操作结果: &quot;</span> &lt;&lt; (lockId.<span class="hljs-built_in">empty</span>() ? <span class="hljs-string">&quot;失败&quot;</span> : <span class="hljs-string">&quot;成功&quot;</span>) &lt;&lt; std::endl;<br>    <span class="hljs-keyword">if</span> (!lockId.<span class="hljs-built_in">empty</span>()) &#123;<br>        std::cout &lt;&lt; <span class="hljs-string">&quot;获取的锁ID: &quot;</span> &lt;&lt; lockId &lt;&lt; std::endl;<br>        <br>        <span class="hljs-comment">// 模拟业务操作</span><br>        std::cout &lt;&lt; <span class="hljs-string">&quot;模拟业务操作...&quot;</span> &lt;&lt; std::endl;<br>        std::this_thread::<span class="hljs-built_in">sleep_for</span>(std::chrono::<span class="hljs-built_in">seconds</span>(<span class="hljs-number">1</span>));<br>        <br>        <span class="hljs-comment">// 释放锁</span><br>        <span class="hljs-type">bool</span> releaseResult = RedisMgr::<span class="hljs-built_in">Inst</span>().<span class="hljs-built_in">releaseLock</span>(lockName, lockId);<br>        std::cout &lt;&lt; <span class="hljs-string">&quot;releaseLock操作结果: &quot;</span> &lt;&lt; (releaseResult ? <span class="hljs-string">&quot;成功&quot;</span> : <span class="hljs-string">&quot;失败&quot;</span>) &lt;&lt; std::endl;<br>    &#125;<br>    <br>    <span class="hljs-comment">// 测试错误的锁ID释放</span><br>    <span class="hljs-keyword">if</span> (!lockId.<span class="hljs-built_in">empty</span>()) &#123;<br>        std::string wrongLockId = lockId + <span class="hljs-string">&quot;_wrong&quot;</span>;<br>        <span class="hljs-type">bool</span> wrongReleaseResult = RedisMgr::<span class="hljs-built_in">Inst</span>().<span class="hljs-built_in">releaseLock</span>(lockName, wrongLockId);<br>        std::cout &lt;&lt; <span class="hljs-string">&quot;使用错误的锁ID释放结果: &quot;</span> &lt;&lt; (wrongReleaseResult ? <span class="hljs-string">&quot;成功（不安全）&quot;</span> : <span class="hljs-string">&quot;失败（安全）&quot;</span>) &lt;&lt; std::endl;<br>    &#125;<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;&quot;</span> &lt;&lt; std::endl;<br>&#125;<br><br><span class="hljs-comment">// 测试多线程并发访问</span><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">testMultiThreadAccess</span><span class="hljs-params">()</span> </span>&#123;<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;===== 测试多线程并发访问 ======&quot;</span> &lt;&lt; std::endl;<br>    <span class="hljs-type">const</span> <span class="hljs-type">int</span> THREAD_COUNT = <span class="hljs-number">5</span>;<br>    <span class="hljs-type">const</span> std::string threadKey = <span class="hljs-string">&quot;thread_counter&quot;</span>;<br>    <br>    <span class="hljs-comment">// 初始化计数器</span><br>    RedisMgr::<span class="hljs-built_in">Inst</span>().<span class="hljs-built_in">InitCount</span>(threadKey);<br>    <br>    <span class="hljs-comment">// 创建多个线程同时增加计数</span><br>    std::thread threads[THREAD_COUNT];<br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; THREAD_COUNT; ++i) &#123;<br>        threads[i] = std::<span class="hljs-built_in">thread</span>([threadKey, i]() &#123;<br>            <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> j = <span class="hljs-number">0</span>; j &lt; <span class="hljs-number">10</span>; ++j) &#123;<br>                RedisMgr::<span class="hljs-built_in">Inst</span>().<span class="hljs-built_in">IncreaseCount</span>(threadKey);<br>                std::this_thread::<span class="hljs-built_in">sleep_for</span>(std::chrono::<span class="hljs-built_in">milliseconds</span>(<span class="hljs-number">10</span>)); <span class="hljs-comment">// 小延迟模拟实际操作</span><br>            &#125;<br>            std::cout &lt;&lt; <span class="hljs-string">&quot;线程&quot;</span> &lt;&lt; i &lt;&lt; <span class="hljs-string">&quot;完成操作&quot;</span> &lt;&lt; std::endl;<br>        &#125;);<br>    &#125;<br>    <br>    <span class="hljs-comment">// 等待所有线程完成</span><br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; THREAD_COUNT; ++i) &#123;<br>        threads[i].<span class="hljs-built_in">join</span>();<br>    &#125;<br>    <br>    <span class="hljs-comment">// 检查最终计数值</span><br>    std::string finalCount;<br>    RedisMgr::<span class="hljs-built_in">Inst</span>().<span class="hljs-built_in">Get</span>(threadKey, finalCount);<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;多线程操作后最终计数值: &quot;</span> &lt;&lt; finalCount <br>              &lt;&lt; <span class="hljs-string">&quot; (期望: &quot;</span> &lt;&lt; THREAD_COUNT * <span class="hljs-number">10</span> &lt;&lt; <span class="hljs-string">&quot;)&quot;</span> &lt;&lt; std::endl;<br>    <br>    <span class="hljs-comment">// 清理测试数据</span><br>    RedisMgr::<span class="hljs-built_in">Inst</span>().<span class="hljs-built_in">DelCount</span>(threadKey);<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;&quot;</span> &lt;&lt; std::endl;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;===== RedisMgr 功能测试程序开始 ======&quot;</span> &lt;&lt; std::endl;<br>    <br>    <span class="hljs-keyword">try</span> &#123;<br>        <span class="hljs-comment">// 测试各种功能</span><br>        <span class="hljs-built_in">testStringOperations</span>();<br>        <span class="hljs-built_in">testListOperations</span>();<br>        <span class="hljs-built_in">testHashOperations</span>();<br>        <span class="hljs-built_in">testCounterOperations</span>();<br>        <span class="hljs-built_in">testLockOperations</span>();<br>        <span class="hljs-built_in">testMultiThreadAccess</span>();<br>        <br>        std::cout &lt;&lt; <span class="hljs-string">&quot;===== RedisMgr 功能测试程序完成 ======&quot;</span> &lt;&lt; std::endl;<br>    &#125; <span class="hljs-built_in">catch</span> (<span class="hljs-type">const</span> std::exception&amp; e) &#123;<br>        std::cerr &lt;&lt; <span class="hljs-string">&quot;测试过程中发生异常: &quot;</span> &lt;&lt; e.<span class="hljs-built_in">what</span>() &lt;&lt; std::endl;<br>        std::cout &lt;&lt; <span class="hljs-string">&quot;===== RedisMgr 功能测试程序异常结束 ======&quot;</span> &lt;&lt; std::endl;<br>    &#125;<br>    <br>    <span class="hljs-comment">// 关闭Redis连接池</span><br>    RedisMgr::<span class="hljs-built_in">Inst</span>().<span class="hljs-built_in">Close</span>();<br>    <br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>样例输出 : </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br></pre></td><td class="code"><pre><code class="hljs bash">➜  RedisLearn ./redistest<br>===== RedisMgr 功能测试程序开始 ======<br>===== 测试字符串操作 ======<br>密码为空，跳过认证<br>密码为空，跳过认证<br>密码为空，跳过认证<br>密码为空，跳过认证<br>密码为空，跳过认证<br>密码为空，跳过认证<br>密码为空，跳过认证<br>密码为空，跳过认证<br>密码为空，跳过认证<br>密码为空，跳过认证<br>Set操作结果: 成功<br>Get操作结果: 成功<br>获取的值: Hello Redis!<br>ExistsKey操作结果: 存在<br>Del操作结果: 成功<br>删除后检查键是否存在: 不存在<br><br>===== 测试列表操作 ======<br>LPush操作结果: 成功<br>RPush操作结果: 成功<br>LPop操作结果: 成功<br>LPop弹出的值: item2<br>RPop操作结果: 成功<br>RPop弹出的值: item3<br><br>===== 测试哈希操作 ======<br>HSet操作结果: 成功<br>HGet field1结果: value1<br>HGet field3结果: (空，字段不存在)<br>HDel操作结果: 成功<br>删除后HGet field1结果: (空，字段已被删除)<br><br>===== 测试计数器操作 ======<br>InitCount操作完成<br>IncreaseCount操作完成（+5）<br>当前计数值: 5<br>DecreaseCount操作完成（-2）<br>减少后计数值: 3<br>DelCount操作完成<br>删除后计数器是否存在: 不存在<br><br>===== 测试分布式锁操作 ======<br>acquireLock操作结果: 成功<br>获取的锁ID: lock_1804289383<br>模拟业务操作...<br>releaseLock操作结果: 成功<br>使用错误的锁ID释放结果: 失败（安全）<br><br>===== 测试多线程并发访问 ======<br>线程1完成操作<br>线程0完成操作<br>线程2完成操作<br>线程4完成操作<br>线程3完成操作<br>多线程操作后最终计数值: 50 (期望: 50)<br><br>===== RedisMgr 功能测试程序完成 ======<br></code></pre></td></tr></table></figure>
+
+
+
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Redis/" class="print-no-link">#Redis</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Redis深入学习(1) 安装与封装</div>
+      <div>http://example.com/2025/10/25/Redis深入学习(1) 安装与封装/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>天目中云</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月25日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/26/Redis%E6%B7%B1%E5%85%A5%E5%AD%A6%E4%B9%A0(2)%20%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81/" title="Redis深入学习(2) 分布式锁">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Redis深入学习(2) 分布式锁</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/09/15/%5BWindows%E6%A0%B8%E5%BF%83%E7%BC%96%E7%A8%8B%5D%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0(1)/" title="Windows核心编程 读书笔记(1)">
+                        <span class="hidden-mobile">Windows核心编程 读书笔记(1)</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"NhgfDy2CEByjwxuxPM1Le2t6-MdYXbMMI","appKey":"nvGMdqKfKbpkVnojLSbwmasv","path":"window.location.pathname","placeholder":null,"avatar":"retro","meta":["nick","mail","link"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":false,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":false},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

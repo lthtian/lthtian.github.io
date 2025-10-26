@@ -1,0 +1,774 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/head.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="天目中云">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="Redis分布式锁  分布式锁看起来很高端, 但是非常易懂, 类似于线程中的互斥锁, 用来保证不同线程间的资源共享, 把这里的线程提升到服务器, 对应的就是分布式锁了.  其实本质就是在做不同服务器上的进程&#x2F;线程对于共享资源的管理. 解决的思路也比较统一, 以我目前的学习程度看来就是单独在一个服务器上开一个分布式锁服务, 统一到这个服务上申请使用权. 实现这种分布式锁功能的中间件有很多">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Redis深入学习(2) 分布式锁">
+<meta property="og:url" content="http://example.com/2025/10/26/Redis%E6%B7%B1%E5%85%A5%E5%AD%A6%E4%B9%A0(2)%20%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81/index.html">
+<meta property="og:site_name" content="天目中云">
+<meta property="og:description" content="Redis分布式锁  分布式锁看起来很高端, 但是非常易懂, 类似于线程中的互斥锁, 用来保证不同线程间的资源共享, 把这里的线程提升到服务器, 对应的就是分布式锁了.  其实本质就是在做不同服务器上的进程&#x2F;线程对于共享资源的管理. 解决的思路也比较统一, 以我目前的学习程度看来就是单独在一个服务器上开一个分布式锁服务, 统一到这个服务上申请使用权. 实现这种分布式锁功能的中间件有很多">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-26T14:00:00.000Z">
+<meta property="article:modified_time" content="2025-10-26T14:42:20.748Z">
+<meta property="article:author" content="天目中云">
+<meta property="article:tag" content="Redis">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>Redis深入学习(2) 分布式锁 - 天目中云</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":"NhgfDy2CEByjwxuxPM1Le2t6-MdYXbMMI","app_key":"nvGMdqKfKbpkVnojLSbwmasv","server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>TianMu</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/03.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Redis深入学习(2) 分布式锁"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-26 22:00" pubdate>
+          2025年10月26日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.6k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          22 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Redis深入学习(2) 分布式锁</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <blockquote>
+<p>Redis分布式锁</p>
+</blockquote>
+<h3 id="分布式锁"><a href="#分布式锁" class="headerlink" title="分布式锁"></a>分布式锁</h3><p>看起来很高端, 但是非常易懂, 类似于线程中的互斥锁, 用来保证不同线程间的资源共享, 把这里的<strong>线程提升到服务器</strong>, 对应的就是分布式锁了. </p>
+<p>其实本质就是在做<strong>不同服务器上的进程&#x2F;线程对于共享资源的管理</strong>.</p>
+<p>解决的思路也比较统一, 以我目前的学习程度看来就是单独<strong>在一个服务器上开一个分布式锁服务, 统一到这个服务上申请使用权</strong>.</p>
+<p>实现这种分布式锁功能的中间件有很多, Redis就是其中之一.</p>
+<h3 id="本质理解"><a href="#本质理解" class="headerlink" title="本质理解"></a>本质理解</h3><p>在Redis中分布式锁的实现非常简单甚至原始, 你可以简单理解为就是<strong>SET一对键值, 键存在表示有占用, 键不存在表示无占用并持有锁</strong>.</p>
+<p>下面是SET命令格式 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cpp">SET key value [NX|XX] [GET] [EX seconds|PX milliseconds|EXAT timestamp|PXAT milliseconds-timestamp|KEEPTTL]<br></code></pre></td></tr></table></figure>
+
+<p>这时我们要用的就是NX表示<strong>键不存在时才能设置</strong>, PX表示<strong>过期时间</strong>. 用hiredis表示如下 :</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cpp">redisReply* reply = (redisReply*)<span class="hljs-built_in">redisCommand</span>(context, <span class="hljs-string">&quot;SET %s %s NX PX %d&quot;</span>, key, value, lockTimeout);<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>超过过期时间后键值自动删除, 其实就等同于<strong>锁释放</strong>, 当然也可以用完提前删除释放.</li>
+<li>注意Redis实现如此简单的前提在于, Redis本身就是一个<strong>单线程</strong>程序, 就算多个服务器同时申请锁, 也不会有任何线程问题.</li>
+</ul>
+<h3 id="进一步封装"><a href="#进一步封装" class="headerlink" title="进一步封装"></a>进一步封装</h3><p>先看锁申请 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 获取分布式锁</span><br><span class="hljs-comment"> * @param lockName 锁名称</span><br><span class="hljs-comment"> * @param lockTimeout 锁超时时间（毫秒）</span><br><span class="hljs-comment"> * @param acquireTimeout 获取锁的超时时间（毫秒）</span><br><span class="hljs-comment"> * @return 锁标识符，如果获取失败返回空字符串</span><br><span class="hljs-comment"> */</span><br><span class="hljs-function">std::string <span class="hljs-title">RedisMgr::acquireLock</span><span class="hljs-params">(<span class="hljs-type">const</span> std::string&amp; lockName, <span class="hljs-type">int</span> lockTimeout, <span class="hljs-type">int</span> acquireTimeout)</span> </span>&#123;<br>	<span class="hljs-comment">// 实现分布式锁获取逻辑</span><br>	std::string identifier = <span class="hljs-string">&quot;lock_&quot;</span> + std::<span class="hljs-built_in">to_string</span>(<span class="hljs-built_in">rand</span>());<br>	<span class="hljs-type">const</span> <span class="hljs-type">char</span>* key = lockName.<span class="hljs-built_in">c_str</span>();<br>	<span class="hljs-type">const</span> <span class="hljs-type">char</span>* value = identifier.<span class="hljs-built_in">c_str</span>();<br>	<span class="hljs-type">int</span> retryCount = <span class="hljs-number">0</span>;<br>	<span class="hljs-type">int</span> maxRetries = acquireTimeout / <span class="hljs-number">100</span>; <span class="hljs-comment">// 每100ms重试一次</span><br><br>	redisContext* context = con_pool_-&gt;<span class="hljs-built_in">getConnection</span>();<br>	<span class="hljs-keyword">if</span> (!context) &#123;<br>		<span class="hljs-keyword">return</span> <span class="hljs-string">&quot;&quot;</span>;<br>	&#125;<br><br>	<span class="hljs-keyword">while</span> (retryCount &lt; maxRetries) &#123;<br>		<span class="hljs-comment">// 使用SET命令的NX和PX选项实现分布式锁</span><br>		redisReply* reply = (redisReply*)<span class="hljs-built_in">redisCommand</span>(context, <span class="hljs-string">&quot;SET %s %s NX PX %d&quot;</span>, key, value, lockTimeout);<br>		<span class="hljs-keyword">if</span> (reply &amp;&amp; reply-&gt;type == REDIS_REPLY_STATUS &amp;&amp; <span class="hljs-built_in">strcmp</span>(reply-&gt;str, <span class="hljs-string">&quot;OK&quot;</span>) == <span class="hljs-number">0</span>) &#123;<br>			<span class="hljs-built_in">freeReplyObject</span>(reply);<br>			con_pool_-&gt;<span class="hljs-built_in">returnConnection</span>(context);<br>			<span class="hljs-keyword">return</span> identifier;<br>		&#125;<br>		<span class="hljs-built_in">freeReplyObject</span>(reply);<br>		retryCount++;<br>		std::this_thread::<span class="hljs-built_in">sleep_for</span>(std::chrono::<span class="hljs-built_in">milliseconds</span>(<span class="hljs-number">100</span>));<br>	&#125;<br><br>	con_pool_-&gt;<span class="hljs-built_in">returnConnection</span>(context);<br>	<span class="hljs-keyword">return</span> <span class="hljs-string">&quot;&quot;</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><p>这里对于键对应的值只是放了个rand(), 但是实际应该放很多信息, 比如订单ID, 用户, pid, tid, timestamp等等, 这样在一个锁被异常持有时就可以<strong>准确追根溯源, 或是统计锁的竞争使用情况</strong>, 不同公司对锁值有不同的规定, 比如阿里就是<code>hostname_ip:pid:threadid:timestamp</code>, 可以类似如下函数生成 :</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function">std::string <span class="hljs-title">generate_lock_id</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-type">char</span> hostname[<span class="hljs-number">256</span>];<br>    <span class="hljs-built_in">gethostname</span>(hostname, <span class="hljs-built_in">sizeof</span>(hostname));<br>        <br>    <span class="hljs-keyword">auto</span> now = std::chrono::system_clock::<span class="hljs-built_in">now</span>();<br>    <span class="hljs-keyword">auto</span> now_ms = std::chrono::<span class="hljs-built_in">duration_cast</span>&lt;std::chrono::milliseconds&gt;(<br>        now.<span class="hljs-built_in">time_since_epoch</span>()).<span class="hljs-built_in">count</span>();<br>        <br>    <span class="hljs-type">char</span> buffer[<span class="hljs-number">512</span>];<br>    <span class="hljs-built_in">snprintf</span>(buffer, <span class="hljs-built_in">sizeof</span>(buffer), <span class="hljs-string">&quot;%s|pid%d|tid%ld|ts%ld&quot;</span>,<br>             hostname,<br>             <span class="hljs-built_in">getpid</span>(),<br>             <span class="hljs-built_in">syscall</span>(SYS_gettid), <span class="hljs-comment">// 获取线程ID</span><br>             now_ms);<br>        <br>    <span class="hljs-keyword">return</span> std::<span class="hljs-built_in">string</span>(buffer);<br>&#125;<br></code></pre></td></tr></table></figure>
+</li>
+<li><p>另外还做了重复尝试申请, 超过一定次数后才退出.</p>
+</li>
+</ul>
+<p>再看锁释放 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 释放分布式锁</span><br><span class="hljs-comment"> * @param lockName 锁名称</span><br><span class="hljs-comment"> * @param identifier 锁标识符</span><br><span class="hljs-comment"> * @return 释放是否成功</span><br><span class="hljs-comment"> */</span><br><span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">RedisMgr::releaseLock</span><span class="hljs-params">(<span class="hljs-type">const</span> std::string&amp; lockName, <span class="hljs-type">const</span> std::string&amp; identifier)</span> </span>&#123;<br>	<span class="hljs-comment">// 实现分布式锁释放逻辑</span><br>	<span class="hljs-type">const</span> <span class="hljs-type">char</span>* key = lockName.<span class="hljs-built_in">c_str</span>();<br>	<span class="hljs-type">const</span> <span class="hljs-type">char</span>* value = identifier.<span class="hljs-built_in">c_str</span>();<br><br>	redisContext* context = con_pool_-&gt;<span class="hljs-built_in">getConnection</span>();<br>	<span class="hljs-keyword">if</span> (!context) &#123;<br>		<span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>	&#125;<br><br>	<span class="hljs-comment">// 使用Lua脚本确保原子性，防止误删其他客户端的锁</span><br>	<span class="hljs-type">const</span> <span class="hljs-type">char</span>* script = <br>		<span class="hljs-string">&quot;if redis.call(&#x27;get&#x27;, KEYS[1]) == ARGV[1] then &quot;</span><br>		<span class="hljs-string">&quot;return redis.call(&#x27;del&#x27;, KEYS[1]) &quot;</span><br>		<span class="hljs-string">&quot;else &quot;</span><br>		<span class="hljs-string">&quot;return 0 &quot;</span><br>		<span class="hljs-string">&quot;end&quot;</span>;<br><br>	redisReply* reply = (redisReply*)<span class="hljs-built_in">redisCommand</span>(context, <span class="hljs-string">&quot;EVAL %s 1 %s %s&quot;</span>, script, key, value);<br>	<span class="hljs-keyword">if</span> (!reply || reply-&gt;type != REDIS_REPLY_INTEGER || reply-&gt;integer == <span class="hljs-number">0</span>) &#123;<br>		<span class="hljs-built_in">freeReplyObject</span>(reply);<br>		con_pool_-&gt;<span class="hljs-built_in">returnConnection</span>(context);<br>		<span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>	&#125;<br><br>	<span class="hljs-built_in">freeReplyObject</span>(reply);<br>	con_pool_-&gt;<span class="hljs-built_in">returnConnection</span>(context);<br>	<span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>这里做的其实就是如果键对应的值还是自己的, 就进行删除操作, 相当于释放锁.</li>
+<li>不过这里实际需要完成两个操作, <strong>为了保证原子性就必须把两个操作封装在一个Lua语句中</strong>, 交给Redis执行, Redis天然支持解读Lua脚本语言, 再加上自己的单线程特性, 很容易实现多个操作的原子化.</li>
+</ul>
+<h3 id="锁续期-看门狗"><a href="#锁续期-看门狗" class="headerlink" title="锁续期(看门狗)"></a>锁续期(看门狗)</h3><p>这里依旧是看了一大堆, 但是本质依旧很简单, 这里分为前提和做法.</p>
+<ul>
+<li>前提 : <ul>
+<li>Redis在针对锁设置键值时<strong>必须设置TTL</strong>, 不能依赖于手动删除, 因为一旦使用Redis的客户端宕机, 就<strong>必定会发生锁的无限占有</strong>, 这是灾难性的.</li>
+<li>我们一般会将自动删除的TTL设置的比较久, 比如3-5秒, 但是有些任务执行的时间确实会因为需求与现况不同有长有短, 在高峰期有时就是会超过TTL. 这里的隐患是, 一旦超TTL自动删除, 客户端并不知情, 因为其没有调用过<code>releaseLock</code>, <strong>自认为锁还被自己持有, 但很有可能已被其他线程持有, 于是就会发生资源竞争</strong>.</li>
+</ul>
+</li>
+<li>做法 : <ul>
+<li>其实我们想实现的效果就是, <strong>只要客户端还没有调用<code>releaseLock</code>, 并且客户端还健在, 就不自动释放锁</strong>, 这种效果便可以由锁续期(看门狗)来实现. </li>
+<li>实现也容易理解, 调用<code>acquireLock</code>就将锁存入map, 调用<code>releaseLock</code>就将锁移出map, 在map中的锁会有一个线程持续进行重置超时时间.</li>
+</ul>
+</li>
+</ul>
+<p>这样只要客户端任务没结束并且不崩溃, 所有就会一直被独占, 不会发生资源竞争, 我们来看看代码 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// LockRenewer.h</span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;atomic&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;chrono&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;condition_variable&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;functional&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;memory&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;mutex&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;string&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;thread&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;unordered_map&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;vector&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;hiredis/hiredis.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;RedisMgr.h&quot;</span></span><br><br><span class="hljs-comment">// 锁续期任务管理器</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">LockRenewer</span> &#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-built_in">LockRenewer</span>(RedisConPool* pool)<br>        : <span class="hljs-built_in">pool_</span>(pool), <span class="hljs-built_in">running_</span>(<span class="hljs-literal">true</span>), <span class="hljs-built_in">manager_thread_</span>(&amp;LockRenewer::run_manager, <span class="hljs-keyword">this</span>) &#123;&#125;<br>    <br>    ~<span class="hljs-built_in">LockRenewer</span>() &#123;<br>        <span class="hljs-built_in">stop</span>();<br>        <span class="hljs-keyword">if</span> (manager_thread_.<span class="hljs-built_in">joinable</span>()) &#123;<br>            manager_thread_.<span class="hljs-built_in">join</span>();<br>        &#125;<br>    &#125;<br>    <br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">start</span><span class="hljs-params">(<span class="hljs-type">const</span> std::string&amp; lock_name, </span></span><br><span class="hljs-params"><span class="hljs-function">               <span class="hljs-type">const</span> std::string&amp; identifier, </span></span><br><span class="hljs-params"><span class="hljs-function">               <span class="hljs-type">int</span> lock_timeout_ms)</span> </span>&#123;<br>        <span class="hljs-function">std::lock_guard&lt;std::mutex&gt; <span class="hljs-title">lock</span><span class="hljs-params">(mutex_)</span></span>;<br>        <br>        <span class="hljs-comment">// 如果已有续期任务，先停止</span><br>        <span class="hljs-keyword">if</span> (tasks_.<span class="hljs-built_in">find</span>(lock_name) != tasks_.<span class="hljs-built_in">end</span>()) &#123;<br>            <span class="hljs-built_in">stop</span>(lock_name);<br>        &#125;<br>        <br>        <span class="hljs-keyword">auto</span> task = std::<span class="hljs-built_in">make_shared</span>&lt;RenewTask&gt;();<br>        task-&gt;lock_name = lock_name;<br>        task-&gt;identifier = identifier;<br>        task-&gt;lock_timeout_ms = lock_timeout_ms;<br>        task-&gt;renew_interval = lock_timeout_ms / <span class="hljs-number">3</span>;<br>        task-&gt;next_renew_time = std::chrono::steady_clock::<span class="hljs-built_in">now</span>() + <br>                               std::chrono::<span class="hljs-built_in">milliseconds</span>(task-&gt;renew_interval);<br>        task-&gt;running = <span class="hljs-literal">true</span>;<br>        <br>        tasks_[lock_name] = task;<br>        cv_.<span class="hljs-built_in">notify_one</span>(); <span class="hljs-comment">// 唤醒管理器线程</span><br>    &#125;<br>    <br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">stop</span><span class="hljs-params">(<span class="hljs-type">const</span> std::string&amp; lock_name)</span> </span>&#123;<br>        <span class="hljs-function">std::lock_guard&lt;std::mutex&gt; <span class="hljs-title">lock</span><span class="hljs-params">(mutex_)</span></span>;<br>        <span class="hljs-keyword">auto</span> it = tasks_.<span class="hljs-built_in">find</span>(lock_name);<br>        <span class="hljs-keyword">if</span> (it != tasks_.<span class="hljs-built_in">end</span>()) &#123;<br>            it-&gt;second-&gt;running = <span class="hljs-literal">false</span>;<br>            tasks_.<span class="hljs-built_in">erase</span>(it);<br>        &#125;<br>    &#125;<br>    <br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">stop</span><span class="hljs-params">()</span> </span>&#123;<br>        &#123;<br>            <span class="hljs-function">std::lock_guard&lt;std::mutex&gt; <span class="hljs-title">lock</span><span class="hljs-params">(mutex_)</span></span>;<br>            running_ = <span class="hljs-literal">false</span>;<br>            <span class="hljs-keyword">for</span> (<span class="hljs-keyword">auto</span>&amp; [_, task] : tasks_) &#123;<br>                task-&gt;running = <span class="hljs-literal">false</span>;<br>            &#125;<br>            tasks_.<span class="hljs-built_in">clear</span>();<br>        &#125;<br>        cv_.<span class="hljs-built_in">notify_one</span>();<br>    &#125;<br><br><span class="hljs-keyword">private</span>:<br>    <span class="hljs-keyword">struct</span> <span class="hljs-title class_">RenewTask</span> &#123;<br>        std::string lock_name;<br>        std::string identifier;<br>        <span class="hljs-type">int</span> lock_timeout_ms;<br>        <span class="hljs-type">int</span> renew_interval;<br>        std::chrono::steady_clock::time_point next_renew_time;<br>        std::atomic&lt;<span class="hljs-type">bool</span>&gt; running;<br>    &#125;;<br>    <br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">run_manager</span><span class="hljs-params">()</span> </span>&#123;<br>        <span class="hljs-keyword">while</span> (running_) &#123;<br>            std::vector&lt;std::shared_ptr&lt;RenewTask&gt;&gt; tasks_to_renew;<br>            <br>            <span class="hljs-comment">// 获取需要续期的任务</span><br>            &#123;<br>                <span class="hljs-function">std::unique_lock&lt;std::mutex&gt; <span class="hljs-title">lock</span><span class="hljs-params">(mutex_)</span></span>;<br>                <br>                <span class="hljs-comment">// 计算最近需要续期的时间</span><br>                <span class="hljs-keyword">auto</span> next_wake_time = std::chrono::steady_clock::<span class="hljs-built_in">now</span>() + std::chrono::<span class="hljs-built_in">seconds</span>(<span class="hljs-number">10</span>);<br>                <span class="hljs-keyword">for</span> (<span class="hljs-type">const</span> <span class="hljs-keyword">auto</span>&amp; [_, task] : tasks_) &#123;<br>                    <span class="hljs-keyword">if</span> (task-&gt;next_renew_time &lt; next_wake_time) &#123;<br>                        next_wake_time = task-&gt;next_renew_time;<br>                    &#125;<br>                &#125;<br>                <br>                <span class="hljs-comment">// 等待到下一个续期时间或新任务</span><br>                cv_.<span class="hljs-built_in">wait_until</span>(lock, next_wake_time, [&amp;] &#123;<br>                    <span class="hljs-keyword">return</span> !running_ || !tasks_.<span class="hljs-built_in">empty</span>();<br>                &#125;);<br>                <br>                <span class="hljs-keyword">if</span> (!running_) <span class="hljs-keyword">break</span>;<br>                <br>                <span class="hljs-comment">// 收集需要续期的任务</span><br>                <span class="hljs-keyword">auto</span> now = std::chrono::steady_clock::<span class="hljs-built_in">now</span>();<br>                <span class="hljs-keyword">for</span> (<span class="hljs-type">const</span> <span class="hljs-keyword">auto</span>&amp; [_, task] : tasks_) &#123;<br>                    <span class="hljs-keyword">if</span> (task-&gt;running &amp;&amp; task-&gt;next_renew_time &lt;= now) &#123;<br>                        tasks_to_renew.<span class="hljs-built_in">push_back</span>(task);<br>                    &#125;<br>                &#125;<br>            &#125;<br>            <br>            <span class="hljs-comment">// 执行续期操作</span><br>            <span class="hljs-keyword">for</span> (<span class="hljs-keyword">auto</span>&amp; task : tasks_to_renew) &#123;<br>                <span class="hljs-keyword">if</span> (!task-&gt;running) <span class="hljs-keyword">continue</span>;<br>                <span class="hljs-type">bool</span> success = <span class="hljs-built_in">renew_lock</span>(task);<br>                <br>                <span class="hljs-comment">// 更新下次续期时间</span><br>                <span class="hljs-keyword">if</span> (task-&gt;running) &#123;<br>                    task-&gt;next_renew_time = std::chrono::steady_clock::<span class="hljs-built_in">now</span>() + <br>                                          std::chrono::<span class="hljs-built_in">milliseconds</span>(task-&gt;renew_interval);<br>                &#125;<br>            &#125;<br>        &#125;<br>    &#125;<br>    <br>    <span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">renew_lock</span><span class="hljs-params">(<span class="hljs-type">const</span> std::shared_ptr&lt;RenewTask&gt;&amp; task)</span> </span>&#123;<br>        redisContext* conn = pool_-&gt;<span class="hljs-built_in">getConnection</span>();<br>        <span class="hljs-keyword">if</span> (!conn) <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>        <br>        <span class="hljs-type">const</span> <span class="hljs-type">char</span>* script = <br>            <span class="hljs-string">&quot;if redis.call(&#x27;GET&#x27;, KEYS[1]) == ARGV[1] then &quot;</span><br>            <span class="hljs-string">&quot;   return redis.call(&#x27;PEXPIRE&#x27;, KEYS[1], ARGV[2]) &quot;</span><br>            <span class="hljs-string">&quot;else &quot;</span><br>            <span class="hljs-string">&quot;   return 0 &quot;</span><br>            <span class="hljs-string">&quot;end&quot;</span>;<br>        <br>        redisReply* reply = <span class="hljs-literal">nullptr</span>;<br>        <span class="hljs-type">bool</span> success = <span class="hljs-literal">false</span>;<br>        <br>        <span class="hljs-keyword">try</span> &#123;<br>            reply = (redisReply*)<span class="hljs-built_in">redisCommand</span>(conn, <br>                <span class="hljs-string">&quot;EVAL %s 1 %s %s %d&quot;</span>, <br>                script, <br>                task-&gt;lock_name.<span class="hljs-built_in">c_str</span>(), <br>                task-&gt;identifier.<span class="hljs-built_in">c_str</span>(),<br>                task-&gt;lock_timeout_ms);<br>            <br>            success = (reply &amp;&amp; <br>                      reply-&gt;type == REDIS_REPLY_INTEGER &amp;&amp; <br>                      reply-&gt;integer == <span class="hljs-number">1</span>);<br>        &#125; <span class="hljs-built_in">catch</span> (...) &#123;<br>            <span class="hljs-comment">// 异常处理</span><br>            success = <span class="hljs-literal">false</span>;<br>        &#125;<br>        <br>        <span class="hljs-keyword">if</span> (reply) <span class="hljs-built_in">freeReplyObject</span>(reply);<br>        pool_-&gt;<span class="hljs-built_in">returnConnection</span>(conn);<br>        <span class="hljs-keyword">return</span> success;<br>    &#125;<br>    <br>    RedisConPool* pool_;<br>    std::atomic&lt;<span class="hljs-type">bool</span>&gt; running_;<br>    std::thread manager_thread_;<br>    std::mutex mutex_;<br>    std::condition_variable cv_;<br>    std::unordered_map&lt;std::string, std::shared_ptr&lt;RenewTask&gt;&gt; tasks_;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>这里便会实现在map中的锁在超时之前就进行重置, 除非由极端情况网络问题, 不然是非常健全的. 我们将其加入RedisMgr : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br></pre></td><td class="code"><pre><code class="hljs cpp">RedisMgr::<span class="hljs-built_in">RedisMgr</span>() &#123;<br>	con_pool_ = std::<span class="hljs-built_in">make_unique</span>&lt;RedisConPool&gt;(<span class="hljs-number">10</span>, <span class="hljs-string">&quot;127.0.0.1&quot;</span>, <span class="hljs-number">6379</span>, <span class="hljs-string">&quot;&quot;</span>);<br>	lock_renewer_ = std::<span class="hljs-built_in">make_unique</span>&lt;LockRenewer&gt;(con_pool_.<span class="hljs-built_in">get</span>());<br>&#125;<br><br>RedisMgr::~<span class="hljs-built_in">RedisMgr</span>() &#123;<br>	<span class="hljs-built_in">Close</span>();<br>	<span class="hljs-comment">// 确保锁续期管理器正确关闭</span><br>    <span class="hljs-keyword">if</span> (lock_renewer_) &#123;<br>        lock_renewer_-&gt;<span class="hljs-built_in">stop</span>();<br>    &#125;<br>&#125;<br><br><span class="hljs-comment">// .....</span><br><br><span class="hljs-function">std::string <span class="hljs-title">RedisMgr::acquireLock</span><span class="hljs-params">(<span class="hljs-type">const</span> std::string&amp; lockName, <span class="hljs-type">int</span> lockTimeout, <span class="hljs-type">int</span> acquireTimeout)</span> </span>&#123;<br>    std::string identifier = <span class="hljs-built_in">generate_lock_id</span>();<br>    <br>    <span class="hljs-type">const</span> <span class="hljs-type">char</span>* key = lockName.<span class="hljs-built_in">c_str</span>();<br>    <span class="hljs-type">const</span> <span class="hljs-type">char</span>* value = identifier.<span class="hljs-built_in">c_str</span>();<br>    <span class="hljs-type">int</span> retryCount = <span class="hljs-number">0</span>;<br>    <span class="hljs-type">int</span> maxRetries = acquireTimeout / <span class="hljs-number">100</span>;<br><br>    redisContext* context = con_pool_-&gt;<span class="hljs-built_in">getConnection</span>();<br>    <span class="hljs-keyword">if</span> (!context) &#123;<br>        <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;&quot;</span>;<br>    &#125;<br><br>    <span class="hljs-keyword">while</span> (retryCount &lt; maxRetries) &#123;<br>        redisReply* reply = (redisReply*)<span class="hljs-built_in">redisCommand</span>(context, <span class="hljs-string">&quot;SET %s %s NX PX %d&quot;</span>, key, value, lockTimeout);<br>        <span class="hljs-keyword">if</span> (reply &amp;&amp; reply-&gt;type == REDIS_REPLY_STATUS &amp;&amp; <span class="hljs-built_in">strcmp</span>(reply-&gt;str, <span class="hljs-string">&quot;OK&quot;</span>) == <span class="hljs-number">0</span>) &#123;<br>            <span class="hljs-built_in">freeReplyObject</span>(reply);<br>            con_pool_-&gt;<span class="hljs-built_in">returnConnection</span>(context);<br>            <br>            <span class="hljs-comment">// 针对当前锁启动锁续期</span><br>            lock_renewer_-&gt;<span class="hljs-built_in">start</span>(lockName, identifier, lockTimeout);<br>            <br>            <span class="hljs-keyword">return</span> identifier;<br>        &#125;<br>        <br>        <span class="hljs-keyword">if</span> (reply) <span class="hljs-built_in">freeReplyObject</span>(reply);<br>        retryCount++;<br>        std::this_thread::<span class="hljs-built_in">sleep_for</span>(std::chrono::<span class="hljs-built_in">milliseconds</span>(<span class="hljs-number">100</span>));<br>    &#125;<br><br>    con_pool_-&gt;<span class="hljs-built_in">returnConnection</span>(context);<br>    <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;&quot;</span>;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">RedisMgr::releaseLock</span><span class="hljs-params">(<span class="hljs-type">const</span> std::string&amp; lockName, <span class="hljs-type">const</span> std::string&amp; identifier)</span> </span>&#123;<br>    <span class="hljs-comment">// 先停止续期</span><br>    lock_renewer_-&gt;<span class="hljs-built_in">stop</span>(lockName);<br>    <br>    <span class="hljs-type">const</span> <span class="hljs-type">char</span>* key = lockName.<span class="hljs-built_in">c_str</span>();<br>    <span class="hljs-type">const</span> <span class="hljs-type">char</span>* value = identifier.<span class="hljs-built_in">c_str</span>();<br><br>    redisContext* context = con_pool_-&gt;<span class="hljs-built_in">getConnection</span>();<br>    <span class="hljs-keyword">if</span> (!context) &#123;<br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>    &#125;<br><br>    <span class="hljs-type">const</span> <span class="hljs-type">char</span>* script = <br>        <span class="hljs-string">&quot;if redis.call(&#x27;get&#x27;, KEYS[1]) == ARGV[1] then &quot;</span><br>        <span class="hljs-string">&quot;return redis.call(&#x27;del&#x27;, KEYS[1]) &quot;</span><br>        <span class="hljs-string">&quot;else &quot;</span><br>        <span class="hljs-string">&quot;return 0 &quot;</span><br>        <span class="hljs-string">&quot;end&quot;</span>;<br><br>    redisReply* reply = (redisReply*)<span class="hljs-built_in">redisCommand</span>(context, <span class="hljs-string">&quot;EVAL %s 1 %s %s&quot;</span>, script, key, value);<br>    <span class="hljs-keyword">if</span> (!reply || reply-&gt;type != REDIS_REPLY_INTEGER || reply-&gt;integer == <span class="hljs-number">0</span>) &#123;<br>        <span class="hljs-keyword">if</span> (reply) <span class="hljs-built_in">freeReplyObject</span>(reply);<br>        con_pool_-&gt;<span class="hljs-built_in">returnConnection</span>(context);<br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>    &#125;<br><br>    <span class="hljs-built_in">freeReplyObject</span>(reply);<br>    con_pool_-&gt;<span class="hljs-built_in">returnConnection</span>(context);<br>    <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>监视机制 : 这里其实可以写一些监视机制来分析锁的使用情况, 锁冲突情况等等, 会很便于后台分析监控, 但会使代码更加负责, 这里就不加赘述.</li>
+</ul>
+<h3 id="RedLock"><a href="#RedLock" class="headerlink" title="RedLock"></a>RedLock</h3><p>这是应对Redis分布式锁另外一个问题的技术, 是Redis官方推荐的解决方式.</p>
+<ul>
+<li><p>问题所在 : 如果锁都只在一个服务器的Redis服务上申请, 那么只要这台服务器挂了, 那么锁服务就瘫痪了.</p>
+</li>
+<li><p>解决方式 : 大道至简, 多开几个服务器, 申请分布式锁要向所有的服务器发出请求, 只要大多数请求成功, 便会认为锁获取成功.</p>
+</li>
+<li><p>具体实现 : 其实可以基于我这里的代码在上层进一步封装RedLock, 但鉴于我只是学习, 实际使用还是直接用现成库就好, 就不继续封装了.</p>
+</li>
+</ul>
+<p>by 天目中云</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Redis/" class="print-no-link">#Redis</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Redis深入学习(2) 分布式锁</div>
+      <div>http://example.com/2025/10/26/Redis深入学习(2) 分布式锁/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>天目中云</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月26日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/25/Redis%E6%B7%B1%E5%85%A5%E5%AD%A6%E4%B9%A0(1)%20%E5%AE%89%E8%A3%85%E4%B8%8E%E5%B0%81%E8%A3%85/" title="Redis深入学习(1) 安装与封装">
+                        <span class="hidden-mobile">Redis深入学习(1) 安装与封装</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"NhgfDy2CEByjwxuxPM1Le2t6-MdYXbMMI","appKey":"nvGMdqKfKbpkVnojLSbwmasv","path":"window.location.pathname","placeholder":null,"avatar":"retro","meta":["nick","mail","link"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":false,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":false},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

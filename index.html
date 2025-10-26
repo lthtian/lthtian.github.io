@@ -246,15 +246,15 @@
     <article class="col-12 col-md-12 mx-auto index-info">
       <h2 class="index-header">
         
-        <a href="/2025/09/17/%5BWindows%E6%A0%B8%E5%BF%83%E7%BC%96%E7%A8%8B%5D%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0(2)/" target="_self">
-          Windows核心编程 读书笔记(2)
+        <a href="/2025/10/26/Redis%E6%B7%B1%E5%85%A5%E5%AD%A6%E4%B9%A0(2)%20%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81/" target="_self">
+          Redis深入学习(2) 分布式锁
         </a>
       </h2>
 
       
-      <a class="index-excerpt index-excerpt__noimg" href="/2025/09/17/%5BWindows%E6%A0%B8%E5%BF%83%E7%BC%96%E7%A8%8B%5D%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0(2)/" target="_self">
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/10/26/Redis%E6%B7%B1%E5%85%A5%E5%AD%A6%E4%B9%A0(2)%20%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81/" target="_self">
         <div>
-          进&#x2F;线程同步  用户模式下的线程同步可以理解为同一进程内的线程同步, 如果不涉及跨进程, 使用这些函数同步效率更高. 原子访问 Interlocked对标C++的atomic, 可以实现完全替代, C++atomic在windows上运行底层用的就是这个. 关键段 critical_section对标C++的mutex, 基本上完全替代, 除了critical_section可以通过E
+          Redis分布式锁  分布式锁看起来很高端, 但是非常易懂, 类似于线程中的互斥锁, 用来保证不同线程间的资源共享, 把这里的线程提升到服务器, 对应的就是分布式锁了.  其实本质就是在做不同服务器上的进程&#x2F;线程对于共享资源的管理. 解决的思路也比较统一, 以我目前的学习程度看来就是单独在一个服务器上开一个分布式锁服务, 统一到这个服务上申请使用权. 实现这种分布式锁功能的中间件有很多
         </div>
       </a>
 
@@ -262,8 +262,8 @@
         
           <div class="post-meta mr-3">
             <i class="iconfont icon-date"></i>
-            <time datetime="2025-09-17 20:00" pubdate>
-              2025-09-17
+            <time datetime="2025-10-26 22:00" pubdate>
+              2025-10-26
             </time>
           </div>
         
@@ -272,9 +272,47 @@
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/WindowsAPI/">#WindowsAPI</a>
+              <a href="/tags/Redis/">#Redis</a>
             
-              <a href="/tags/Windows%E6%A0%B8%E5%BF%83%E7%BC%96%E7%A8%8B/">#Windows核心编程</a>
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2025/10/25/Redis%E6%B7%B1%E5%85%A5%E5%AD%A6%E4%B9%A0(1)%20%E5%AE%89%E8%A3%85%E4%B8%8E%E5%B0%81%E8%A3%85/" target="_self">
+          Redis深入学习(1) 安装与封装
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/10/25/Redis%E6%B7%B1%E5%85%A5%E5%AD%A6%E4%B9%A0(1)%20%E5%AE%89%E8%A3%85%E4%B8%8E%E5%B0%81%E8%A3%85/" target="_self">
+        <div>
+          vcpkg一个安装管理器, 你可以认为类似于ubuntu的apt, 这个安装器跨平台, windows和linux都可以用, 可以一键部署下载很多C&#x2F;C++的核心第三方库. 其对CMake配置的项目有天然助益, 有清单配置之类的功能, 之后可以了解一下在vs上使用CMake + vcpkg的方式写几个demo. 安装&#x2F;配置一般选用hiredis库作为Redis第三方库使用.
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2025-10-25 20:00" pubdate>
+              2025-10-25
+            </time>
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/Redis/">#Redis</a>
             
           </div>
         
@@ -607,46 +645,6 @@
               <a href="/tags/%E7%BC%96%E8%AF%91%E9%93%BE%E6%8E%A5/">#编译链接</a>
             
               <a href="/tags/C-20%E6%A8%A1%E5%9D%97/">#C++20模块</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h2 class="index-header">
-        
-        <a href="/2025/08/05/HTTP3/" target="_self">
-          HTTP/3
-        </a>
-      </h2>
-
-      
-      <a class="index-excerpt index-excerpt__noimg" href="/2025/08/05/HTTP3/" target="_self">
-        <div>
-          生态分析TCP队头阻塞这是HTTP&#x2F;2所拥有的根本性通病, 注意这里的队头阻塞不是指排队造成的阻塞, 而是指丢包造成的阻塞. TCP为了实现可靠有序, 采用了超时重传机制, 该机制可以确保可靠有序, 但是对于现代网络却有严重缺陷. TCP中如果发送出现丢包, 必须要依靠超时重传等到当前包再次发来, 后面的包才能生效, 即使已经发来了, 后面的包也不能及时处理和使用, 这是在内核中就强制决
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2025-08-05 17:00" pubdate>
-              2025-08-05
-            </time>
-          </div>
-        
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/HTTP/">#HTTP</a>
             
           </div>
         
