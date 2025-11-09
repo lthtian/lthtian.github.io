@@ -1,0 +1,770 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/head.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="天目中云">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="本章使用了redis_plus_plus库, 确实使用要比hiredis要方便的多, 实际使用还是直接用这个最好. 另外还加入了 Pipeline &#x2F; 事务 &#x2F; 发布订阅 的应用, 补全一些前面没有深入的概念.  Redis Pub&#x2F;Sub (消息订阅)这应该算是简化版的消息队列, 其可以通过订阅评到来实时获取频道上实时发来的消息, 和卡夫卡之类不同, Redis做">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Redis深入学习(4) redis_plus_plus库">
+<meta property="og:url" content="http://example.com/2025/11/08/Redis%E6%B7%B1%E5%85%A5%E5%AD%A6%E4%B9%A0(4)%20redis_plus_plus%E5%BA%93/index.html">
+<meta property="og:site_name" content="天目中云">
+<meta property="og:description" content="本章使用了redis_plus_plus库, 确实使用要比hiredis要方便的多, 实际使用还是直接用这个最好. 另外还加入了 Pipeline &#x2F; 事务 &#x2F; 发布订阅 的应用, 补全一些前面没有深入的概念.  Redis Pub&#x2F;Sub (消息订阅)这应该算是简化版的消息队列, 其可以通过订阅评到来实时获取频道上实时发来的消息, 和卡夫卡之类不同, Redis做">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-11-08T09:00:00.000Z">
+<meta property="article:modified_time" content="2025-11-09T09:18:46.043Z">
+<meta property="article:author" content="天目中云">
+<meta property="article:tag" content="Redis">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>Redis深入学习(4) redis_plus_plus库 - 天目中云</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":"NhgfDy2CEByjwxuxPM1Le2t6-MdYXbMMI","app_key":"nvGMdqKfKbpkVnojLSbwmasv","server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>TianMu</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/03.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Redis深入学习(4) redis_plus_plus库"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-11-08 17:00" pubdate>
+          2025年11月8日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          6.6k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          56 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Redis深入学习(4) redis_plus_plus库</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <blockquote>
+<p>本章使用了redis_plus_plus库, 确实使用要比hiredis要方便的多, 实际使用还是直接用这个最好.</p>
+<p>另外还加入了 Pipeline &#x2F; 事务 &#x2F; 发布订阅 的应用, 补全一些前面没有深入的概念.</p>
+</blockquote>
+<h3 id="Redis-Pub-Sub-消息订阅"><a href="#Redis-Pub-Sub-消息订阅" class="headerlink" title="Redis Pub&#x2F;Sub (消息订阅)"></a>Redis Pub&#x2F;Sub (消息订阅)</h3><p>这应该算是简化版的消息队列, 其可以通过订阅评到来实时获取频道上实时发来的消息, 和卡夫卡之类不同, Redis做的更简化, 更轻便, 在实时接收消息上的效率是极高的. 但相应的高载荷&#x2F;持久化&#x2F;数据堆积之类的功能就没有了, 适合一些简单的需求.</p>
+<p>测试代码 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">RedisExamples::pubsubOperations</span><span class="hljs-params">()</span> </span>&#123;<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;\n=== 发布订阅操作 ===&quot;</span> &lt;&lt; std::endl;<br>    <br>    <span class="hljs-keyword">try</span> &#123;<br>        <span class="hljs-comment">// 创建连接配置</span><br>        sw::redis::ConnectionOptions conn_opts;<br>        conn_opts.host = <span class="hljs-string">&quot;127.0.0.1&quot;</span>;<br>        conn_opts.port = <span class="hljs-number">6382</span>;<br>        conn_opts.socket_timeout = std::chrono::<span class="hljs-built_in">seconds</span>(<span class="hljs-number">1</span>);<br>        <br>        sw::redis::ConnectionPoolOptions pool_opts;<br>        pool_opts.size = <span class="hljs-number">1</span>;<br>        <br>        <span class="hljs-comment">// 使用shared_ptr管理Redis实例</span><br>        <span class="hljs-keyword">auto</span> redis_ptr = std::<span class="hljs-built_in">make_shared</span>&lt;sw::redis::Redis&gt;(conn_opts, pool_opts);<br>        <br>        <span class="hljs-comment">// 在单独的线程中运行订阅者</span><br>        <span class="hljs-function">std::thread <span class="hljs-title">subscriber_thread</span><span class="hljs-params">([redis_ptr]() &#123;  <span class="hljs-comment">// 值捕获，安全！</span></span></span><br><span class="hljs-params"><span class="hljs-function">            <span class="hljs-keyword">try</span> &#123;</span></span><br><span class="hljs-params"><span class="hljs-function">                <span class="hljs-keyword">auto</span> sub = redis_ptr-&gt;subscriber();</span></span><br><span class="hljs-params"><span class="hljs-function">                sub.on_message([](std::string channel, std::string msg) &#123;</span></span><br><span class="hljs-params"><span class="hljs-function">                    std::cout &lt;&lt; <span class="hljs-string">&quot;[订阅者] 收到消息 - 频道: &quot;</span> &lt;&lt; channel </span></span><br><span class="hljs-params"><span class="hljs-function">                              &lt;&lt; <span class="hljs-string">&quot;, 消息: &quot;</span> &lt;&lt; msg &lt;&lt; std::endl;</span></span><br><span class="hljs-params"><span class="hljs-function">                &#125;);</span></span><br><span class="hljs-params"><span class="hljs-function">                sub.subscribe(<span class="hljs-string">&quot;test_channel&quot;</span>);</span></span><br><span class="hljs-params"><span class="hljs-function">                <span class="hljs-comment">// 运行一段时间后自动退出, 如果是生产环境就不必退出了</span></span></span><br><span class="hljs-params"><span class="hljs-function">                <span class="hljs-keyword">auto</span> end_time = std::chrono::steady_clock::now() + std::chrono::seconds(<span class="hljs-number">30</span>);</span></span><br><span class="hljs-params"><span class="hljs-function">                <span class="hljs-keyword">while</span> (std::chrono::steady_clock::now() &lt; end_time) &#123;</span></span><br><span class="hljs-params"><span class="hljs-function">                    <span class="hljs-keyword">try</span> &#123;</span></span><br><span class="hljs-params"><span class="hljs-function">                        sub.consume();</span></span><br><span class="hljs-params"><span class="hljs-function">                    &#125; <span class="hljs-keyword">catch</span> (<span class="hljs-type">const</span> sw::redis::TimeoutError&amp; e) &#123;</span></span><br><span class="hljs-params"><span class="hljs-function">                        <span class="hljs-keyword">continue</span>;</span></span><br><span class="hljs-params"><span class="hljs-function">                    &#125;</span></span><br><span class="hljs-params"><span class="hljs-function">                &#125;</span></span><br><span class="hljs-params"><span class="hljs-function">            &#125; <span class="hljs-keyword">catch</span> (<span class="hljs-type">const</span> Error&amp; e) &#123;</span></span><br><span class="hljs-params"><span class="hljs-function">                std::cerr &lt;&lt; <span class="hljs-string">&quot;订阅错误: &quot;</span> &lt;&lt; e.what() &lt;&lt; std::endl;</span></span><br><span class="hljs-params"><span class="hljs-function">            &#125;</span></span><br><span class="hljs-params"><span class="hljs-function">        &#125;)</span></span>;<br>        <br>        <span class="hljs-comment">// 给订阅者一些时间准备</span><br>        std::this_thread::<span class="hljs-built_in">sleep_for</span>(std::chrono::<span class="hljs-built_in">milliseconds</span>(<span class="hljs-number">100</span>));<br>        <span class="hljs-comment">// 发布消息</span><br>        redis_ptr-&gt;<span class="hljs-built_in">publish</span>(<span class="hljs-string">&quot;test_channel&quot;</span>, <span class="hljs-string">&quot;Hello from publisher!&quot;</span>);<br>        redis_ptr-&gt;<span class="hljs-built_in">publish</span>(<span class="hljs-string">&quot;test_channel&quot;</span>, <span class="hljs-string">&quot;Second message&quot;</span>);<br>        <span class="hljs-comment">// 现在可以安全detach</span><br>        subscriber_thread.<span class="hljs-built_in">detach</span>();<br>        std::cout &lt;&lt; <span class="hljs-string">&quot;主线程继续执行，订阅线程在后台运行30秒后自动退出&quot;</span> &lt;&lt; std::endl;<br>    &#125; <span class="hljs-built_in">catch</span> (<span class="hljs-type">const</span> Error&amp; e) &#123;<br>        std::cerr &lt;&lt; <span class="hljs-string">&quot;发布订阅错误: &quot;</span> &lt;&lt; e.<span class="hljs-built_in">what</span>() &lt;&lt; std::endl;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><code>on_message</code> : 当订阅的频道有消息传来, 会将频道与消息作为参数传入该回调, 然后进行自定义反馈.</li>
+<li><code>subscribe</code> : 订阅频道名, 类似于关注一个key, 可以同时订阅多个.</li>
+<li><code>consume</code> : 阻塞等待订阅频道的消息.</li>
+<li><code>publish</code> : 向指定频道发送消息.</li>
+<li>这里我们可以看到一般会在一个单独的线程中实现频道的订阅和消息接收, 并且和主线程detach, 当消息发来时便可以通过回调函数进行持续的反馈.</li>
+<li>在聊天室项目就用到过这个技术, 主要解决的是不同服务器上消息的广播问题, 就可以让客户端订阅同一个Redis服务, 当不同服务器的客户端发送消息, 就会向指定的频道发送消息, 让其他服务器上的客户端收到消息.</li>
+</ul>
+<h3 id="内嵌Lua脚本-Redis-事务"><a href="#内嵌Lua脚本-Redis-事务" class="headerlink" title="内嵌Lua脚本(Redis 事务)"></a>内嵌Lua脚本(Redis 事务)</h3><p>Redis确实有自己的事务, 其理由和MYSQL的事务也差不多, 就是为了实现多条命令的原子性, 但是由于Redis已经可以支持内嵌Lua脚本, 这种机制<strong>天然原子性, 并且还可以自定义回滚机制</strong>, 就导致其几乎成了Redis事务的上位替代, 之前在分布式锁解锁的时候也是用的Lua脚本保证原子性.</p>
+<p>下面的这个测试函数中, 其中的Lua脚本就具备原子性与失败回滚.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">RedisExamples::LuaTransaction</span><span class="hljs-params">()</span> </span>&#123;<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;\n=== Lua 事务回滚测试 ===&quot;</span> &lt;&lt; std::endl;<br>    <br>    <span class="hljs-keyword">try</span> &#123;<br>        redis.<span class="hljs-built_in">set</span>(<span class="hljs-string">&quot;acc:X&quot;</span>, <span class="hljs-string">&quot;100&quot;</span>);<br>        redis.<span class="hljs-built_in">set</span>(<span class="hljs-string">&quot;acc:Y&quot;</span>, <span class="hljs-string">&quot;50&quot;</span>);<br>        <br>        std::cout &lt;&lt; <span class="hljs-string">&quot;初始 - X: &quot;</span> &lt;&lt; *redis.<span class="hljs-built_in">get</span>(<span class="hljs-string">&quot;acc:X&quot;</span>) <br>                  &lt;&lt; <span class="hljs-string">&quot;, Y: &quot;</span> &lt;&lt; *redis.<span class="hljs-built_in">get</span>(<span class="hljs-string">&quot;acc:Y&quot;</span>) &lt;&lt; std::endl;<br>        <br>        <span class="hljs-comment">// 事务脚本：要么全部成功，要么全部回滚</span><br>        std::string tx_script = <span class="hljs-string">R&quot;(</span><br><span class="hljs-string">            local from = KEYS[1]</span><br><span class="hljs-string">            local to = KEYS[2] </span><br><span class="hljs-string">            local amount = tonumber(ARGV[1])</span><br><span class="hljs-string">            </span><br><span class="hljs-string">            -- 先读取，不修改</span><br><span class="hljs-string">            local from_balance = tonumber(redis.call(&#x27;GET&#x27;, from))</span><br><span class="hljs-string">            local to_balance = tonumber(redis.call(&#x27;GET&#x27;, to))</span><br><span class="hljs-string">            </span><br><span class="hljs-string">            -- 验证</span><br><span class="hljs-string">            if from_balance &lt; amount then</span><br><span class="hljs-string">                return &quot;错误：余额不足&quot;</span><br><span class="hljs-string">            end</span><br><span class="hljs-string">            </span><br><span class="hljs-string">            -- 验证通过，执行转账</span><br><span class="hljs-string">            redis.call(&#x27;DECRBY&#x27;, from, amount)</span><br><span class="hljs-string">            redis.call(&#x27;INCRBY&#x27;, to, amount)</span><br><span class="hljs-string">            </span><br><span class="hljs-string">            -- 最终验证（模拟业务规则）</span><br><span class="hljs-string">            if amount &gt; 80 then</span><br><span class="hljs-string">                -- 违反规则，回滚操作</span><br><span class="hljs-string">                redis.call(&#x27;INCRBY&#x27;, from, amount)  -- 退款</span><br><span class="hljs-string">                redis.call(&#x27;DECRBY&#x27;, to, amount)    -- 扣回</span><br><span class="hljs-string">                return &quot;错误：金额超过限制，已回滚&quot;</span><br><span class="hljs-string">            end</span><br><span class="hljs-string">            </span><br><span class="hljs-string">            return &quot;成功&quot;</span><br><span class="hljs-string">        )&quot;</span>;<br>        <br>        <span class="hljs-comment">// 测试</span><br>        <span class="hljs-keyword">auto</span> result = redis.<span class="hljs-built_in">eval</span>&lt;std::string&gt;(tx_script, &#123;<span class="hljs-string">&quot;acc:X&quot;</span>, <span class="hljs-string">&quot;acc:Y&quot;</span>&#125;, &#123;<span class="hljs-string">&quot;90&quot;</span>&#125;);<br>        std::cout &lt;&lt; <span class="hljs-string">&quot;转账结果: &quot;</span> &lt;&lt; result &lt;&lt; std::endl;<br>        std::cout &lt;&lt; <span class="hljs-string">&quot;最终 - X: &quot;</span> &lt;&lt; *redis.<span class="hljs-built_in">get</span>(<span class="hljs-string">&quot;acc:X&quot;</span>) <br>                  &lt;&lt; <span class="hljs-string">&quot;, Y: &quot;</span> &lt;&lt; *redis.<span class="hljs-built_in">get</span>(<span class="hljs-string">&quot;acc:Y&quot;</span>) &lt;&lt; std::endl;<br>        <br>        redis.<span class="hljs-built_in">del</span>(&#123;<span class="hljs-string">&quot;acc:X&quot;</span>, <span class="hljs-string">&quot;acc:Y&quot;</span>&#125;);<br>        <br>    &#125; <span class="hljs-built_in">catch</span> (<span class="hljs-type">const</span> sw::redis::Error&amp; e) &#123;<br>        std::cerr &lt;&lt; <span class="hljs-string">&quot;错误: &quot;</span> &lt;&lt; e.<span class="hljs-built_in">what</span>() &lt;&lt; std::endl;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="Redis-PipiLine"><a href="#Redis-PipiLine" class="headerlink" title="Redis PipiLine"></a>Redis PipiLine</h3><p>也是一个相对简单的机制, 目的是<strong>降低网络传输的次数与消耗</strong>, 方法是<strong>将一批操作打包在一块发送, 并一次性接收所有返回</strong>.</p>
+<p>实际到操作中其实就是在打包前调用<code>pipeline</code>, 打包完调用<code>exec</code>.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">RedisExamples::pipelineBasic</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;\n=== Pipeline 基本使用 ===&quot;</span> &lt;&lt; std::endl;<br><br>    <span class="hljs-keyword">try</span><br>    &#123;<br>        <span class="hljs-keyword">auto</span> pipe = redis.<span class="hljs-built_in">pipeline</span>();<br><br>        <span class="hljs-comment">// 添加命令到 pipeline</span><br>        pipe.<span class="hljs-built_in">set</span>(<span class="hljs-string">&quot;pipeline_key&quot;</span>, <span class="hljs-string">&quot;pipeline_value&quot;</span>);<br>        pipe.<span class="hljs-built_in">get</span>(<span class="hljs-string">&quot;pipeline_key&quot;</span>);<br>        pipe.<span class="hljs-built_in">incr</span>(<span class="hljs-string">&quot;pipeline_counter&quot;</span>);<br>        pipe.<span class="hljs-built_in">hset</span>(<span class="hljs-string">&quot;pipeline_hash&quot;</span>, <span class="hljs-string">&quot;field&quot;</span>, <span class="hljs-string">&quot;value&quot;</span>);<br><br>        <span class="hljs-comment">// 执行所有命令</span><br>        <span class="hljs-keyword">auto</span> replies = pipe.<span class="hljs-built_in">exec</span>();<br><br>        <span class="hljs-comment">// 获取结果</span><br>        std::cout &lt;&lt; <span class="hljs-string">&quot;SET 结果: &quot;</span> &lt;&lt; replies.<span class="hljs-built_in">get</span>&lt;<span class="hljs-type">bool</span>&gt;(<span class="hljs-number">0</span>) &lt;&lt; std::endl;<br><br>        <span class="hljs-keyword">auto</span> value = replies.<span class="hljs-built_in">get</span>&lt;sw::redis::OptionalString&gt;(<span class="hljs-number">1</span>);<br>        <span class="hljs-keyword">if</span> (value)<br>        &#123;<br>            std::cout &lt;&lt; <span class="hljs-string">&quot;GET 结果: &quot;</span> &lt;&lt; *value &lt;&lt; std::endl;<br>        &#125;<br><br>        std::cout &lt;&lt; <span class="hljs-string">&quot;INCR 结果: &quot;</span> &lt;&lt; replies.<span class="hljs-built_in">get</span>&lt;<span class="hljs-type">long</span> <span class="hljs-type">long</span>&gt;(<span class="hljs-number">2</span>) &lt;&lt; std::endl;<br>        std::cout &lt;&lt; <span class="hljs-string">&quot;HSET 结果: &quot;</span> &lt;&lt; replies.<span class="hljs-built_in">get</span>&lt;<span class="hljs-type">bool</span>&gt;(<span class="hljs-number">3</span>) &lt;&lt; std::endl;<br>    &#125;<br>    <span class="hljs-built_in">catch</span> (<span class="hljs-type">const</span> Error &amp;e)<br>    &#123;<br>        std::cerr &lt;&lt; <span class="hljs-string">&quot;Pipeline 错误: &quot;</span> &lt;&lt; e.<span class="hljs-built_in">what</span>() &lt;&lt; std::endl;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="Redis功能全面测试"><a href="#Redis功能全面测试" class="headerlink" title="Redis功能全面测试"></a>Redis功能全面测试</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-comment">// redis_examples.h</span><br><span class="hljs-meta">#<span class="hljs-keyword">ifndef</span> REDIS_EXAMPLES_H</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> REDIS_EXAMPLES_H</span><br><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;sw/redis++/redis++.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iostream&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;vector&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;unordered_map&gt;</span></span><br><br><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> sw::redis;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">RedisExamples</span> &#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-built_in">RedisExamples</span>(<span class="hljs-type">const</span> std::string&amp; connection_string = <span class="hljs-string">&quot;tcp://127.0.0.1:6382&quot;</span>);<br>    <br>    <span class="hljs-comment">// 基本连接测试</span><br>    <span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">testConnection</span><span class="hljs-params">()</span></span>;<br>    <span class="hljs-comment">// 字符串操作示例</span><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">stringOperations</span><span class="hljs-params">()</span></span>;<br>    <span class="hljs-comment">// 列表操作示例</span><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">listOperations</span><span class="hljs-params">()</span></span>;<br>    <span class="hljs-comment">// 哈希操作示例</span><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">hashOperations</span><span class="hljs-params">()</span></span>;<br>    <span class="hljs-comment">// 集合操作示例</span><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">setOperations</span><span class="hljs-params">()</span></span>;<br>    <span class="hljs-comment">// // 有序集合操作示例</span><br>    <span class="hljs-comment">// void sortedSetOperations();</span><br>    <span class="hljs-comment">// 事务操作示例</span><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">transactionOperations</span><span class="hljs-params">()</span></span>;<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">LuaTransaction</span><span class="hljs-params">()</span></span>;<br>    <span class="hljs-comment">// 发布订阅示例</span><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">pubsubOperations</span><span class="hljs-params">()</span></span>;<br>    <span class="hljs-comment">// PipeLine示例</span><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">pipelineBasic</span><span class="hljs-params">()</span></span>;<br><span class="hljs-keyword">private</span>:<br>    Redis redis;<br>&#125;;<br><br><span class="hljs-meta">#<span class="hljs-keyword">endif</span></span><br></code></pre></td></tr></table></figure>
+
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br><span class="line">253</span><br><span class="line">254</span><br><span class="line">255</span><br><span class="line">256</span><br><span class="line">257</span><br><span class="line">258</span><br><span class="line">259</span><br><span class="line">260</span><br><span class="line">261</span><br><span class="line">262</span><br><span class="line">263</span><br><span class="line">264</span><br><span class="line">265</span><br><span class="line">266</span><br><span class="line">267</span><br><span class="line">268</span><br><span class="line">269</span><br><span class="line">270</span><br><span class="line">271</span><br><span class="line">272</span><br><span class="line">273</span><br><span class="line">274</span><br><span class="line">275</span><br><span class="line">276</span><br><span class="line">277</span><br><span class="line">278</span><br><span class="line">279</span><br><span class="line">280</span><br><span class="line">281</span><br><span class="line">282</span><br><span class="line">283</span><br><span class="line">284</span><br><span class="line">285</span><br><span class="line">286</span><br><span class="line">287</span><br><span class="line">288</span><br><span class="line">289</span><br><span class="line">290</span><br><span class="line">291</span><br><span class="line">292</span><br><span class="line">293</span><br><span class="line">294</span><br><span class="line">295</span><br><span class="line">296</span><br><span class="line">297</span><br><span class="line">298</span><br><span class="line">299</span><br><span class="line">300</span><br><span class="line">301</span><br><span class="line">302</span><br><span class="line">303</span><br><span class="line">304</span><br><span class="line">305</span><br><span class="line">306</span><br><span class="line">307</span><br><span class="line">308</span><br><span class="line">309</span><br><span class="line">310</span><br><span class="line">311</span><br><span class="line">312</span><br><span class="line">313</span><br><span class="line">314</span><br><span class="line">315</span><br><span class="line">316</span><br><span class="line">317</span><br><span class="line">318</span><br><span class="line">319</span><br><span class="line">320</span><br><span class="line">321</span><br><span class="line">322</span><br><span class="line">323</span><br><span class="line">324</span><br><span class="line">325</span><br><span class="line">326</span><br><span class="line">327</span><br><span class="line">328</span><br><span class="line">329</span><br><span class="line">330</span><br><span class="line">331</span><br><span class="line">332</span><br><span class="line">333</span><br><span class="line">334</span><br><span class="line">335</span><br><span class="line">336</span><br><span class="line">337</span><br><span class="line">338</span><br><span class="line">339</span><br><span class="line">340</span><br><span class="line">341</span><br><span class="line">342</span><br><span class="line">343</span><br><span class="line">344</span><br><span class="line">345</span><br><span class="line">346</span><br><span class="line">347</span><br><span class="line">348</span><br><span class="line">349</span><br><span class="line">350</span><br><span class="line">351</span><br><span class="line">352</span><br><span class="line">353</span><br><span class="line">354</span><br><span class="line">355</span><br><span class="line">356</span><br><span class="line">357</span><br><span class="line">358</span><br><span class="line">359</span><br><span class="line">360</span><br><span class="line">361</span><br><span class="line">362</span><br><span class="line">363</span><br><span class="line">364</span><br><span class="line">365</span><br><span class="line">366</span><br><span class="line">367</span><br><span class="line">368</span><br><span class="line">369</span><br><span class="line">370</span><br><span class="line">371</span><br><span class="line">372</span><br><span class="line">373</span><br><span class="line">374</span><br><span class="line">375</span><br><span class="line">376</span><br><span class="line">377</span><br><span class="line">378</span><br><span class="line">379</span><br><span class="line">380</span><br><span class="line">381</span><br><span class="line">382</span><br><span class="line">383</span><br><span class="line">384</span><br><span class="line">385</span><br><span class="line">386</span><br><span class="line">387</span><br><span class="line">388</span><br><span class="line">389</span><br><span class="line">390</span><br><span class="line">391</span><br><span class="line">392</span><br><span class="line">393</span><br><span class="line">394</span><br><span class="line">395</span><br><span class="line">396</span><br><span class="line">397</span><br><span class="line">398</span><br><span class="line">399</span><br><span class="line">400</span><br><span class="line">401</span><br><span class="line">402</span><br><span class="line">403</span><br><span class="line">404</span><br><span class="line">405</span><br><span class="line">406</span><br><span class="line">407</span><br><span class="line">408</span><br><span class="line">409</span><br><span class="line">410</span><br><span class="line">411</span><br><span class="line">412</span><br><span class="line">413</span><br><span class="line">414</span><br><span class="line">415</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// redis_examples.cpp</span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;redis_examples.h&quot;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;chrono&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;thread&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;atomic&gt;</span></span><br><br>RedisExamples::<span class="hljs-built_in">RedisExamples</span>(<span class="hljs-type">const</span> std::string &amp;connection_string)<br>    : <span class="hljs-built_in">redis</span>(connection_string)<br>&#123;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">RedisExamples::testConnection</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">try</span><br>    &#123;<br>        <span class="hljs-comment">// 测试 ping 命令</span><br>        <span class="hljs-keyword">auto</span> pong = redis.<span class="hljs-built_in">ping</span>();<br>        std::cout &lt;&lt; <span class="hljs-string">&quot;连接测试: &quot;</span> &lt;&lt; pong &lt;&lt; std::endl;<br><br>        <span class="hljs-comment">// 测试设置和获取</span><br>        redis.<span class="hljs-built_in">set</span>(<span class="hljs-string">&quot;test_key&quot;</span>, <span class="hljs-string">&quot;Hello, Redis!&quot;</span>);<br>        <span class="hljs-keyword">auto</span> value = redis.<span class="hljs-built_in">get</span>(<span class="hljs-string">&quot;test_key&quot;</span>);<br>        <span class="hljs-keyword">if</span> (value)<br>        &#123;<br>            std::cout &lt;&lt; <span class="hljs-string">&quot;获取测试值: &quot;</span> &lt;&lt; *value &lt;&lt; std::endl;<br>        &#125;<br><br>        redis.<span class="hljs-built_in">del</span>(<span class="hljs-string">&quot;test_key&quot;</span>);<br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>    &#125;<br>    <span class="hljs-built_in">catch</span> (<span class="hljs-type">const</span> Error &amp;e)<br>    &#123;<br>        std::cerr &lt;&lt; <span class="hljs-string">&quot;Redis 错误: &quot;</span> &lt;&lt; e.<span class="hljs-built_in">what</span>() &lt;&lt; std::endl;<br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>    &#125;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">RedisExamples::stringOperations</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;\n=== 字符串操作 ===&quot;</span> &lt;&lt; std::endl;<br><br>    <span class="hljs-keyword">try</span><br>    &#123;<br>        <span class="hljs-comment">// 基本设置和获取</span><br>        redis.<span class="hljs-built_in">set</span>(<span class="hljs-string">&quot;name&quot;</span>, <span class="hljs-string">&quot;Alice&quot;</span>);<br>        <span class="hljs-keyword">auto</span> name = redis.<span class="hljs-built_in">get</span>(<span class="hljs-string">&quot;name&quot;</span>);<br>        std::cout &lt;&lt; <span class="hljs-string">&quot;姓名: &quot;</span> &lt;&lt; *name &lt;&lt; std::endl;<br><br>        <span class="hljs-comment">// 数字操作</span><br>        redis.<span class="hljs-built_in">set</span>(<span class="hljs-string">&quot;counter&quot;</span>, <span class="hljs-string">&quot;10&quot;</span>);<br>        redis.<span class="hljs-built_in">incr</span>(<span class="hljs-string">&quot;counter&quot;</span>);<br>        <span class="hljs-keyword">auto</span> counter = redis.<span class="hljs-built_in">get</span>(<span class="hljs-string">&quot;counter&quot;</span>);<br>        std::cout &lt;&lt; <span class="hljs-string">&quot;计数器: &quot;</span> &lt;&lt; *counter &lt;&lt; std::endl;<br><br>        <span class="hljs-comment">// 设置过期时间</span><br>        redis.<span class="hljs-built_in">setex</span>(<span class="hljs-string">&quot;temp_data&quot;</span>, std::chrono::<span class="hljs-built_in">seconds</span>(<span class="hljs-number">10</span>), <span class="hljs-string">&quot;临时数据&quot;</span>);<br><br>        <span class="hljs-comment">// 批量操作</span><br>        std::unordered_map&lt;std::string, std::string&gt; data = &#123;<br>            &#123;<span class="hljs-string">&quot;key1&quot;</span>, <span class="hljs-string">&quot;value1&quot;</span>&#125;,<br>            &#123;<span class="hljs-string">&quot;key2&quot;</span>, <span class="hljs-string">&quot;value2&quot;</span>&#125;,<br>            &#123;<span class="hljs-string">&quot;key3&quot;</span>, <span class="hljs-string">&quot;value3&quot;</span>&#125;&#125;;<br>        redis.<span class="hljs-built_in">mset</span>(data.<span class="hljs-built_in">begin</span>(), data.<span class="hljs-built_in">end</span>());<br><br>        std::vector&lt;std::string&gt; keys = &#123;<span class="hljs-string">&quot;key1&quot;</span>, <span class="hljs-string">&quot;key2&quot;</span>, <span class="hljs-string">&quot;key3&quot;</span>&#125;;<br>        std::vector&lt;OptionalString&gt; values;<br>        redis.<span class="hljs-built_in">mget</span>(keys.<span class="hljs-built_in">begin</span>(), keys.<span class="hljs-built_in">end</span>(), std::<span class="hljs-built_in">back_inserter</span>(values));<br><br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">size_t</span> i = <span class="hljs-number">0</span>; i &lt; values.<span class="hljs-built_in">size</span>(); ++i)<br>        &#123;<br>            <span class="hljs-keyword">if</span> (values[i])<br>            &#123;<br>                std::cout &lt;&lt; keys[i] &lt;&lt; <span class="hljs-string">&quot;: &quot;</span> &lt;&lt; *values[i] &lt;&lt; std::endl;<br>            &#125;<br>        &#125;<br><br>        <span class="hljs-comment">// 清理</span><br>        redis.<span class="hljs-built_in">del</span>(keys.<span class="hljs-built_in">begin</span>(), keys.<span class="hljs-built_in">end</span>());<br>        redis.<span class="hljs-built_in">del</span>(&#123;<span class="hljs-string">&quot;name&quot;</span>, <span class="hljs-string">&quot;counter&quot;</span>&#125;);<br>    &#125;<br>    <span class="hljs-built_in">catch</span> (<span class="hljs-type">const</span> Error &amp;e)<br>    &#123;<br>        std::cerr &lt;&lt; <span class="hljs-string">&quot;字符串操作错误: &quot;</span> &lt;&lt; e.<span class="hljs-built_in">what</span>() &lt;&lt; std::endl;<br>    &#125;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">RedisExamples::listOperations</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;\n=== 列表操作 ===&quot;</span> &lt;&lt; std::endl;<br><br>    <span class="hljs-keyword">try</span><br>    &#123;<br>        std::string list_key = <span class="hljs-string">&quot;my_list&quot;</span>;<br><br>        <span class="hljs-comment">// 推入元素</span><br>        redis.<span class="hljs-built_in">rpush</span>(list_key, <span class="hljs-string">&quot;first&quot;</span>);<br>        redis.<span class="hljs-built_in">rpush</span>(list_key, <span class="hljs-string">&quot;second&quot;</span>);<br>        redis.<span class="hljs-built_in">lpush</span>(list_key, <span class="hljs-string">&quot;zero&quot;</span>);<br><br>        <span class="hljs-comment">// 获取列表长度</span><br>        <span class="hljs-keyword">auto</span> length = redis.<span class="hljs-built_in">llen</span>(list_key);<br>        std::cout &lt;&lt; <span class="hljs-string">&quot;列表长度: &quot;</span> &lt;&lt; length &lt;&lt; std::endl;<br><br>        <span class="hljs-comment">// 获取范围元素</span><br>        std::vector&lt;std::string&gt; elements;<br>        redis.<span class="hljs-built_in">lrange</span>(list_key, <span class="hljs-number">0</span>, <span class="hljs-number">-1</span>, std::<span class="hljs-built_in">back_inserter</span>(elements));<br><br>        std::cout &lt;&lt; <span class="hljs-string">&quot;列表元素: &quot;</span>;<br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">const</span> <span class="hljs-keyword">auto</span> &amp;elem : elements)<br>        &#123;<br>            std::cout &lt;&lt; elem &lt;&lt; <span class="hljs-string">&quot; &quot;</span>;<br>        &#125;<br>        std::cout &lt;&lt; std::endl;<br><br>        <span class="hljs-comment">// 弹出元素</span><br>        <span class="hljs-keyword">auto</span> popped = redis.<span class="hljs-built_in">lpop</span>(list_key);<br>        <span class="hljs-keyword">if</span> (popped)<br>        &#123;<br>            std::cout &lt;&lt; <span class="hljs-string">&quot;弹出的元素: &quot;</span> &lt;&lt; *popped &lt;&lt; std::endl;<br>        &#125;<br><br>        redis.<span class="hljs-built_in">del</span>(list_key);<br>    &#125;<br>    <span class="hljs-built_in">catch</span> (<span class="hljs-type">const</span> Error &amp;e)<br>    &#123;<br>        std::cerr &lt;&lt; <span class="hljs-string">&quot;列表操作错误: &quot;</span> &lt;&lt; e.<span class="hljs-built_in">what</span>() &lt;&lt; std::endl;<br>    &#125;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">RedisExamples::hashOperations</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;\n=== 哈希操作 ===&quot;</span> &lt;&lt; std::endl;<br><br>    <span class="hljs-keyword">try</span><br>    &#123;<br>        std::string hash_key = <span class="hljs-string">&quot;user:1001&quot;</span>;<br><br>        <span class="hljs-comment">// 设置哈希字段</span><br>        redis.<span class="hljs-built_in">hset</span>(hash_key, <span class="hljs-string">&quot;name&quot;</span>, <span class="hljs-string">&quot;John Doe&quot;</span>);<br>        redis.<span class="hljs-built_in">hset</span>(hash_key, <span class="hljs-string">&quot;age&quot;</span>, <span class="hljs-string">&quot;30&quot;</span>);<br>        redis.<span class="hljs-built_in">hset</span>(hash_key, <span class="hljs-string">&quot;email&quot;</span>, <span class="hljs-string">&quot;john@example.com&quot;</span>);<br><br>        <span class="hljs-comment">// 获取单个字段</span><br>        <span class="hljs-keyword">auto</span> name = redis.<span class="hljs-built_in">hget</span>(hash_key, <span class="hljs-string">&quot;name&quot;</span>);<br>        <span class="hljs-keyword">if</span> (name)<br>        &#123;<br>            std::cout &lt;&lt; <span class="hljs-string">&quot;姓名: &quot;</span> &lt;&lt; *name &lt;&lt; std::endl;<br>        &#125;<br><br>        <span class="hljs-comment">// 获取所有字段</span><br>        std::unordered_map&lt;std::string, std::string&gt; all_fields;<br>        redis.<span class="hljs-built_in">hgetall</span>(hash_key, std::<span class="hljs-built_in">inserter</span>(all_fields, all_fields.<span class="hljs-built_in">begin</span>()));<br><br>        std::cout &lt;&lt; <span class="hljs-string">&quot;所有字段:&quot;</span> &lt;&lt; std::endl;<br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">const</span> <span class="hljs-keyword">auto</span> &amp;field : all_fields)<br>        &#123;<br>            std::cout &lt;&lt; <span class="hljs-string">&quot;  &quot;</span> &lt;&lt; field.first &lt;&lt; <span class="hljs-string">&quot;: &quot;</span> &lt;&lt; field.second &lt;&lt; std::endl;<br>        &#125;<br><br>        <span class="hljs-comment">// 数字操作</span><br>        redis.<span class="hljs-built_in">hincrby</span>(hash_key, <span class="hljs-string">&quot;age&quot;</span>, <span class="hljs-number">1</span>);<br>        <span class="hljs-keyword">auto</span> new_age = redis.<span class="hljs-built_in">hget</span>(hash_key, <span class="hljs-string">&quot;age&quot;</span>);<br>        <span class="hljs-keyword">if</span> (new_age)<br>        &#123;<br>            std::cout &lt;&lt; <span class="hljs-string">&quot;新年龄: &quot;</span> &lt;&lt; *new_age &lt;&lt; std::endl;<br>        &#125;<br><br>        redis.<span class="hljs-built_in">del</span>(hash_key);<br>    &#125;<br>    <span class="hljs-built_in">catch</span> (<span class="hljs-type">const</span> Error &amp;e)<br>    &#123;<br>        std::cerr &lt;&lt; <span class="hljs-string">&quot;哈希操作错误: &quot;</span> &lt;&lt; e.<span class="hljs-built_in">what</span>() &lt;&lt; std::endl;<br>    &#125;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">RedisExamples::setOperations</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;\n=== 集合操作 ===&quot;</span> &lt;&lt; std::endl;<br><br>    <span class="hljs-keyword">try</span><br>    &#123;<br>        std::string set_key = <span class="hljs-string">&quot;my_set&quot;</span>;<br><br>        <span class="hljs-comment">// 添加元素</span><br>        redis.<span class="hljs-built_in">sadd</span>(set_key, <span class="hljs-string">&quot;apple&quot;</span>);<br>        redis.<span class="hljs-built_in">sadd</span>(set_key, <span class="hljs-string">&quot;banana&quot;</span>);<br>        redis.<span class="hljs-built_in">sadd</span>(set_key, <span class="hljs-string">&quot;orange&quot;</span>);<br>        redis.<span class="hljs-built_in">sadd</span>(set_key, <span class="hljs-string">&quot;apple&quot;</span>); <span class="hljs-comment">// 重复元素不会被添加</span><br><br>        <span class="hljs-comment">// 获取集合大小</span><br>        <span class="hljs-keyword">auto</span> size = redis.<span class="hljs-built_in">scard</span>(set_key);<br>        std::cout &lt;&lt; <span class="hljs-string">&quot;集合大小: &quot;</span> &lt;&lt; size &lt;&lt; std::endl;<br><br>        <span class="hljs-comment">// 获取所有成员</span><br>        std::vector&lt;std::string&gt; members;<br>        redis.<span class="hljs-built_in">smembers</span>(set_key, std::<span class="hljs-built_in">back_inserter</span>(members));<br><br>        std::cout &lt;&lt; <span class="hljs-string">&quot;集合成员: &quot;</span>;<br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">const</span> <span class="hljs-keyword">auto</span> &amp;member : members)<br>        &#123;<br>            std::cout &lt;&lt; member &lt;&lt; <span class="hljs-string">&quot; &quot;</span>;<br>        &#125;<br>        std::cout &lt;&lt; std::endl;<br><br>        <span class="hljs-comment">// 检查成员是否存在</span><br>        <span class="hljs-type">bool</span> exists = redis.<span class="hljs-built_in">sismember</span>(set_key, <span class="hljs-string">&quot;apple&quot;</span>);<br>        std::cout &lt;&lt; <span class="hljs-string">&quot;apple 是否存在: &quot;</span> &lt;&lt; (exists ? <span class="hljs-string">&quot;是&quot;</span> : <span class="hljs-string">&quot;否&quot;</span>) &lt;&lt; std::endl;<br><br>        redis.<span class="hljs-built_in">del</span>(set_key);<br>    &#125;<br>    <span class="hljs-built_in">catch</span> (<span class="hljs-type">const</span> Error &amp;e)<br>    &#123;<br>        std::cerr &lt;&lt; <span class="hljs-string">&quot;集合操作错误: &quot;</span> &lt;&lt; e.<span class="hljs-built_in">what</span>() &lt;&lt; std::endl;<br>    &#125;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">RedisExamples::transactionOperations</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;\n=== 事务操作 ===&quot;</span> &lt;&lt; std::endl;<br><br>    <span class="hljs-keyword">try</span><br>    &#123;<br>        <span class="hljs-comment">// 只执行设置操作，不获取结果</span><br>        <span class="hljs-keyword">auto</span> tx = redis.<span class="hljs-built_in">transaction</span>();<br><br>        tx.<span class="hljs-built_in">set</span>(<span class="hljs-string">&quot;tx_key1&quot;</span>, <span class="hljs-string">&quot;value1&quot;</span>);<br>        tx.<span class="hljs-built_in">set</span>(<span class="hljs-string">&quot;tx_key2&quot;</span>, <span class="hljs-string">&quot;value2&quot;</span>);<br>        tx.<span class="hljs-built_in">incr</span>(<span class="hljs-string">&quot;tx_counter&quot;</span>);<br><br>        <span class="hljs-comment">// 提交事务</span><br>        tx.<span class="hljs-built_in">exec</span>();<br><br>        std::cout &lt;&lt; <span class="hljs-string">&quot;事务执行成功&quot;</span> &lt;&lt; std::endl;<br><br>        <span class="hljs-comment">// 验证结果（在事务外查询）</span><br>        <span class="hljs-keyword">auto</span> value1 = redis.<span class="hljs-built_in">get</span>(<span class="hljs-string">&quot;tx_key1&quot;</span>);<br>        <span class="hljs-keyword">auto</span> value2 = redis.<span class="hljs-built_in">get</span>(<span class="hljs-string">&quot;tx_key2&quot;</span>);<br>        <span class="hljs-keyword">auto</span> counter = redis.<span class="hljs-built_in">get</span>(<span class="hljs-string">&quot;tx_counter&quot;</span>);<br><br>        <span class="hljs-keyword">if</span> (value1)<br>            std::cout &lt;&lt; <span class="hljs-string">&quot;tx_key1: &quot;</span> &lt;&lt; *value1 &lt;&lt; std::endl;<br>        <span class="hljs-keyword">if</span> (value2)<br>            std::cout &lt;&lt; <span class="hljs-string">&quot;tx_key2: &quot;</span> &lt;&lt; *value2 &lt;&lt; std::endl;<br>        <span class="hljs-keyword">if</span> (counter)<br>            std::cout &lt;&lt; <span class="hljs-string">&quot;tx_counter: &quot;</span> &lt;&lt; *counter &lt;&lt; std::endl;<br><br>        <span class="hljs-comment">// 清理</span><br>        redis.<span class="hljs-built_in">del</span>(&#123;<span class="hljs-string">&quot;tx_key1&quot;</span>, <span class="hljs-string">&quot;tx_key2&quot;</span>, <span class="hljs-string">&quot;tx_counter&quot;</span>&#125;);<br>    &#125;<br>    <span class="hljs-built_in">catch</span> (<span class="hljs-type">const</span> Error &amp;e)<br>    &#123;<br>        std::cerr &lt;&lt; <span class="hljs-string">&quot;事务操作错误: &quot;</span> &lt;&lt; e.<span class="hljs-built_in">what</span>() &lt;&lt; std::endl;<br>    &#125;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">RedisExamples::LuaTransaction</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;\n=== Lua 事务回滚测试 ===&quot;</span> &lt;&lt; std::endl;<br><br>    <span class="hljs-keyword">try</span><br>    &#123;<br>        redis.<span class="hljs-built_in">set</span>(<span class="hljs-string">&quot;acc:X&quot;</span>, <span class="hljs-string">&quot;100&quot;</span>);<br>        redis.<span class="hljs-built_in">set</span>(<span class="hljs-string">&quot;acc:Y&quot;</span>, <span class="hljs-string">&quot;50&quot;</span>);<br><br>        std::cout &lt;&lt; <span class="hljs-string">&quot;初始 - X: &quot;</span> &lt;&lt; *redis.<span class="hljs-built_in">get</span>(<span class="hljs-string">&quot;acc:X&quot;</span>)<br>                  &lt;&lt; <span class="hljs-string">&quot;, Y: &quot;</span> &lt;&lt; *redis.<span class="hljs-built_in">get</span>(<span class="hljs-string">&quot;acc:Y&quot;</span>) &lt;&lt; std::endl;<br><br>        <span class="hljs-comment">// 事务脚本：要么全部成功，要么全部回滚</span><br>        std::string tx_script = <span class="hljs-string">R&quot;(</span><br><span class="hljs-string">            local from = KEYS[1]</span><br><span class="hljs-string">            local to = KEYS[2] </span><br><span class="hljs-string">            local amount = tonumber(ARGV[1])</span><br><span class="hljs-string">            </span><br><span class="hljs-string">            -- 先读取，不修改</span><br><span class="hljs-string">            local from_balance = tonumber(redis.call(&#x27;GET&#x27;, from))</span><br><span class="hljs-string">            local to_balance = tonumber(redis.call(&#x27;GET&#x27;, to))</span><br><span class="hljs-string">            </span><br><span class="hljs-string">            -- 验证</span><br><span class="hljs-string">            if from_balance &lt; amount then</span><br><span class="hljs-string">                return &quot;错误：余额不足&quot;</span><br><span class="hljs-string">            end</span><br><span class="hljs-string">            </span><br><span class="hljs-string">            -- 验证通过，执行转账</span><br><span class="hljs-string">            redis.call(&#x27;DECRBY&#x27;, from, amount)</span><br><span class="hljs-string">            redis.call(&#x27;INCRBY&#x27;, to, amount)</span><br><span class="hljs-string">            </span><br><span class="hljs-string">            -- 最终验证（模拟业务规则）</span><br><span class="hljs-string">            if amount &gt; 80 then</span><br><span class="hljs-string">                -- 违反规则，回滚操作</span><br><span class="hljs-string">                redis.call(&#x27;INCRBY&#x27;, from, amount)  -- 退款</span><br><span class="hljs-string">                redis.call(&#x27;DECRBY&#x27;, to, amount)    -- 扣回</span><br><span class="hljs-string">                return &quot;错误：金额超过限制，已回滚&quot;</span><br><span class="hljs-string">            end</span><br><span class="hljs-string">            </span><br><span class="hljs-string">            return &quot;成功&quot;</span><br><span class="hljs-string">        )&quot;</span>;<br><br>        <span class="hljs-comment">// 测试</span><br>        <span class="hljs-keyword">auto</span> result = redis.<span class="hljs-built_in">eval</span>&lt;std::string&gt;(tx_script, &#123;<span class="hljs-string">&quot;acc:X&quot;</span>, <span class="hljs-string">&quot;acc:Y&quot;</span>&#125;, &#123;<span class="hljs-string">&quot;90&quot;</span>&#125;);<br>        std::cout &lt;&lt; <span class="hljs-string">&quot;转账结果: &quot;</span> &lt;&lt; result &lt;&lt; std::endl;<br>        std::cout &lt;&lt; <span class="hljs-string">&quot;最终 - X: &quot;</span> &lt;&lt; *redis.<span class="hljs-built_in">get</span>(<span class="hljs-string">&quot;acc:X&quot;</span>)<br>                  &lt;&lt; <span class="hljs-string">&quot;, Y: &quot;</span> &lt;&lt; *redis.<span class="hljs-built_in">get</span>(<span class="hljs-string">&quot;acc:Y&quot;</span>) &lt;&lt; std::endl;<br><br>        redis.<span class="hljs-built_in">del</span>(&#123;<span class="hljs-string">&quot;acc:X&quot;</span>, <span class="hljs-string">&quot;acc:Y&quot;</span>&#125;);<br>    &#125;<br>    <span class="hljs-built_in">catch</span> (<span class="hljs-type">const</span> sw::redis::Error &amp;e)<br>    &#123;<br>        std::cerr &lt;&lt; <span class="hljs-string">&quot;错误: &quot;</span> &lt;&lt; e.<span class="hljs-built_in">what</span>() &lt;&lt; std::endl;<br>    &#125;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">RedisExamples::pubsubOperations</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;\n=== 发布订阅操作 ===&quot;</span> &lt;&lt; std::endl;<br><br>    <span class="hljs-keyword">try</span><br>    &#123;<br>        <span class="hljs-comment">// 创建连接配置</span><br>        sw::redis::ConnectionOptions conn_opts;<br>        conn_opts.host = <span class="hljs-string">&quot;127.0.0.1&quot;</span>;<br>        conn_opts.port = <span class="hljs-number">6382</span>;<br>        conn_opts.socket_timeout = std::chrono::<span class="hljs-built_in">seconds</span>(<span class="hljs-number">1</span>);<br><br>        sw::redis::ConnectionPoolOptions pool_opts;<br>        pool_opts.size = <span class="hljs-number">1</span>;<br><br>        <span class="hljs-comment">// 使用shared_ptr管理Redis实例</span><br>        <span class="hljs-keyword">auto</span> redis_ptr = std::<span class="hljs-built_in">make_shared</span>&lt;sw::redis::Redis&gt;(conn_opts, pool_opts);<br><br>        <span class="hljs-comment">// 在单独的线程中运行订阅者</span><br>        <span class="hljs-function">std::thread <span class="hljs-title">subscriber_thread</span><span class="hljs-params">([redis_ptr]() &#123; <span class="hljs-comment">// 值捕获，安全！</span></span></span><br><span class="hljs-params"><span class="hljs-function">            <span class="hljs-keyword">try</span></span></span><br><span class="hljs-params"><span class="hljs-function">            &#123;</span></span><br><span class="hljs-params"><span class="hljs-function">                <span class="hljs-keyword">auto</span> sub = redis_ptr-&gt;subscriber();</span></span><br><span class="hljs-params"><span class="hljs-function"></span></span><br><span class="hljs-params"><span class="hljs-function">                sub.on_message([](std::string channel, std::string msg)</span></span><br><span class="hljs-params"><span class="hljs-function">                               &#123; std::cout &lt;&lt; <span class="hljs-string">&quot;[订阅者] 收到消息 - 频道: &quot;</span> &lt;&lt; channel</span></span><br><span class="hljs-params"><span class="hljs-function">                                           &lt;&lt; <span class="hljs-string">&quot;, 消息: &quot;</span> &lt;&lt; msg &lt;&lt; std::endl; &#125;);</span></span><br><span class="hljs-params"><span class="hljs-function"></span></span><br><span class="hljs-params"><span class="hljs-function">                sub.subscribe(<span class="hljs-string">&quot;test_channel&quot;</span>);</span></span><br><span class="hljs-params"><span class="hljs-function"></span></span><br><span class="hljs-params"><span class="hljs-function">                <span class="hljs-comment">// 运行一段时间后自动退出, 如果是生产环境就不必退出了</span></span></span><br><span class="hljs-params"><span class="hljs-function">                <span class="hljs-keyword">auto</span> end_time = std::chrono::steady_clock::now() + std::chrono::seconds(<span class="hljs-number">30</span>);</span></span><br><span class="hljs-params"><span class="hljs-function">                <span class="hljs-keyword">while</span> (std::chrono::steady_clock::now() &lt; end_time)</span></span><br><span class="hljs-params"><span class="hljs-function">                &#123;</span></span><br><span class="hljs-params"><span class="hljs-function">                    <span class="hljs-keyword">try</span></span></span><br><span class="hljs-params"><span class="hljs-function">                    &#123;</span></span><br><span class="hljs-params"><span class="hljs-function">                        sub.consume();</span></span><br><span class="hljs-params"><span class="hljs-function">                    &#125;</span></span><br><span class="hljs-params"><span class="hljs-function">                    <span class="hljs-keyword">catch</span> (<span class="hljs-type">const</span> sw::redis::TimeoutError &amp;e)</span></span><br><span class="hljs-params"><span class="hljs-function">                    &#123;</span></span><br><span class="hljs-params"><span class="hljs-function">                        <span class="hljs-keyword">continue</span>;</span></span><br><span class="hljs-params"><span class="hljs-function">                    &#125;</span></span><br><span class="hljs-params"><span class="hljs-function">                &#125;</span></span><br><span class="hljs-params"><span class="hljs-function"></span></span><br><span class="hljs-params"><span class="hljs-function">                std::cout &lt;&lt; <span class="hljs-string">&quot;[订阅者] 监听时间到，正常退出&quot;</span> &lt;&lt; std::endl;</span></span><br><span class="hljs-params"><span class="hljs-function">            &#125;</span></span><br><span class="hljs-params"><span class="hljs-function">            <span class="hljs-keyword">catch</span> (<span class="hljs-type">const</span> Error &amp;e)</span></span><br><span class="hljs-params"><span class="hljs-function">            &#123;</span></span><br><span class="hljs-params"><span class="hljs-function">                std::cerr &lt;&lt; <span class="hljs-string">&quot;订阅错误: &quot;</span> &lt;&lt; e.what() &lt;&lt; std::endl;</span></span><br><span class="hljs-params"><span class="hljs-function">            &#125;</span></span><br><span class="hljs-params"><span class="hljs-function">        &#125;)</span></span>;<br><br>        <span class="hljs-comment">// 给订阅者一些时间准备</span><br>        std::this_thread::<span class="hljs-built_in">sleep_for</span>(std::chrono::<span class="hljs-built_in">milliseconds</span>(<span class="hljs-number">100</span>));<br><br>        <span class="hljs-comment">// 发布消息</span><br>        redis_ptr-&gt;<span class="hljs-built_in">publish</span>(<span class="hljs-string">&quot;test_channel&quot;</span>, <span class="hljs-string">&quot;Hello from publisher!&quot;</span>);<br>        redis_ptr-&gt;<span class="hljs-built_in">publish</span>(<span class="hljs-string">&quot;test_channel&quot;</span>, <span class="hljs-string">&quot;Second message&quot;</span>);<br><br>        <span class="hljs-comment">// 现在可以安全detach</span><br>        subscriber_thread.<span class="hljs-built_in">detach</span>();<br><br>        std::cout &lt;&lt; <span class="hljs-string">&quot;主线程继续执行，订阅线程在后台运行30秒后自动退出&quot;</span> &lt;&lt; std::endl;<br>    &#125;<br>    <span class="hljs-built_in">catch</span> (<span class="hljs-type">const</span> Error &amp;e)<br>    &#123;<br>        std::cerr &lt;&lt; <span class="hljs-string">&quot;发布订阅错误: &quot;</span> &lt;&lt; e.<span class="hljs-built_in">what</span>() &lt;&lt; std::endl;<br>    &#125;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">RedisExamples::pipelineBasic</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;\n=== Pipeline 基本使用 ===&quot;</span> &lt;&lt; std::endl;<br><br>    <span class="hljs-keyword">try</span><br>    &#123;<br>        <span class="hljs-keyword">auto</span> pipe = redis.<span class="hljs-built_in">pipeline</span>();<br><br>        <span class="hljs-comment">// 添加命令到 pipeline</span><br>        pipe.<span class="hljs-built_in">set</span>(<span class="hljs-string">&quot;pipeline_key&quot;</span>, <span class="hljs-string">&quot;pipeline_value&quot;</span>);<br>        pipe.<span class="hljs-built_in">get</span>(<span class="hljs-string">&quot;pipeline_key&quot;</span>);<br>        pipe.<span class="hljs-built_in">incr</span>(<span class="hljs-string">&quot;pipeline_counter&quot;</span>);<br>        pipe.<span class="hljs-built_in">hset</span>(<span class="hljs-string">&quot;pipeline_hash&quot;</span>, <span class="hljs-string">&quot;field&quot;</span>, <span class="hljs-string">&quot;value&quot;</span>);<br><br>        <span class="hljs-comment">// 执行所有命令</span><br>        <span class="hljs-keyword">auto</span> replies = pipe.<span class="hljs-built_in">exec</span>();<br><br>        <span class="hljs-comment">// 获取结果</span><br>        std::cout &lt;&lt; <span class="hljs-string">&quot;SET 结果: &quot;</span> &lt;&lt; replies.<span class="hljs-built_in">get</span>&lt;<span class="hljs-type">bool</span>&gt;(<span class="hljs-number">0</span>) &lt;&lt; std::endl;<br><br>        <span class="hljs-keyword">auto</span> value = replies.<span class="hljs-built_in">get</span>&lt;sw::redis::OptionalString&gt;(<span class="hljs-number">1</span>);<br>        <span class="hljs-keyword">if</span> (value)<br>        &#123;<br>            std::cout &lt;&lt; <span class="hljs-string">&quot;GET 结果: &quot;</span> &lt;&lt; *value &lt;&lt; std::endl;<br>        &#125;<br><br>        std::cout &lt;&lt; <span class="hljs-string">&quot;INCR 结果: &quot;</span> &lt;&lt; replies.<span class="hljs-built_in">get</span>&lt;<span class="hljs-type">long</span> <span class="hljs-type">long</span>&gt;(<span class="hljs-number">2</span>) &lt;&lt; std::endl;<br>        std::cout &lt;&lt; <span class="hljs-string">&quot;HSET 结果: &quot;</span> &lt;&lt; replies.<span class="hljs-built_in">get</span>&lt;<span class="hljs-type">bool</span>&gt;(<span class="hljs-number">3</span>) &lt;&lt; std::endl;<br>    &#125;<br>    <span class="hljs-built_in">catch</span> (<span class="hljs-type">const</span> Error &amp;e)<br>    &#123;<br>        std::cerr &lt;&lt; <span class="hljs-string">&quot;Pipeline 错误: &quot;</span> &lt;&lt; e.<span class="hljs-built_in">what</span>() &lt;&lt; std::endl;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><code>incr</code> : 数字操作, 对指定键的值递增1.</li>
+<li><code>setex</code> : 中间多填一个std::chrono::seconds()来设置TTL, 应该实际中用的都是这个.</li>
+<li>批量操作中<code>mget</code>用到的<code>std::back_inserter</code>, 这个是输出迭代器, 之前在c++primer中有看过, 简单理解就是可以从容器中获取其, 对其进行<strong>赋值动作就等于进行push_back操作</strong>, 其专门<strong>针对序列容器</strong>. 在这里的应用就是把输出填入values. 而后面的<code>std::inserter</code>可以应用于关联容器和序列容器.</li>
+<li>事务与集群在下面专门讲解, 不再赘述.</li>
+</ul>
+<p>测试代码 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">testStandaloneRedis</span><span class="hljs-params">()</span> </span>&#123;<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;=== 测试单机Redis (6382端口) ===&quot;</span> &lt;&lt; std::endl;<br>    <br>    <span class="hljs-function">RedisExamples <span class="hljs-title">examples</span><span class="hljs-params">(<span class="hljs-string">&quot;tcp://127.0.0.1:6382&quot;</span>)</span></span>;<br>    <br>    <span class="hljs-keyword">if</span> (!examples.<span class="hljs-built_in">testConnection</span>()) &#123;<br>        std::cerr &lt;&lt; <span class="hljs-string">&quot;单机Redis连接测试失败!&quot;</span> &lt;&lt; std::endl;<br>        <span class="hljs-keyword">return</span>;<br>    &#125;<br>    <br>    examples.<span class="hljs-built_in">stringOperations</span>();<br>    examples.<span class="hljs-built_in">listOperations</span>();<br>    examples.<span class="hljs-built_in">hashOperations</span>();<br>    examples.<span class="hljs-built_in">setOperations</span>();<br>    examples.<span class="hljs-built_in">transactionOperations</span>();<br>    examples.<span class="hljs-built_in">LuaTransaction</span>();<br>    examples.<span class="hljs-built_in">pubsubOperations</span>();<br>    examples.<span class="hljs-built_in">pipelineBasic</span>();<br>    <br>    std::cout &lt;&lt; <span class="hljs-string">&quot;单机Redis测试完成!&quot;</span> &lt;&lt; std::endl &lt;&lt; std::endl;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>测试结果:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><code class="hljs cpp">➜  build ./redis_test<br>Redis-plus-plus 集群测试程序<br>=== 测试单机<span class="hljs-built_in">Redis</span> (<span class="hljs-number">6382</span>端口) ===<br>连接测试: PONG<br>获取测试值: Hello, Redis!<br><br>=== 字符串操作 ===<br>姓名: Alice<br>计数器: <span class="hljs-number">11</span><br>key1: value1<br>key2: value2<br>key3: value3<br><br>=== 列表操作 ===<br>列表长度: <span class="hljs-number">3</span><br>列表元素: zero first second <br>弹出的元素: zero<br><br>=== 哈希操作 ===<br>姓名: John Doe<br>所有字段:<br>  email: john@example.com<br>  age: <span class="hljs-number">30</span><br>  name: John Doe<br>新年龄: <span class="hljs-number">31</span><br><br>=== 集合操作 ===<br>集合大小: <span class="hljs-number">3</span><br>集合成员: orange banana apple <br>apple 是否存在: 是<br><br>=== 事务操作 ===<br>事务执行成功<br>tx_key1: value1<br>tx_key2: value2<br>tx_counter: <span class="hljs-number">1</span><br><br>=== Lua 事务回滚测试 ===<br>初始 - X: <span class="hljs-number">100</span>, Y: <span class="hljs-number">50</span><br>转账结果: 错误：金额超过限制，已回滚<br>最终 - X: <span class="hljs-number">100</span>, Y: <span class="hljs-number">50</span><br><br>=== 发布订阅操作 ===<br>[订阅者] 收到消息 - 频道: test_channel, 消息: Hello from publisher!<br>[订阅者] 收到消息 - 频道: test_channel, 消息: Second message<br>主线程继续执行，订阅线程在后台运行<span class="hljs-number">30</span>秒后自动退出<br><br>=== Pipeline 基本使用 ===<br>SET 结果: <span class="hljs-number">1</span><br>GET 结果: pipeline_value<br>INCR 结果: <span class="hljs-number">2</span><br>HSET 结果: <span class="hljs-number">0</span><br>单机Redis测试完成!<br></code></pre></td></tr></table></figure>
+
+<h3 id="集群代码测试"><a href="#集群代码测试" class="headerlink" title="集群代码测试"></a>集群代码测试</h3><p>集群上一章已经讲了很多了, 实际使用却非常简单, 和普通Redis操作基本一样, 只要传入正确的集群ip就行.</p>
+<p>下面是测试代码 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// redis_cluster_examples.h</span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;sw/redis++/redis_cluster.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iostream&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;vector&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;unordered_map&gt;</span></span><br><br><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> sw::redis;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">RedisClusterExamples</span> &#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-built_in">RedisClusterExamples</span>(<span class="hljs-type">const</span> std::string&amp; connection_string = <span class="hljs-string">&quot;tcp://127.0.0.1:7000&quot;</span>);<br>    <span class="hljs-comment">// 基本连接测试</span><br>    <span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">testConnection</span><span class="hljs-params">()</span></span>;  <br>    <span class="hljs-comment">// 集群信息查询</span><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">clusterInfo</span><span class="hljs-params">()</span></span>; <br>    <span class="hljs-comment">// 键操作（自动路由到正确的节点）</span><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">keyOperations</span><span class="hljs-params">()</span></span>;  <br>    <span class="hljs-comment">// 字符串操作</span><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">stringOperations</span><span class="hljs-params">()</span></span>;<br>    <span class="hljs-comment">// 哈希操作</span><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">hashOperations</span><span class="hljs-params">()</span></span>;<br>    <span class="hljs-comment">// 列表操作</span><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">listOperations</span><span class="hljs-params">()</span></span>;<br>    <span class="hljs-comment">// 集群特定操作</span><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">clusterSpecificOperations</span><span class="hljs-params">()</span></span>;<br>    <span class="hljs-comment">// 哈希标签</span><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">hashTagOperations</span><span class="hljs-params">()</span></span>;<br><span class="hljs-keyword">private</span>:<br>    RedisCluster cluster;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br><span class="line">253</span><br><span class="line">254</span><br><span class="line">255</span><br><span class="line">256</span><br><span class="line">257</span><br><span class="line">258</span><br><span class="line">259</span><br><span class="line">260</span><br><span class="line">261</span><br><span class="line">262</span><br><span class="line">263</span><br><span class="line">264</span><br><span class="line">265</span><br><span class="line">266</span><br><span class="line">267</span><br><span class="line">268</span><br><span class="line">269</span><br><span class="line">270</span><br><span class="line">271</span><br><span class="line">272</span><br><span class="line">273</span><br><span class="line">274</span><br><span class="line">275</span><br><span class="line">276</span><br><span class="line">277</span><br><span class="line">278</span><br><span class="line">279</span><br><span class="line">280</span><br><span class="line">281</span><br><span class="line">282</span><br><span class="line">283</span><br><span class="line">284</span><br><span class="line">285</span><br><span class="line">286</span><br><span class="line">287</span><br><span class="line">288</span><br><span class="line">289</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// redis_cluster_examples.cpp</span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;redis_cluster_examples.h&quot;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;chrono&gt;</span></span><br><br>RedisClusterExamples::<span class="hljs-built_in">RedisClusterExamples</span>(<span class="hljs-type">const</span> std::string&amp; connection_string) <br>    : <span class="hljs-built_in">cluster</span>(connection_string) &#123;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">RedisClusterExamples::testConnection</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-keyword">try</span> &#123;<br>        <span class="hljs-comment">// 修正：使用 set/get 测试连接，而不是 ping</span><br>        cluster.<span class="hljs-built_in">set</span>(<span class="hljs-string">&quot;cluster_test_key&quot;</span>, <span class="hljs-string">&quot;Hello, Redis Cluster!&quot;</span>);<br>        <span class="hljs-keyword">auto</span> value = cluster.<span class="hljs-built_in">get</span>(<span class="hljs-string">&quot;cluster_test_key&quot;</span>);<br>        <br>        <span class="hljs-keyword">if</span> (value) &#123;<br>            std::cout &lt;&lt; <span class="hljs-string">&quot;集群连接测试: 成功&quot;</span> &lt;&lt; std::endl;<br>            std::cout &lt;&lt; <span class="hljs-string">&quot;获取集群测试值: &quot;</span> &lt;&lt; *value &lt;&lt; std::endl;<br>        &#125;<br>        <br>        cluster.<span class="hljs-built_in">del</span>(<span class="hljs-string">&quot;cluster_test_key&quot;</span>);<br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>        <br>    &#125; <span class="hljs-built_in">catch</span> (<span class="hljs-type">const</span> Error&amp; e) &#123;<br>        std::cerr &lt;&lt; <span class="hljs-string">&quot;Redis集群错误: &quot;</span> &lt;&lt; e.<span class="hljs-built_in">what</span>() &lt;&lt; std::endl;<br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>    &#125;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">RedisClusterExamples::clusterInfo</span><span class="hljs-params">()</span> </span>&#123;<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;\n=== 集群信息查询 ===&quot;</span> &lt;&lt; std::endl;<br>    <br>    <span class="hljs-keyword">try</span> &#123;<br>        <span class="hljs-comment">// 修正：使用 command 方法执行 CLUSTER NODES 和 CLUSTER SLOTS 命令</span><br>        <span class="hljs-keyword">auto</span> nodes_reply = cluster.<span class="hljs-built_in">command</span>(<span class="hljs-string">&quot;CLUSTER&quot;</span>, <span class="hljs-string">&quot;NODES&quot;</span>);<br>        std::cout &lt;&lt; <span class="hljs-string">&quot;集群节点信息:&quot;</span> &lt;&lt; std::endl;<br>        <span class="hljs-keyword">if</span> (nodes_reply) &#123;<br>            <span class="hljs-comment">// std::cout &lt;&lt; nodes_reply-&gt;str() &lt;&lt; std::endl;</span><br>        &#125;<br>        <br>        <span class="hljs-keyword">auto</span> slots_reply = cluster.<span class="hljs-built_in">command</span>(<span class="hljs-string">&quot;CLUSTER&quot;</span>, <span class="hljs-string">&quot;SLOTS&quot;</span>);<br>        std::cout &lt;&lt; <span class="hljs-string">&quot;集群槽信息获取成功&quot;</span> &lt;&lt; std::endl;<br>        <br>    &#125; <span class="hljs-built_in">catch</span> (<span class="hljs-type">const</span> Error&amp; e) &#123;<br>        std::cerr &lt;&lt; <span class="hljs-string">&quot;集群信息查询错误: &quot;</span> &lt;&lt; e.<span class="hljs-built_in">what</span>() &lt;&lt; std::endl;<br>    &#125;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">RedisClusterExamples::keyOperations</span><span class="hljs-params">()</span> </span>&#123;<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;\n=== 键操作（自动路由） ===&quot;</span> &lt;&lt; std::endl;<br>    <br>    <span class="hljs-keyword">try</span> &#123;<br>        <span class="hljs-comment">// 测试不同slot的键</span><br>        std::vector&lt;std::string&gt; keys = &#123;<br>            <span class="hljs-string">&quot;user:1001&quot;</span>,    <span class="hljs-comment">// 可能在一个slot</span><br>            <span class="hljs-string">&quot;product:2001&quot;</span>, <span class="hljs-comment">// 可能在另一个slot</span><br>            <span class="hljs-string">&quot;order:3001&quot;</span>    <span class="hljs-comment">// 可能在第三个slot</span><br>        &#125;;<br>        <br>        <span class="hljs-comment">// 设置多个键（会自动路由到不同节点）</span><br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">const</span> <span class="hljs-keyword">auto</span>&amp; key : keys) &#123;<br>            cluster.<span class="hljs-built_in">set</span>(key, <span class="hljs-string">&quot;value_for_&quot;</span> + key);<br>            std::cout &lt;&lt; <span class="hljs-string">&quot;设置键: &quot;</span> &lt;&lt; key &lt;&lt; std::endl;<br>        &#125;<br>        <br>        <span class="hljs-comment">// 获取键值</span><br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">const</span> <span class="hljs-keyword">auto</span>&amp; key : keys) &#123;<br>            <span class="hljs-keyword">auto</span> value = cluster.<span class="hljs-built_in">get</span>(key);<br>            <span class="hljs-keyword">if</span> (value) &#123;<br>                std::cout &lt;&lt; <span class="hljs-string">&quot;获取键 &quot;</span> &lt;&lt; key &lt;&lt; <span class="hljs-string">&quot;: &quot;</span> &lt;&lt; *value &lt;&lt; std::endl;<br>            &#125;<br>        &#125;<br>        <br>        <span class="hljs-comment">// 测试键是否存在</span><br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">const</span> <span class="hljs-keyword">auto</span>&amp; key : keys) &#123;<br>            <span class="hljs-type">bool</span> exists = cluster.<span class="hljs-built_in">exists</span>(key);<br>            std::cout &lt;&lt; <span class="hljs-string">&quot;键 &quot;</span> &lt;&lt; key &lt;&lt; <span class="hljs-string">&quot; 是否存在: &quot;</span> &lt;&lt; (exists ? <span class="hljs-string">&quot;是&quot;</span> : <span class="hljs-string">&quot;否&quot;</span>) &lt;&lt; std::endl;<br>        &#125;<br>        <br>        <span class="hljs-comment">// 清理</span><br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">const</span> <span class="hljs-keyword">auto</span>&amp; key : keys) &#123;<br>            cluster.<span class="hljs-built_in">del</span>(key);<br>        &#125;<br>        <br>    &#125; <span class="hljs-built_in">catch</span> (<span class="hljs-type">const</span> Error&amp; e) &#123;<br>        std::cerr &lt;&lt; <span class="hljs-string">&quot;键操作错误: &quot;</span> &lt;&lt; e.<span class="hljs-built_in">what</span>() &lt;&lt; std::endl;<br>    &#125;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">RedisClusterExamples::stringOperations</span><span class="hljs-params">()</span> </span>&#123;<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;\n=== 字符串操作 ===&quot;</span> &lt;&lt; std::endl;<br>    <br>    <span class="hljs-keyword">try</span> &#123;<br>        <span class="hljs-comment">// 基本操作</span><br>        cluster.<span class="hljs-built_in">set</span>(<span class="hljs-string">&quot;cluster_counter&quot;</span>, <span class="hljs-string">&quot;100&quot;</span>);<br>        cluster.<span class="hljs-built_in">incr</span>(<span class="hljs-string">&quot;cluster_counter&quot;</span>);<br>        <span class="hljs-keyword">auto</span> counter = cluster.<span class="hljs-built_in">get</span>(<span class="hljs-string">&quot;cluster_counter&quot;</span>);<br>        <span class="hljs-keyword">if</span> (counter) &#123;<br>            std::cout &lt;&lt; <span class="hljs-string">&quot;计数器值: &quot;</span> &lt;&lt; *counter &lt;&lt; std::endl;<br>        &#125;<br>        <br>        <span class="hljs-comment">// 带过期时间</span><br>        cluster.<span class="hljs-built_in">setex</span>(<span class="hljs-string">&quot;cluster_temp&quot;</span>, std::chrono::<span class="hljs-built_in">seconds</span>(<span class="hljs-number">10</span>), <span class="hljs-string">&quot;临时数据&quot;</span>);<br>        <br>        <span class="hljs-comment">// 批量操作</span><br>        std::unordered_map&lt;std::string, std::string&gt; data = &#123;<br>            &#123;<span class="hljs-string">&quot;cluster_key1&quot;</span>, <span class="hljs-string">&quot;value1&quot;</span>&#125;,<br>            &#123;<span class="hljs-string">&quot;cluster_key2&quot;</span>, <span class="hljs-string">&quot;value2&quot;</span>&#125;,<br>            &#123;<span class="hljs-string">&quot;cluster_key3&quot;</span>, <span class="hljs-string">&quot;value3&quot;</span>&#125;<br>        &#125;;<br>        <br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">const</span> <span class="hljs-keyword">auto</span>&amp; item : data) &#123;<br>            cluster.<span class="hljs-built_in">set</span>(item.first, item.second);<br>        &#125;<br>        <br>        <span class="hljs-comment">// 批量获取</span><br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">const</span> <span class="hljs-keyword">auto</span>&amp; item : data) &#123;<br>            <span class="hljs-keyword">auto</span> val = cluster.<span class="hljs-built_in">get</span>(item.first);<br>            <span class="hljs-keyword">if</span> (val) &#123;<br>                std::cout &lt;&lt; item.first &lt;&lt; <span class="hljs-string">&quot;: &quot;</span> &lt;&lt; *val &lt;&lt; std::endl;<br>            &#125;<br>        &#125;<br>        <br>        <span class="hljs-comment">// 清理</span><br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">const</span> <span class="hljs-keyword">auto</span>&amp; item : data) &#123;<br>            cluster.<span class="hljs-built_in">del</span>(item.first);<br>        &#125;<br>        cluster.<span class="hljs-built_in">del</span>(<span class="hljs-string">&quot;cluster_counter&quot;</span>);<br>        cluster.<span class="hljs-built_in">del</span>(<span class="hljs-string">&quot;cluster_temp&quot;</span>);<br>        <br>    &#125; <span class="hljs-built_in">catch</span> (<span class="hljs-type">const</span> Error&amp; e) &#123;<br>        std::cerr &lt;&lt; <span class="hljs-string">&quot;字符串操作错误: &quot;</span> &lt;&lt; e.<span class="hljs-built_in">what</span>() &lt;&lt; std::endl;<br>    &#125;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">RedisClusterExamples::hashOperations</span><span class="hljs-params">()</span> </span>&#123;<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;\n=== 哈希操作 ===&quot;</span> &lt;&lt; std::endl;<br>    <br>    <span class="hljs-keyword">try</span> &#123;<br>        std::string hash_key = <span class="hljs-string">&quot;cluster_user:1001&quot;</span>;<br>        <br>        <span class="hljs-comment">// 设置哈希字段</span><br>        cluster.<span class="hljs-built_in">hset</span>(hash_key, <span class="hljs-string">&quot;name&quot;</span>, <span class="hljs-string">&quot;Cluster User&quot;</span>);<br>        cluster.<span class="hljs-built_in">hset</span>(hash_key, <span class="hljs-string">&quot;age&quot;</span>, <span class="hljs-string">&quot;30&quot;</span>);<br>        cluster.<span class="hljs-built_in">hset</span>(hash_key, <span class="hljs-string">&quot;city&quot;</span>, <span class="hljs-string">&quot;Beijing&quot;</span>);<br>        <br>        <span class="hljs-comment">// 获取单个字段</span><br>        <span class="hljs-keyword">auto</span> name = cluster.<span class="hljs-built_in">hget</span>(hash_key, <span class="hljs-string">&quot;name&quot;</span>);<br>        <span class="hljs-keyword">if</span> (name) &#123;<br>            std::cout &lt;&lt; <span class="hljs-string">&quot;用户名: &quot;</span> &lt;&lt; *name &lt;&lt; std::endl;<br>        &#125;<br>        <br>        <span class="hljs-comment">// 获取所有字段</span><br>        std::unordered_map&lt;std::string, std::string&gt; all_fields;<br>        cluster.<span class="hljs-built_in">hgetall</span>(hash_key, std::<span class="hljs-built_in">inserter</span>(all_fields, all_fields.<span class="hljs-built_in">begin</span>()));<br>        <br>        std::cout &lt;&lt; <span class="hljs-string">&quot;用户信息:&quot;</span> &lt;&lt; std::endl;<br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">const</span> <span class="hljs-keyword">auto</span>&amp; field : all_fields) &#123;<br>            std::cout &lt;&lt; <span class="hljs-string">&quot;  &quot;</span> &lt;&lt; field.first &lt;&lt; <span class="hljs-string">&quot;: &quot;</span> &lt;&lt; field.second &lt;&lt; std::endl;<br>        &#125;<br>        <br>        <span class="hljs-comment">// 数字操作</span><br>        cluster.<span class="hljs-built_in">hincrby</span>(hash_key, <span class="hljs-string">&quot;age&quot;</span>, <span class="hljs-number">1</span>);<br>        <span class="hljs-keyword">auto</span> new_age = cluster.<span class="hljs-built_in">hget</span>(hash_key, <span class="hljs-string">&quot;age&quot;</span>);<br>        <span class="hljs-keyword">if</span> (new_age) &#123;<br>            std::cout &lt;&lt; <span class="hljs-string">&quot;新年龄: &quot;</span> &lt;&lt; *new_age &lt;&lt; std::endl;<br>        &#125;<br>        <br>        cluster.<span class="hljs-built_in">del</span>(hash_key);<br>        <br>    &#125; <span class="hljs-built_in">catch</span> (<span class="hljs-type">const</span> Error&amp; e) &#123;<br>        std::cerr &lt;&lt; <span class="hljs-string">&quot;哈希操作错误: &quot;</span> &lt;&lt; e.<span class="hljs-built_in">what</span>() &lt;&lt; std::endl;<br>    &#125;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">RedisClusterExamples::listOperations</span><span class="hljs-params">()</span> </span>&#123;<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;\n=== 列表操作 ===&quot;</span> &lt;&lt; std::endl;<br>    <br>    <span class="hljs-keyword">try</span> &#123;<br>        std::string list_key = <span class="hljs-string">&quot;cluster_queue&quot;</span>;<br>        <br>        <span class="hljs-comment">// 推入元素</span><br>        cluster.<span class="hljs-built_in">rpush</span>(list_key, <span class="hljs-string">&quot;item1&quot;</span>);<br>        cluster.<span class="hljs-built_in">rpush</span>(list_key, <span class="hljs-string">&quot;item2&quot;</span>);<br>        cluster.<span class="hljs-built_in">lpush</span>(list_key, <span class="hljs-string">&quot;item0&quot;</span>);<br>        <br>        <span class="hljs-comment">// 获取列表长度</span><br>        <span class="hljs-keyword">auto</span> length = cluster.<span class="hljs-built_in">llen</span>(list_key);<br>        std::cout &lt;&lt; <span class="hljs-string">&quot;队列长度: &quot;</span> &lt;&lt; length &lt;&lt; std::endl;<br>        <br>        <span class="hljs-comment">// 获取范围元素</span><br>        std::vector&lt;std::string&gt; elements;<br>        cluster.<span class="hljs-built_in">lrange</span>(list_key, <span class="hljs-number">0</span>, <span class="hljs-number">-1</span>, std::<span class="hljs-built_in">back_inserter</span>(elements));<br>        <br>        std::cout &lt;&lt; <span class="hljs-string">&quot;队列内容: &quot;</span>;<br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">const</span> <span class="hljs-keyword">auto</span>&amp; elem : elements) &#123;<br>            std::cout &lt;&lt; elem &lt;&lt; <span class="hljs-string">&quot; &quot;</span>;<br>        &#125;<br>        std::cout &lt;&lt; std::endl;<br>        <br>        <span class="hljs-comment">// 弹出元素</span><br>        <span class="hljs-keyword">auto</span> popped = cluster.<span class="hljs-built_in">lpop</span>(list_key);<br>        <span class="hljs-keyword">if</span> (popped) &#123;<br>            std::cout &lt;&lt; <span class="hljs-string">&quot;弹出的元素: &quot;</span> &lt;&lt; *popped &lt;&lt; std::endl;<br>        &#125;<br>        <br>        cluster.<span class="hljs-built_in">del</span>(list_key);<br>        <br>    &#125; <span class="hljs-built_in">catch</span> (<span class="hljs-type">const</span> Error&amp; e) &#123;<br>        std::cerr &lt;&lt; <span class="hljs-string">&quot;列表操作错误: &quot;</span> &lt;&lt; e.<span class="hljs-built_in">what</span>() &lt;&lt; std::endl;<br>    &#125;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">RedisClusterExamples::clusterSpecificOperations</span><span class="hljs-params">()</span> </span>&#123;<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;\n=== 集群特定操作 ===&quot;</span> &lt;&lt; std::endl;<br>    <br>    <span class="hljs-keyword">try</span> &#123;<br>        <span class="hljs-comment">// 修正：使用 command 方法执行 CLUSTER INFO 命令</span><br>        <span class="hljs-keyword">auto</span> info_reply = cluster.<span class="hljs-built_in">command</span>(<span class="hljs-string">&quot;CLUSTER&quot;</span>, <span class="hljs-string">&quot;INFO&quot;</span>);<br>        std::cout &lt;&lt; <span class="hljs-string">&quot;集群信息:&quot;</span> &lt;&lt; std::endl;<br>        <span class="hljs-keyword">if</span> (info_reply) &#123;<br>            <span class="hljs-comment">// std::cout &lt;&lt; info_reply-&gt;str() &lt;&lt; std::endl;</span><br>        &#125;<br>        <br>        std::cout &lt;&lt; <span class="hljs-string">&quot;集群状态: 正常&quot;</span> &lt;&lt; std::endl;<br>        <br>    &#125; <span class="hljs-built_in">catch</span> (<span class="hljs-type">const</span> Error&amp; e) &#123;<br>        std::cerr &lt;&lt; <span class="hljs-string">&quot;集群特定操作错误: &quot;</span> &lt;&lt; e.<span class="hljs-built_in">what</span>() &lt;&lt; std::endl;<br>    &#125;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">RedisClusterExamples::hashTagOperations</span><span class="hljs-params">()</span> </span>&#123;<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;\n=== 哈希标签测试 ===&quot;</span> &lt;&lt; std::endl;<br>    <br>    <span class="hljs-keyword">try</span> &#123;<br>        std::string user_id = <span class="hljs-string">&quot;1001&quot;</span>;<br>        std::string order_id = <span class="hljs-string">&quot;20240115001&quot;</span>;<br>        <br>        <span class="hljs-comment">// 1. 测试哈希标签的基本功能</span><br>        std::cout &lt;&lt; <span class="hljs-string">&quot;哈希标签基本功能测试:&quot;</span> &lt;&lt; std::endl;<br>        <br>        <span class="hljs-comment">// 使用相同哈希标签的键（会在同一个节点）</span><br>        cluster.<span class="hljs-built_in">set</span>(<span class="hljs-string">&quot;user:&#123;&quot;</span> + user_id + <span class="hljs-string">&quot;&#125;:name&quot;</span>, <span class="hljs-string">&quot;张三&quot;</span>);<br>        cluster.<span class="hljs-built_in">set</span>(<span class="hljs-string">&quot;user:&#123;&quot;</span> + user_id + <span class="hljs-string">&quot;&#125;:age&quot;</span>, <span class="hljs-string">&quot;25&quot;</span>);<br>        cluster.<span class="hljs-built_in">set</span>(<span class="hljs-string">&quot;user:&#123;&quot;</span> + user_id + <span class="hljs-string">&quot;&#125;:email&quot;</span>, <span class="hljs-string">&quot;zhang@example.com&quot;</span>);<br>        <br>        <span class="hljs-comment">// 验证数据设置成功</span><br>        <span class="hljs-keyword">auto</span> name = cluster.<span class="hljs-built_in">get</span>(<span class="hljs-string">&quot;user:&#123;&quot;</span> + user_id + <span class="hljs-string">&quot;&#125;:name&quot;</span>);<br>        <span class="hljs-keyword">auto</span> age = cluster.<span class="hljs-built_in">get</span>(<span class="hljs-string">&quot;user:&#123;&quot;</span> + user_id + <span class="hljs-string">&quot;&#125;:age&quot;</span>);<br>        <span class="hljs-keyword">auto</span> email = cluster.<span class="hljs-built_in">get</span>(<span class="hljs-string">&quot;user:&#123;&quot;</span> + user_id + <span class="hljs-string">&quot;&#125;:email&quot;</span>);<br>        <br>        <span class="hljs-keyword">if</span> (name) std::cout &lt;&lt; <span class="hljs-string">&quot;  用户名: &quot;</span> &lt;&lt; *name &lt;&lt; std::endl;<br>        <span class="hljs-keyword">if</span> (age) std::cout &lt;&lt; <span class="hljs-string">&quot;  年龄: &quot;</span> &lt;&lt; *age &lt;&lt; std::endl;<br>        <span class="hljs-keyword">if</span> (email) std::cout &lt;&lt; <span class="hljs-string">&quot;  邮箱: &quot;</span> &lt;&lt; *email &lt;&lt; std::endl;<br>        <br>        <span class="hljs-comment">// 测试不同哈希标签的数据分布</span><br>        std::cout &lt;&lt; <span class="hljs-string">&quot;\n不同哈希标签的数据分布测试:&quot;</span> &lt;&lt; std::endl;<br>        <br>        cluster.<span class="hljs-built_in">set</span>(<span class="hljs-string">&quot;order:&#123;&quot;</span> + order_id + <span class="hljs-string">&quot;&#125;:amount&quot;</span>, <span class="hljs-string">&quot;199.99&quot;</span>);<br>        cluster.<span class="hljs-built_in">set</span>(<span class="hljs-string">&quot;order:&#123;&quot;</span> + order_id + <span class="hljs-string">&quot;&#125;:status&quot;</span>, <span class="hljs-string">&quot;paid&quot;</span>);<br>        <br>        <span class="hljs-keyword">auto</span> amount = cluster.<span class="hljs-built_in">get</span>(<span class="hljs-string">&quot;order:&#123;&quot;</span> + order_id + <span class="hljs-string">&quot;&#125;:amount&quot;</span>);<br>        <span class="hljs-keyword">auto</span> status = cluster.<span class="hljs-built_in">get</span>(<span class="hljs-string">&quot;order:&#123;&quot;</span> + order_id + <span class="hljs-string">&quot;&#125;:status&quot;</span>);<br>        <br>        <span class="hljs-keyword">if</span> (amount) std::cout &lt;&lt; <span class="hljs-string">&quot;  订单金额: &quot;</span> &lt;&lt; *amount &lt;&lt; std::endl;<br>        <span class="hljs-keyword">if</span> (status) std::cout &lt;&lt; <span class="hljs-string">&quot;  订单状态: &quot;</span> &lt;&lt; *status &lt;&lt; std::endl;<br>        <br>        std::vector&lt;std::string&gt; keys_to_delete = &#123;<br>            <span class="hljs-string">&quot;user:&#123;&quot;</span> + user_id + <span class="hljs-string">&quot;&#125;:name&quot;</span>,<br>            <span class="hljs-string">&quot;user:&#123;&quot;</span> + user_id + <span class="hljs-string">&quot;&#125;:age&quot;</span>, <br>            <span class="hljs-string">&quot;user:&#123;&quot;</span> + user_id + <span class="hljs-string">&quot;&#125;:email&quot;</span>,<br>            <span class="hljs-string">&quot;user:&#123;&quot;</span> + user_id + <span class="hljs-string">&quot;&#125;:last_login&quot;</span>,<br>            <span class="hljs-string">&quot;user:&#123;&quot;</span> + user_id + <span class="hljs-string">&quot;&#125;:login_count&quot;</span>,<br>            <span class="hljs-string">&quot;user:&#123;&quot;</span> + user_id + <span class="hljs-string">&quot;&#125;:profile&quot;</span>,<br>            <span class="hljs-string">&quot;user:&#123;&quot;</span> + user_id + <span class="hljs-string">&quot;&#125;:counter1&quot;</span>,<br>            <span class="hljs-string">&quot;user:&#123;&quot;</span> + user_id + <span class="hljs-string">&quot;&#125;:counter2&quot;</span>,<br>            <span class="hljs-string">&quot;order:&#123;&quot;</span> + order_id + <span class="hljs-string">&quot;&#125;:amount&quot;</span>,<br>            <span class="hljs-string">&quot;order:&#123;&quot;</span> + order_id + <span class="hljs-string">&quot;&#125;:status&quot;</span><br>        &#125;;<br>        <br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">const</span> <span class="hljs-keyword">auto</span>&amp; key : keys_to_delete) &#123;<br>            cluster.<span class="hljs-built_in">del</span>(key);<br>        &#125;<br>        <br>        std::cout &lt;&lt; <span class="hljs-string">&quot;哈希标签测试完成!&quot;</span> &lt;&lt; std::endl;<br>        <br>    &#125; <span class="hljs-built_in">catch</span> (<span class="hljs-type">const</span> Error&amp; e) &#123;<br>        std::cerr &lt;&lt; <span class="hljs-string">&quot;哈希标签测试错误: &quot;</span> &lt;&lt; e.<span class="hljs-built_in">what</span>() &lt;&lt; std::endl;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><p>哈希标签:</p>
+<p>这是这里唯一要额外解释的一种使用方式, 你可以理解<strong>哈希标签是一种键的性质</strong>.</p>
+<p><strong>只要一个键中带有花括号<code>&#123;&#125;</code>, 那么计算哈希时就只会用花括号内的, 如果没有则用整个键算</strong>.</p>
+<p>因此<strong>只要花括号内值一致, 就算键不同, 也一定会被分到同一个节点中</strong>.</p>
+<p>这种机制的目的在于 : <strong>将一些关联度较高的数据设置相同的哈希标签, 使其存放到同一个节点中, 使得同时读取它们不需要到多个节点中去找, 从而提升性能.</strong></p>
+</li>
+</ul>
+<p>测试代码:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">testClusterRedis</span><span class="hljs-params">()</span> </span>&#123;<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;=== 测试Redis集群 (7000端口) ===&quot;</span> &lt;&lt; std::endl;<br>    <br>    <span class="hljs-function">RedisClusterExamples <span class="hljs-title">cluster_examples</span><span class="hljs-params">(<span class="hljs-string">&quot;tcp://127.0.0.1:7000&quot;</span>)</span></span>;<br>    <br>    <span class="hljs-keyword">if</span> (!cluster_examples.<span class="hljs-built_in">testConnection</span>()) &#123;<br>        std::cerr &lt;&lt; <span class="hljs-string">&quot;Redis集群连接测试失败!&quot;</span> &lt;&lt; std::endl;<br>        <span class="hljs-keyword">return</span>;<br>    &#125;<br>    <br>    cluster_examples.<span class="hljs-built_in">clusterInfo</span>();<br>    cluster_examples.<span class="hljs-built_in">keyOperations</span>();<br>    cluster_examples.<span class="hljs-built_in">stringOperations</span>();<br>    cluster_examples.<span class="hljs-built_in">hashOperations</span>();<br>    cluster_examples.<span class="hljs-built_in">listOperations</span>();<br>    cluster_examples.<span class="hljs-built_in">clusterSpecificOperations</span>();<br>    cluster_examples.<span class="hljs-built_in">hashTagOperations</span>();<br>    <br>    std::cout &lt;&lt; <span class="hljs-string">&quot;Redis集群测试完成!&quot;</span> &lt;&lt; std::endl;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>测试结果 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><code class="hljs cpp">=== 测试Redis集群 (<span class="hljs-number">7000</span>端口) ===<br>集群连接测试: 成功<br>获取集群测试值: Hello, Redis Cluster!<br><br>=== 集群信息查询 ===<br>集群节点信息:<br>集群槽信息获取成功<br><br>=== 键操作（自动路由） ===<br>设置键: user:<span class="hljs-number">1001</span><br>设置键: product:<span class="hljs-number">2001</span><br>设置键: order:<span class="hljs-number">3001</span><br>获取键 user:<span class="hljs-number">1001</span>: value_for_user:<span class="hljs-number">1001</span><br>获取键 product:<span class="hljs-number">2001</span>: value_for_product:<span class="hljs-number">2001</span><br>获取键 order:<span class="hljs-number">3001</span>: value_for_order:<span class="hljs-number">3001</span><br>键 user:<span class="hljs-number">1001</span> 是否存在: 是<br>键 product:<span class="hljs-number">2001</span> 是否存在: 是<br>键 order:<span class="hljs-number">3001</span> 是否存在: 是<br><br>=== 字符串操作 ===<br>计数器值: <span class="hljs-number">101</span><br>cluster_key3: value3<br>cluster_key2: value2<br>cluster_key1: value1<br><br>=== 哈希操作 ===<br>用户名: Cluster User<br>用户信息:<br>  age: <span class="hljs-number">30</span><br>  city: Beijing<br>  name: Cluster User<br>新年龄: <span class="hljs-number">31</span><br><br>=== 列表操作 ===<br>队列长度: <span class="hljs-number">3</span><br>队列内容: item0 item1 item2 <br>弹出的元素: item0<br><br>=== 集群特定操作 ===<br>集群信息:<br>集群状态: 正常<br><br>=== 哈希标签测试 ===<br>哈希标签基本功能测试:<br>  用户名: 张三<br>  年龄: <span class="hljs-number">25</span><br>  邮箱: zhang@example.com<br><br>不同哈希标签的数据分布测试:<br>  订单金额: <span class="hljs-number">199.99</span><br>  订单状态: paid<br><br>哈希标签测试完成!<br>Redis集群测试完成!<br></code></pre></td></tr></table></figure>
+
+
+
+<p>by 天目中云</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Redis/" class="print-no-link">#Redis</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Redis深入学习(4) redis_plus_plus库</div>
+      <div>http://example.com/2025/11/08/Redis深入学习(4) redis_plus_plus库/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>天目中云</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年11月8日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/11/01/Redis%E6%B7%B1%E5%85%A5%E5%AD%A6%E4%B9%A0(3)%20%E6%8C%81%E4%B9%85%E5%8C%96%20%E9%AB%98%E5%8F%AF%E7%94%A8%20%E9%AB%98%E6%89%A9%E5%B1%95/" title="Redis深入学习(3) 持久化 高可用 高扩展">
+                        <span class="hidden-mobile">Redis深入学习(3) 持久化 高可用 高扩展</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"NhgfDy2CEByjwxuxPM1Le2t6-MdYXbMMI","appKey":"nvGMdqKfKbpkVnojLSbwmasv","path":"window.location.pathname","placeholder":null,"avatar":"retro","meta":["nick","mail","link"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":false,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":false},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
