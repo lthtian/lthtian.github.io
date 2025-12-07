@@ -21,24 +21,31 @@
   <meta name="author" content="天目中云">
   <meta name="keywords" content="">
   
-    <meta name="description" content="关于运行库, 你可以仅仅理解静态库和动态库的原理, 也许够用, 但是如果深入进去的话, 大有可以说道的地方, 在我的认知中, 这不算是什么实用知识, 但是算一种”技术底蕴”吧.  CRT(C&#x2F;C++ Runtime Library)总所周知, 程序运行不只依靠自己的代码, 更依靠各种标准库. 你可以认为CRT就是C&#x2F;C++运行库, 是环境, 是C标准库, 是C++标准库, 是">
+    <meta name="description" content="工作总结 从零开发蓝屏修复项目. 封装aliyun-oss-cpp-sdk接口到动态库中, 供后续dll修复的上传功能使用.  Jenkins这算是一个CI&#x2F;CD工具, 貌似现在非常多公司都在用这个, 其功能在于持续集成&#x2F;持续交付 + 自动化, 虽然这么说, 感觉很高端很厉害, 但是如果不实际接触, 感觉还是很难摸清其中的门道, 我下面就用比较简单的语言一边理解一边介绍吧. 初步理解你可">
 <meta property="og:type" content="article">
-<meta property="og:title" content="运行库相关深入学习">
-<meta property="og:url" content="http://example.com/2025/11/16/%E8%BF%90%E8%A1%8C%E5%BA%93%E7%9B%B8%E5%85%B3%E6%B7%B1%E5%85%A5%E5%AD%A6%E4%B9%A0/index.html">
+<meta property="og:title" content="LDS实习次月总结">
+<meta property="og:url" content="http://example.com/2025/11/29/LDS%E5%AE%9E%E4%B9%A0%E6%AC%A1%E6%9C%88%E6%80%BB%E7%BB%93/index.html">
 <meta property="og:site_name" content="天目中云">
-<meta property="og:description" content="关于运行库, 你可以仅仅理解静态库和动态库的原理, 也许够用, 但是如果深入进去的话, 大有可以说道的地方, 在我的认知中, 这不算是什么实用知识, 但是算一种”技术底蕴”吧.  CRT(C&#x2F;C++ Runtime Library)总所周知, 程序运行不只依靠自己的代码, 更依靠各种标准库. 你可以认为CRT就是C&#x2F;C++运行库, 是环境, 是C标准库, 是C++标准库, 是">
+<meta property="og:description" content="工作总结 从零开发蓝屏修复项目. 封装aliyun-oss-cpp-sdk接口到动态库中, 供后续dll修复的上传功能使用.  Jenkins这算是一个CI&#x2F;CD工具, 貌似现在非常多公司都在用这个, 其功能在于持续集成&#x2F;持续交付 + 自动化, 虽然这么说, 感觉很高端很厉害, 但是如果不实际接触, 感觉还是很难摸清其中的门道, 我下面就用比较简单的语言一边理解一边介绍吧. 初步理解你可">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2025-11-16T10:59:00.000Z">
-<meta property="article:modified_time" content="2025-11-16T11:00:07.449Z">
+<meta property="og:image" content="http://example.com/LDS%E6%80%BB%E7%BB%932/2.jpg">
+<meta property="og:image" content="http://example.com/LDS%E6%80%BB%E7%BB%932/3.jpg">
+<meta property="og:image" content="http://example.com/LDS%E6%80%BB%E7%BB%932/4.jpg">
+<meta property="og:image" content="http://example.com/LDS%E6%80%BB%E7%BB%932/5.png">
+<meta property="article:published_time" content="2025-11-29T10:00:00.000Z">
+<meta property="article:modified_time" content="2025-12-07T12:59:14.235Z">
 <meta property="article:author" content="天目中云">
-<meta property="article:tag" content="运行库">
+<meta property="article:tag" content="实习">
+<meta property="article:tag" content="Jenkins">
+<meta property="article:tag" content="CRT">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/LDS%E6%80%BB%E7%BB%932/2.jpg">
   
   
     <meta name="referrer" content="no-referrer-when-downgrade">
   
   
-  <title>运行库相关深入学习 - 天目中云</title>
+  <title>LDS实习次月总结 - 天目中云</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -217,7 +224,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="运行库相关深入学习"></span>
+            <span id="subtitle" data-typed-text="LDS实习次月总结"></span>
           
         </div>
 
@@ -228,8 +235,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2025-11-16 18:59" pubdate>
-          2025年11月16日 晚上
+        <time datetime="2025-11-29 18:00" pubdate>
+          2025年11月29日 晚上
         </time>
       </span>
     
@@ -240,7 +247,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          2.2k 字
+          5k 字
         
       </span>
     
@@ -251,7 +258,7 @@
         
         
         
-          19 分钟
+          42 分钟
         
       </span>
     
@@ -297,14 +304,96 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <h1 id="seo-header">运行库相关深入学习</h1>
+            <h1 id="seo-header">LDS实习次月总结</h1>
             
             
               <div class="markdown-body">
                 
-                <blockquote>
-<p>关于运行库, 你可以仅仅理解静态库和动态库的原理, 也许够用, 但是如果深入进去的话, 大有可以说道的地方, 在我的认知中, 这不算是什么实用知识, 但是算一种”技术底蕴”吧.</p>
-</blockquote>
+                <h2 id="工作总结"><a href="#工作总结" class="headerlink" title="工作总结"></a>工作总结</h2><ul>
+<li>从零开发蓝屏修复项目.</li>
+<li>封装aliyun-oss-cpp-sdk接口到动态库中, 供后续dll修复的上传功能使用.</li>
+</ul>
+<h2 id="Jenkins"><a href="#Jenkins" class="headerlink" title="Jenkins"></a>Jenkins</h2><p>这算是一个<code>CI/CD</code>工具, 貌似现在非常多公司都在用这个, 其功能在于<strong>持续集成&#x2F;持续交付 + 自动化</strong>, 虽然这么说, 感觉很高端很厉害, 但是如果不实际接触, 感觉还是很难摸清其中的门道, 我下面就用比较简单的语言一边理解一边介绍吧.</p>
+<h3 id="初步理解"><a href="#初步理解" class="headerlink" title="初步理解"></a>初步理解</h3><p>你可以认为这个工具可以在服务器上部署, 其可以做的事简单来说大抵可以包括 : </p>
+<ul>
+<li>拥有一个或很多个干净且没有外部污染的编译构建环境(当然是你自己搭建, 只是在这里单独搭建更安全也方便多人协作).</li>
+<li>为编译构建项目提供很多便利, 比如配置构建参数, 编写构建前提和后续, 列出构建结果.</li>
+<li>提供很多的自动化配置, 比如定时从git平台上拉取新的代码自动构建.</li>
+<li><strong>PipeLine</strong> : Jenkins的核心 — 流水线, 可以通过配置PipeLine脚本来实现开发流程的流水线化, 比如<code>拉取git代码 -&gt; 编译构建 -&gt; 配置签名 -&gt; 存储调试符号 -&gt; 将结果列举</code>, 当然还可以更复杂更多样, 比如开始时<strong>拉取docker重装环境</strong>, 保证环境洁净, 又或者后续执行<strong>自动化测试</strong>等等.</li>
+<li>作为一个服务提供给外部网站申请资源(类比Redis), 开发人员可以直接从网站上一览项目构建情况, 并且实现资源互通.</li>
+</ul>
+<p>不过我认为也不要过度神话此工具, 因为其最终实现的<strong>是也只是自动化</strong>, 我们需要想的是自动化的流程如何搭建, 怎么写PipeLine, 比如拉取git我们就要提供git平台, 编译构建需要我们自己搭建平台,  Jenkins最后在脚本中实际也只是执行一下bat罢了.</p>
+<h3 id="Pipeline"><a href="#Pipeline" class="headerlink" title="Pipeline"></a>Pipeline</h3><p>这里先介绍核心流水线, 其本质就是<strong>使用<code>Groovy</code>语言的脚本代码</strong>, 目的是串通项目各个阶段的流程.</p>
+<p>下面是一个模板 : </p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><code class="hljs groovy">pipeline &#123;<br>    agent any    <br>    parameters &#123;<br>        extendedChoice(...)<br>        booleanParam(...)<br>    &#125;<br>    environment &#123;<br>        SLN_PATH = ...<br>    &#125;<br>    stages &#123;<br>        stage(<span class="hljs-string">&#x27;checkout&#x27;</span>) &#123;<br>           steps &#123;<br>                checkout(...)<br>           &#125;<br>        &#125;<br>        stage(<span class="hljs-string">&#x27;build&#x27;</span>) &#123;<br>            steps &#123;<br>                script &#123;...&#125;<br>            &#125;<br>        &#125;<br>        stage(<span class="hljs-string">&#x27;sign&#x27;</span>) &#123;<br>            steps &#123;<br>                script &#123;...&#125;<br>            &#125;<br>        &#125;<br>        <br>        stage(<span class="hljs-string">&#x27;store pdb&#x27;</span>) &#123;<br>            steps &#123;<br>                script &#123;...&#125;<br>            &#125;<br>        &#125;<br>        stage(<span class="hljs-string">&#x27;archive&#x27;</span>) &#123;<br>            steps &#123;<br>                script &#123;...&#125;<br>            &#125;<br>        &#125;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><p>你可以认为Jenkins的PipeLine中又一些关键词可以触发设置好的操作, 下面介绍这些关键词.</p>
+</li>
+<li><p>parameters : 使项目<strong>参数化</strong>, 让项目在手动开始流水线前可以选择一些参数或是配置, 比如构建哪些项目, 构建用的参数怎么设置.</p>
+</li>
+<li><p>environment : 设置一些本次构建需要用的环境变量.</p>
+</li>
+<li><p>stage : 一个stage代表流水线的一个阶段, 每个阶段就要干对应的事情.</p>
+</li>
+<li><p>checkout :</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs groovy">stage(<span class="hljs-string">&#x27;checkout&#x27;</span>) &#123;<br>        steps &#123;<br>            checkout([<span class="hljs-attr">$class:</span> <span class="hljs-string">&#x27;GitSCM&#x27;</span>, <br>                     <span class="hljs-symbol">branches:</span> [[<span class="hljs-attr">name:</span> <span class="hljs-string">&quot;$&#123;branchName&#125;&quot;</span>]], <span class="hljs-comment">// 分支名，可能由其他方式传入</span><br>                     <span class="hljs-symbol">userRemoteConfigs:</span> [[<span class="hljs-attr">url:</span> <span class="hljs-string">&#x27;你的代码仓库&#x27;</span>]],<br>                     <span class="hljs-symbol">extensions:</span> [[<span class="hljs-attr">$class:</span> <span class="hljs-string">&#x27;RelativeTargetDirectory&#x27;</span>, <span class="hljs-attr">relativeTargetDir:</span> <span class="hljs-string">&#x27;subfolder&#x27;</span>]] <span class="hljs-comment">// 拉取到指定子目录</span><br>                    ])<br>        &#125;<br>    &#125;<br></code></pre></td></tr></table></figure>
+
+<p>只要这里设置好了, 流水线进行到这里就会去你配置好的git仓库中取出对应的代码.</p>
+</li>
+<li><p>script : 也许你会发现后面的阶段用的都是script, 这其实是在groovy语法中内置js语法, 可以去做一些更灵活的操作, 比如构建&#x2F;删除目录, 设置项目输入输出, 执行目标操作等等. 下面只展示build处的部分配置 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-built_in">stage</span>(<span class="hljs-string">&#x27;build&#x27;</span>) &#123;<br>            steps &#123;<br>                script &#123;<br>                    <span class="hljs-comment">// 遍历所有选中的场景</span><br>                    def selectedScenes = ...            <br>                    selectedScenes.each &#123; scene -&gt;<br>                        <span class="hljs-comment">// 动态设置输出目录</span><br>                        def outputDir = scene == <span class="hljs-string">&#x27;popularize&#x27;</span> ? <br>                            <span class="hljs-string">&quot;$WORKSPACE\\...\\out\\Release_popularize&quot;</span> : <br>                            <span class="hljs-string">&quot;$WORKSPACE\\...\\out\\Release&quot;</span>        <br>                        def config = scene == <span class="hljs-string">&#x27;...&quot;</span><br><span class="hljs-string">                        // 清理输出目录</span><br><span class="hljs-string">                        bat &quot;if exist $&#123;outputDir&#125; (rmdir /S /Q $&#123;outputDir&#125;)&quot;</span><br><span class="hljs-string">                        // 构建主程序</span><br><span class="hljs-string">                        if (params.build_main) &#123;</span><br><span class="hljs-string">                            bat &quot;...&quot;</span><br><span class="hljs-string">                        &#125;</span><br><span class="hljs-string">                    &#125;</span><br><span class="hljs-string">                &#125;</span><br><span class="hljs-string">            &#125;</span><br><span class="hljs-string">        &#125;</span><br></code></pre></td></tr></table></figure>
+</li>
+<li><p>bat : 执行Shell命令, 这个操作非常灵活, 其实就是你在操作系统上可以干什么, bat就可以干什么.</p>
+</li>
+<li><p>archiveArtifacts : 归档构建产物, 可以将一些构建成果(如exe, jar, html, bat, tpi等等)打包展示在主界面供项目成员下载.</p>
+</li>
+<li><p>publishHTML : 发布一个html报告到构建页面, 可以直接在网站上阅览.</p>
+</li>
+<li><p><code>docker.image(...).inside</code> : 直接在流水线中动态启动一个Docker容器搭建构建环境, 就可以连搭环境都省去.</p>
+</li>
+</ul>
+<p>于是我们就可以又一个非常直观有用的Jenkins页面了!</p>
+<p><img src="/./LDS%E6%80%BB%E7%BB%932/2.jpg" srcset="/img/loading.gif" lazyload></p>
+<h3 id="构建触发器"><a href="#构建触发器" class="headerlink" title="构建触发器"></a>构建触发器</h3><p><img src="/./LDS%E6%80%BB%E7%BB%932/3.jpg" srcset="/img/loading.gif" lazyload></p>
+<p>在配置界面有这样的选项, 都属于触发器的范畴, 本质就是在满足一些情况后自动构建给项目.</p>
+<ul>
+<li>Build after other projects are built : 设置上游依赖, 一些项目会有练习, 比如B依赖于A, 那么B就可以在这里配置A, 那么A构建完, B也会自动构建.</li>
+<li>Build periodically : 定时构建.</li>
+<li>GitHub hook trigger for GITScm polling : 这个很好用, 可以在git托管平台上设置我们的Jenkins, 当发生push或merge时, 平台会自动通知Jenkins服务器, 于是就会自动进行构建.</li>
+<li>Poll SCM : 属于上一种的下位替代, 可以让Jenkins定期向git托管平台检查代码有无更新.</li>
+</ul>
+<h2 id="VS远程调试"><a href="#VS远程调试" class="headerlink" title="VS远程调试"></a>VS远程调试</h2><ul>
+<li>意义 : <strong>测试不同机型, 操作系统下程序是否依旧保持稳定</strong>. </li>
+<li>必要性 : 在其他OS上再安一边vs然后调实在有些弱智, 而vs远程调试可以有效降低不同OS上测试同一套程序的测试成本.</li>
+<li>本质 : 就是把自己本地编出来的exe或dll放到其他OS上运行, 但是可以远程调试.</li>
+<li>其他OS的来源可以是其他电脑, 用个ToDesk连过去, 也可以做虚拟机, 这点看实际情况.</li>
+</ul>
+<h3 id="远程调用方"><a href="#远程调用方" class="headerlink" title="远程调用方"></a>远程调用方</h3><ul>
+<li><p>把vs目录下的Remote Debugger文件夹压缩拷到目标OS上. 我的路径是这个:</p>
+<p><code>C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\Remote Debugger</code></p>
+</li>
+<li><p>Remote Debugger中有X86&#x2F;X64, 看你的代码是32位还是64位的, 点进去找到<code>msvsmon.exe</code>, 以管理员身份运行, 点击工具-&gt;选项, 身份验证设置为无, 允许任何用户进行调试.</p>
+<p><img src="/./LDS%E6%80%BB%E7%BB%932/4.jpg" srcset="/img/loading.gif" lazyload></p>
+</li>
+<li><p>你的最终目的是再目标OS上执行你的exe文件, 因此必须要把exe和其依赖的所有文件压缩拷到目标OS上, 如果只是普通的vs项目, 构建成功后直接拷贝Debug目录就行, 其他的话要自己斟酌. (这里必须好好考量)</p>
+</li>
+</ul>
+<h3 id="本地"><a href="#本地" class="headerlink" title="本地"></a>本地</h3><ul>
+<li><p>将<code>本地Windows调试器</code>切换为<code>远程Windows调试器</code>.</p>
+</li>
+<li><p>打开要调试的项目的属性, 设置远程命令&#x2F;远程命令参数(如果有的话)&#x2F;工作目录&#x2F;远程服务器名称&#x2F;连接 : </p>
+<p><img src="/./LDS%E6%80%BB%E7%BB%932/5.png" srcset="/img/loading.gif" lazyload></p>
+<ul>
+<li>远程命令 : 你要执行的exe的绝对路径.</li>
+<li>工作目录 : exe所在目录或是安装目录.</li>
+<li>远程服务器名称 : 这里要自己看目标OS的IP地址, 自己搜一下怎么看, 后面加上端口.</li>
+<li>连接 : 不带身份验证.</li>
+</ul>
+<p>至此开始调试即可, 操作和正常调试没有任何区别.</p>
+</li>
+</ul>
+<h2 id="运行库"><a href="#运行库" class="headerlink" title="运行库"></a>运行库</h2><p>关于运行库, 你可以仅仅理解静态库和动态库的原理, 也许够用, 但是如果深入进去的话, 大有可以说道的地方, 在我的认知中, 这不算是什么实用知识, 但是算一种”技术底蕴”吧.</p>
 <h3 id="CRT-C-C-Runtime-Library"><a href="#CRT-C-C-Runtime-Library" class="headerlink" title="CRT(C&#x2F;C++ Runtime Library)"></a>CRT(C&#x2F;C++ Runtime Library)</h3><p>总所周知, 程序运行不只依靠自己的代码, 更依靠各种标准库.</p>
 <p>你可以认为CRT就是<strong>C&#x2F;C++运行库</strong>, 是环境, 是C标准库, 是C++标准库, 是Windows.h等等, 一定要把CRT和各种第三方动静态库区分开.</p>
 <p>而CRT是可以<strong>选择链接方式</strong>的, 也就是说你可以使用静态库版本的CRT, 那就是**&#x2F;MT**, 也可以使用动态库版本的CRT, 那就是**&#x2F;MD**, 至于&#x2F;MTd和&#x2F;MDd是Debug版本的就不多说了.</p>
@@ -368,7 +457,57 @@
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// exe调用</span><br><span class="hljs-comment">// 即使是C++程序，也只处理C风格字符串</span><br><span class="hljs-type">const</span> <span class="hljs-type">char</span>* message = <span class="hljs-built_in">get_message</span>();<br>std::cout &lt;&lt; message &lt;&lt; std::endl;<br><span class="hljs-built_in">free_message</span>(message); <span class="hljs-comment">// 调用DLL提供的释放函数</span><br></code></pre></td></tr></table></figure>
 
 <p>这里有一个非常有趣的事情是, 我上个月看一个佬直播用C++写MAA的框架库, 当时他就正在给自己的动态库导出纯C接口, 然后我看评论区有人在嘲讽用纯C接口干什么, 直接用C++就行了, 我当时细想也没想通为什么非要写纯C接口, 结果现在茅塞顿开之后, 只觉得很酷, 也许这就是我一开头说的”技术底蕴”吧.</p>
-<p>by 天目中云</p>
+<h2 id="细碎知识总结"><a href="#细碎知识总结" class="headerlink" title="细碎知识总结"></a>细碎知识总结</h2><ul>
+<li><p><code>utf8 with BOM</code> 这个貌似是微软utf-8的带编码签名的格式, 专门用在Windows上的. </p>
+</li>
+<li><p>使用SDK8.1时一定要把 C++ -&gt; 语言 -&gt; 符合模式, 符合模式判为no.</p>
+</li>
+<li><p>动态库导出最好用.def文件导出, 更清晰一些.</p>
+</li>
+<li><p>合格的项目需要有良好的版本号规范, vs项目中可以通过 项目 -&gt; 添加 -&gt; 资源 -&gt; Version, 据此构建出VS_VERSION_INFO, 在其中可以设置version&#x2F;copyright&#x2F;description&#x2F;companyname等等, 你点击exe的属性-&gt;详细信息显示的就是这些.</p>
+</li>
+<li><p>git中的<code>rebase</code>指令可以合并以往多次的commit, 适合于多次commit但并没有push, 最后push时将前面的所有commit合并的情况.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">git <span class="hljs-built_in">log</span> --oneline --graph<br></code></pre></td></tr></table></figure>
+
+<p>通过该指令可以查看提交情况.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">git rebase -i HEAD~4 <span class="hljs-comment"># 合并最近4个提交</span><br></code></pre></td></tr></table></figure>
+
+<p>然后会让你编辑 : </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs bash">pick 1m2n3o4 实现核心功能<br>squash 7i8j9k0 临时提交，还需要修改<br>squash e4f5g6h 再次完善功能<br>squash a1b2c3d 修复一个小bug<br></code></pre></td></tr></table></figure>
+
+<p>这里squash表示要压缩的commit, 最后要留下最后一个commit.</p>
+</li>
+<li><p><code>hosts</code> : </p>
+<p>这类似于一个域名解析的文本文件, 优先级高于DNS. 一般存在于C:\Windows\System32\drivers\etc下. </p>
+<p>文本类似下面:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs cpp"># <span class="hljs-built_in">Copyright</span> (c) <span class="hljs-number">1993</span><span class="hljs-number">-2009</span> Microsoft Corp.<br>#<br># This is a sample HOSTS file used by Microsoft TCP/IP <span class="hljs-keyword">for</span> Windows.<br>#<br># This file contains the mappings of IP addresses to host names. Each<br><span class="hljs-meta"># entry should be kept on an individual <span class="hljs-keyword">line</span>. The IP address should</span><br><span class="hljs-meta"># be placed in the first column followed by the corresponding host name.</span><br># The IP address <span class="hljs-keyword">and</span> the host name should be separated by at least one<br><span class="hljs-meta"># space.</span><br>#<br># Additionally, <span class="hljs-built_in">comments</span> (such as these) may be inserted on individual<br><span class="hljs-meta"># lines or following the machine name denoted by a <span class="hljs-string">&#x27;#&#x27;</span> symbol.</span><br>#<br># For example:<br>#<br>#      <span class="hljs-number">102.54</span><span class="hljs-number">.94</span><span class="hljs-number">.97</span>     rhino.acme.com          <span class="hljs-meta"># source server</span><br>#       <span class="hljs-number">38.25</span><span class="hljs-number">.63</span><span class="hljs-number">.10</span>     x.acme.com              <span class="hljs-meta"># x client host</span><br><br><span class="hljs-meta"># localhost name resolution is handled within DNS itself.</span><br>#	<span class="hljs-number">127.0</span><span class="hljs-number">.0</span><span class="hljs-number">.1</span>       localhost<br>#	::<span class="hljs-number">1</span>             localhost<br><br>xxx.xxx.xxx.<span class="hljs-built_in">xxx</span>(B) xxx.<span class="hljs-built_in">com</span>(A)<br></code></pre></td></tr></table></figure>
+
+<p>**hosts文件是电脑访问网络时的”第一道关卡”,可以通过它来告诉电脑:”当你要访问A这个网址时，别问DNS了,直接去B这个IP地址.”**因此在使用未注册DNS的服务器时要用这个文件, 一般用于配置企业内网.</p>
+</li>
+<li><p>Assoc(文件关联) : 这个其实就是在针对扩展名和打开软件进行设置, 经常出现的<strong>选择打开方式</strong>就是在设置这个.</p>
+</li>
+</ul>
+<h2 id="项目细节分析"><a href="#项目细节分析" class="headerlink" title="项目细节分析"></a>项目细节分析</h2><h3 id="GetModuleLV"><a href="#GetModuleLV" class="headerlink" title="GetModuleLV"></a>GetModuleLV</h3><p>可以直接获取模块相对于安装目录的层数, 需要在一开始根据你exe&#x2F;dll在安装目录中实际位置进行设置.</p>
+<p>在大体量多文件软件中这种设计很有优势, 可以更方便地找到根目录, 然后再据此拼接需要的路径.</p>
+<h3 id="Roaming"><a href="#Roaming" class="headerlink" title="Roaming"></a>Roaming</h3><p>虽然软件一般都会安装在<code>C:\Program Files\</code> 或<code>C:\Program Files (x86)\</code>下, 但是用户数据一般都会存放在<code>C:\Users\AppData\Roaming</code>或<code>C:\Users\AppData\Local[应用名]</code>下.</p>
+<p>一般认为<code>Roaming</code>下存储用户配置等用户数据, <code>Local</code>下存储日志文件等本地数据.</p>
+<h3 id="Tpi细节"><a href="#Tpi细节" class="headerlink" title="Tpi细节"></a>Tpi细节</h3><ul>
+<li><p><code>Popularize</code> :<br><strong>具体弹窗类</strong>, 整个类控制一种弹窗的整个状态周期, 包括初始化, 弹窗准备, 弹窗运行, 关闭处理(弹窗管理), 默认弹窗类型准备.</p>
+</li>
+<li><p><code>PopularizeConfig</code> :<br>可以理解为是<strong>云端配置拉取</strong>, 就是把一些经常可能发生变动的配置(比如白名单, 下载路径, 时间设置)存在云端, 当云端配置发生更新时, 本地运行的配置中心会调用<code>OnSlowConfigUpdate</code>, 这里会把配置读出来然后执行配置更新回调.</p>
+<ul>
+<li>该类构造需要传入配置更新时的回调函数, 并且需要自己编写, ParseConfig针对项目专门的配置进行读取.</li>
+<li>使用该类需要调用Init函数, 其中会拉起配置中心的dll, 当然也需要对应的UnInit.</li>
+</ul>
+</li>
+<li><p><code>PopularizeHelper</code>:</p>
+<p>上面两个还偏模板一些, 但这个主要就是看实际情况编写了, 可以理解为<code>Popularize</code>和<code>PopularizeConfig</code>的具体管理类, 包括云配置服务的初始化和弹窗示例的初始化以及管理.</p>
+</li>
+</ul>
+<h3 id="杂项"><a href="#杂项" class="headerlink" title="杂项"></a>杂项</h3><ul>
+<li><code>DECLARE_WND_CLASS</code> : ATL再构造函数中设置全局唯一的窗口名.</li>
+<li><code>MESSAGE_HANDLER</code> : 关注某个消息, 并且需要传入回调.</li>
+</ul>
 
                 
               </div>
@@ -381,7 +520,11 @@
     <div class="post-meta">
       <i class="iconfont icon-tags"></i>
       
-        <a href="/tags/%E8%BF%90%E8%A1%8C%E5%BA%93/" class="print-no-link">#运行库</a>
+        <a href="/tags/%E5%AE%9E%E4%B9%A0/" class="print-no-link">#实习</a>
+      
+        <a href="/tags/Jenkins/" class="print-no-link">#Jenkins</a>
+      
+        <a href="/tags/CRT/" class="print-no-link">#CRT</a>
       
     </div>
   
@@ -393,8 +536,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>运行库相关深入学习</div>
-      <div>http://example.com/2025/11/16/运行库相关深入学习/</div>
+      <div>LDS实习次月总结</div>
+      <div>http://example.com/2025/11/29/LDS实习次月总结/</div>
     </div>
     <div class="license-meta">
       
@@ -406,7 +549,7 @@
       
         <div class="license-meta-item license-meta-date">
           <div>发布于</div>
-          <div>2025年11月16日</div>
+          <div>2025年11月29日</div>
         </div>
       
       
@@ -438,9 +581,9 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2025/11/29/LDS%E5%AE%9E%E4%B9%A0%E6%AC%A1%E6%9C%88%E6%80%BB%E7%BB%93/" title="LDS实习次月总结">
+                      <a href="/2025/11/30/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E6%B7%B1%E5%85%A5%E5%AD%A6%E4%B9%A0(1)/" title="消息队列深入学习(1) kafka">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">LDS实习次月总结</span>
+                        <span class="hidden-mobile">消息队列深入学习(1) kafka</span>
                         <span class="visible-mobile">上一篇</span>
                       </a>
                     
@@ -448,8 +591,8 @@
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2025/11/09/LDS%E5%AE%9E%E4%B9%A0%E9%A6%96%E6%9C%88%E6%80%BB%E7%BB%93/" title="LDS实习首月总结">
-                        <span class="hidden-mobile">LDS实习首月总结</span>
+                      <a href="/2025/11/16/%E8%BF%90%E8%A1%8C%E5%BA%93%E7%9B%B8%E5%85%B3%E6%B7%B1%E5%85%A5%E5%AD%A6%E4%B9%A0/" title="运行库相关深入学习">
+                        <span class="hidden-mobile">运行库相关深入学习</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>

@@ -246,6 +246,90 @@
     <article class="col-12 col-md-12 mx-auto index-info">
       <h2 class="index-header">
         
+        <a href="/2025/07/14/%5BLinux%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%9C%8D%E5%8A%A1%E7%AB%AF%E7%BC%96%E7%A8%8B%5D%20%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0(2)/" target="_self">
+          Linux多线程服务端编程 读书笔记2
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/07/14/%5BLinux%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%9C%8D%E5%8A%A1%E7%AB%AF%E7%BC%96%E7%A8%8B%5D%20%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0(2)/" target="_self">
+        <div>
+          第二部分 Muduo网络库  文件传输 如何完整高效地传输一个文件?  文件传输过程一般如下 :   磁盘 -&gt; 内核页缓冲 -&gt; 用户缓冲区 -&gt; Tcp发送缓冲区 -&gt; 网卡等  最简单的传输方式当然就是fread + send 一口气传出, 但是这样如果文件非常大的话, 服务器扛不住几个连接, 因为这样的内存消耗非常大.  书中提出了一种解决内存占用过多的方法 :
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2025-07-14 17:00" pubdate>
+              2025-07-14
+            </time>
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/%E6%96%87%E4%BB%B6%E4%BC%A0%E8%BE%93/">#文件传输</a>
+            
+              <a href="/tags/io-uring/">#io_uring</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2025/07/12/%5BLinux%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%9C%8D%E5%8A%A1%E7%AB%AF%E7%BC%96%E7%A8%8B%5D%20%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0(1)/" target="_self">
+          Linux多线程服务端编程 读书笔记1
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/07/12/%5BLinux%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%9C%8D%E5%8A%A1%E7%AB%AF%E7%BC%96%E7%A8%8B%5D%20%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0(1)/" target="_self">
+        <div>
+          第一部分 C++多线程系统编程  析构所在的线程当share_ptr引用计数归零时, 会在归零的这个线程就地析构, 而这个线程不一定是对象诞生的线程. 这就引发出一个问题 :   如果对象的析构比较耗时, 且经常在关键线程触发析构, 就会拖慢关键线程的速度.  这种情况的解决方案是专门做一个阻塞队列存入要析构的智能指针, 另开一个专门析构的线程从队列中取出进行析构. 多线程适用场景 其核心作用在
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2025-07-12 18:25" pubdate>
+              2025-07-12
+            </time>
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/">#多线程</a>
+            
+              <a href="/tags/Muduo/">#Muduo</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
         <a href="/2025/07/11/libuv%E7%BD%91%E7%BB%9C%E5%BA%93/" target="_self">
           libuv事件库
         </a>
@@ -546,86 +630,6 @@
             <i class="iconfont icon-date"></i>
             <time datetime="2025-06-26 12:00" pubdate>
               2025-06-26
-            </time>
-          </div>
-        
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/RPC/">#RPC</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h2 class="index-header">
-        
-        <a href="/2025/06/25/Rpc%E5%88%86%E5%B8%83%E5%BC%8F%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E6%A1%86%E6%9E%B6(6)%20RpcChannel/" target="_self">
-          Rpc分布式网络通信框架(6) RpcChannel
-        </a>
-      </h2>
-
-      
-      <a class="index-excerpt index-excerpt__noimg" href="/2025/06/25/Rpc%E5%88%86%E5%B8%83%E5%BC%8F%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E6%A1%86%E6%9E%B6(6)%20RpcChannel/" target="_self">
-        <div>
-          RpcChannel  RpcChannel是客户调用端的核心类, 其控制了客户端该如何向服务端发出远程方法调用. 让我们先回顾一下客户端是如何调用我们的框架的 :  123456789101112131415161718192021222324252627282930313233343536373839404142#include &lt;iostream&gt;#include &quot;
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2025-06-25 21:00" pubdate>
-              2025-06-25
-            </time>
-          </div>
-        
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/RPC/">#RPC</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h2 class="index-header">
-        
-        <a href="/2025/06/23/Rpc%E5%88%86%E5%B8%83%E5%BC%8F%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E6%A1%86%E6%9E%B6(5)%20RpcProdvider/" target="_self">
-          Rpc分布式网络通信框架(5) RpcProdvider
-        </a>
-      </h2>
-
-      
-      <a class="index-excerpt index-excerpt__noimg" href="/2025/06/23/Rpc%E5%88%86%E5%B8%83%E5%BC%8F%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E6%A1%86%E6%9E%B6(5)%20RpcProdvider/" target="_self">
-        <div>
-          RpcProdvider  RpcProdvider是提供给服务发布端的核心类.  既然想把方法发布为远程方法被外部调用, 那么发布端需要做的无非就是作为一个服务器持续接收外部的方法调用请求, 根据请求在本地调用对应的方法, 最后再将响应发送回去, 可以当作一个简易的webServer, 但是需要配合我们先前protobuf的Service类, 使其对于方法调用更加便捷与通用. 12345678
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2025-06-23 21:00" pubdate>
-              2025-06-23
             </time>
           </div>
         

@@ -246,6 +246,86 @@
     <article class="col-12 col-md-12 mx-auto index-info">
       <h2 class="index-header">
         
+        <a href="/2024/11/30/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE10-12%20%E6%8B%B7%E8%B4%9D%E4%B8%8E%E8%B5%8B%E5%80%BC/" target="_self">
+          Effective C++ 条款10-12 拷贝与赋值
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2024/11/30/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE10-12%20%E6%8B%B7%E8%B4%9D%E4%B8%8E%E8%B5%8B%E5%80%BC/" target="_self">
+        <div>
+          条款10 : 令 operator&#x3D; 返回一个 reference to * this 很多类都有重写operator&#x3D;函数的要求,  本质是 &#x3D; 左侧调用 operator&#x3D; 函数, 右侧作为参数传入, 将右侧参数赋值给左侧成员变量, 并且为了实现连锁赋值, 我们还应当使 operator&#x3D; 返回当前赋完值的对象.  本条款的目的是实现连锁赋值,
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2024-11-30 22:06" pubdate>
+              2024-11-30
+            </time>
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/Effective-C/">#Effective C++</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2024/11/30/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE9%20%E7%BB%9D%E4%B8%8D%E5%9C%A8%E6%9E%84%E9%80%A0%E5%92%8C%E6%9E%90%E6%9E%84%E5%87%BD%E6%95%B0%E8%BF%87%E7%A8%8B%E4%B8%AD%E8%B0%83%E7%94%A8virtual%E5%87%BD%E6%95%B0/" target="_self">
+          Effective C++ 条款9 绝不在构造和析构函数过程中调用
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2024/11/30/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE9%20%E7%BB%9D%E4%B8%8D%E5%9C%A8%E6%9E%84%E9%80%A0%E5%92%8C%E6%9E%90%E6%9E%84%E5%87%BD%E6%95%B0%E8%BF%87%E7%A8%8B%E4%B8%AD%E8%B0%83%E7%94%A8virtual%E5%87%BD%E6%95%B0/" target="_self">
+        <div>
+          条款09 : 绝不在构造和析构函数过程中调用virtual函数开门见山阐释本条款的重点 : 你不该在构造函数和析构函数中调用virtual函数. 书中给出了一个例子 : 假如我们要塑膜股市交易订单模型, 订单可以分成买入, 卖出等不同类型的订单, 当我们产生不同类型的订单, 也就是构造不同类型订单对象时, 我们也许会有记录订单日志的需求, 并我们希望订单根据不同的订单类型产生不同的订单日志. 于是
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2024-11-30 22:06" pubdate>
+              2024-11-30
+            </time>
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/Effective-C/">#Effective C++</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
         <a href="/2024/11/30/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE8%20%E6%9E%90%E6%9E%84%E5%87%BD%E6%95%B0%E7%9A%84%E5%BC%82%E5%B8%B8%E7%AE%A1%E7%90%86/" target="_self">
           Effective C++ 条款8 析构函数的异常管理
         </a>
