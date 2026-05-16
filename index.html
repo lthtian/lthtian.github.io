@@ -1,0 +1,808 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/head.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="天目中云">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="hello">
+<meta property="og:type" content="website">
+<meta property="og:title" content="天目中云">
+<meta property="og:url" content="http://example.com/index.html">
+<meta property="og:site_name" content="天目中云">
+<meta property="og:description" content="hello">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:author" content="天目中云">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>天目中云</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":"NhgfDy2CEByjwxuxPM1Le2t6-MdYXbMMI","app_key":"nvGMdqKfKbpkVnojLSbwmasv","server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 100vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>TianMu</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/02.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="欢迎来到天目中云的小站!"></span>
+          
+        </div>
+
+        
+      </div>
+
+      
+        <div class="scroll-down-bar">
+          <i class="iconfont icon-arrowdown"></i>
+        </div>
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      <div class="container nopadding-x-md">
+        <div id="board"
+          style="margin-top: 0">
+          
+          <div class="container">
+            <div class="row">
+              <div class="col-12 col-md-10 m-auto">
+                
+
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2026/01/16/C++20%E5%8D%8F%E7%A8%8B%E5%AE%8F%E8%A7%82%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3/" target="_self">
+          C++20协程深入宏观理解
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2026/01/16/C++20%E5%8D%8F%E7%A8%8B%E5%AE%8F%E8%A7%82%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3/" target="_self">
+        <div>
+          核心观念协程在表面上是在函数中的暂停节点，本质是在堆上存储函数上下文数据的机制。 协程的终极目标是增加单个线程的资源利用率——让线程在等待 I&#x2F;O 的时间片内去做别的事情，而不是阻塞空转。当所有阻塞操作（网络、数据库、Redis）都可以 co_await 时，一个线程就能同时推进数千个并发任务，而不需要数千个线程。 C++20 协程是无栈协程（stackless），没有独立的栈。编译器将
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2026-01-16 20:14" pubdate>
+              2026-01-16
+            </time>
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/%E5%8D%8F%E7%A8%8B/">#协程</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2025/12/07/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E6%B7%B1%E5%85%A5%E5%AD%A6%E4%B9%A0(2)%20librdkafka%E4%BD%BF%E7%94%A8/" target="_self">
+          消息队列深入学习(2) librdkafka使用
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/12/07/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E6%B7%B1%E5%85%A5%E5%AD%A6%E4%B9%A0(2)%20librdkafka%E4%BD%BF%E7%94%A8/" target="_self">
+        <div>
+          安装的话下载压缩包解压安装就行, 在服务器上后台运行后就可以正常使用了.  简易生产者1234567891011121314151617181920212223242526272829303132333435363738394041424344454647484950515253545556575859606162636465666768697071727374757677// simple_p
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2025-12-07 19:00" pubdate>
+              2025-12-07
+            </time>
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/kafka/">#kafka</a>
+            
+              <a href="/tags/librdkafka/">#librdkafka</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2025/11/30/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E6%B7%B1%E5%85%A5%E5%AD%A6%E4%B9%A0(1)%20kafka/" target="_self">
+          消息队列深入学习(1) kafka
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/11/30/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E6%B7%B1%E5%85%A5%E5%AD%A6%E4%B9%A0(1)%20kafka/" target="_self">
+        <div>
+          本章将以卡夫卡为核心深入学习消息队列的方方面面  必要性分布式这是宏观上消息队列非常大的优势, 其所带来的好处可以细分如下 :   解耦 :  消息队列专注于生产消费模型, 其作为中间层可以很好地将这两方面解耦, 像我们在代码中使用queue + 条件变量的组合其实本质就是为了实现该功能.  独立 &#x2F; 持久化 :  消息队列一般运行在一个独立的服务器上, 这样就算消费者崩溃, 消息队列
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2025-11-30 17:00" pubdate>
+              2025-11-30
+            </time>
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97/">#消息队列</a>
+            
+              <a href="/tags/kafka/">#kafka</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2025/11/29/LDS%E5%AE%9E%E4%B9%A0%E6%AC%A1%E6%9C%88%E6%80%BB%E7%BB%93/" target="_self">
+          LDS实习次月总结
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/11/29/LDS%E5%AE%9E%E4%B9%A0%E6%AC%A1%E6%9C%88%E6%80%BB%E7%BB%93/" target="_self">
+        <div>
+          工作总结 从零开发蓝屏修复项目. 封装aliyun-oss-cpp-sdk接口到动态库中, 供后续dll修复的上传功能使用.  Jenkins这算是一个CI/CD工具, 貌似现在非常多公司都在用这个, 其功能在于持续集成&#x2F;持续交付 + 自动化, 虽然这么说, 感觉很高端很厉害, 但是如果不实际接触, 感觉还是很难摸清其中的门道, 我下面就用比较简单的语言一边理解一边介绍吧. 初步理解你可
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2025-11-29 18:00" pubdate>
+              2025-11-29
+            </time>
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/%E5%AE%9E%E4%B9%A0/">#实习</a>
+            
+              <a href="/tags/Jenkins/">#Jenkins</a>
+            
+              <a href="/tags/CRT/">#CRT</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2025/11/16/%E8%BF%90%E8%A1%8C%E5%BA%93%E7%9B%B8%E5%85%B3%E6%B7%B1%E5%85%A5%E5%AD%A6%E4%B9%A0/" target="_self">
+          运行库相关深入学习
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/11/16/%E8%BF%90%E8%A1%8C%E5%BA%93%E7%9B%B8%E5%85%B3%E6%B7%B1%E5%85%A5%E5%AD%A6%E4%B9%A0/" target="_self">
+        <div>
+          关于运行库, 你可以仅仅理解静态库和动态库的原理, 也许够用, 但是如果深入进去的话, 大有可以说道的地方, 在我的认知中, 这不算是什么实用知识, 但是算一种”技术底蕴”吧.  CRT(C&#x2F;C++ Runtime Library)总所周知, 程序运行不只依靠自己的代码, 更依靠各种标准库. 你可以认为CRT就是C&#x2F;C++运行库, 是环境, 是C标准库, 是C++标准库, 是
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2025-11-16 18:59" pubdate>
+              2025-11-16
+            </time>
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/%E8%BF%90%E8%A1%8C%E5%BA%93/">#运行库</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2025/11/09/LDS%E5%AE%9E%E4%B9%A0%E9%A6%96%E6%9C%88%E6%80%BB%E7%BB%93/" target="_self">
+          LDS实习首月总结
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/11/09/LDS%E5%AE%9E%E4%B9%A0%E9%A6%96%E6%9C%88%E6%80%BB%E7%BB%93/" target="_self">
+        <div>
+          工作总结 对清理大师安装卸载界面进行高dpi适配. 学习DLL修复的项目代码, 重点学习DLL自学习相关部分的代码并进行调试, 找到了一个路径问题, 一个大小写匹配的问题. 实现DLL修复中自修复功能从独立版到内嵌版的迁移.  知识总结环境配置公司主要是用VS写项目, 遇见了很多之前没有遇到的情况, 下面把一些知识点或情况总结一下 :   可以用.prpos属性表来进行项目配置的导入, 将同一个属
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2025-11-09 18:00" pubdate>
+              2025-11-09
+            </time>
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/%E5%AE%9E%E4%B9%A0/">#实习</a>
+            
+              <a href="/tags/LDS/">#LDS</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2025/11/08/Redis%E6%B7%B1%E5%85%A5%E5%AD%A6%E4%B9%A0(4)%20redis_plus_plus%E5%BA%93/" target="_self">
+          Redis深入学习(4) redis_plus_plus库
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/11/08/Redis%E6%B7%B1%E5%85%A5%E5%AD%A6%E4%B9%A0(4)%20redis_plus_plus%E5%BA%93/" target="_self">
+        <div>
+          本章使用了redis_plus_plus库, 确实使用要比hiredis要方便的多, 实际使用还是直接用这个最好. 另外还加入了 Pipeline &#x2F; 事务 &#x2F; 发布订阅 的应用, 补全一些前面没有深入的概念.  Redis Pub&#x2F;Sub (消息订阅)这应该算是简化版的消息队列, 其可以通过订阅评到来实时获取频道上实时发来的消息, 和卡夫卡之类不同, Redis做
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2025-11-08 17:00" pubdate>
+              2025-11-08
+            </time>
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/Redis/">#Redis</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2025/11/01/Redis%E6%B7%B1%E5%85%A5%E5%AD%A6%E4%B9%A0(3)%20%E6%8C%81%E4%B9%85%E5%8C%96%20%E9%AB%98%E5%8F%AF%E7%94%A8%20%E9%AB%98%E6%89%A9%E5%B1%95/" target="_self">
+          Redis深入学习(3) 持久化 高可用 高扩展
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/11/01/Redis%E6%B7%B1%E5%85%A5%E5%AD%A6%E4%B9%A0(3)%20%E6%8C%81%E4%B9%85%E5%8C%96%20%E9%AB%98%E5%8F%AF%E7%94%A8%20%E9%AB%98%E6%89%A9%E5%B1%95/" target="_self">
+        <div>
+          持久化Redis作为缓存服务, 其快速高效的本质在于, 其服务都是在内存上执行的, 不想Mysql要刷到磁盘上, 搜索时还要搜盘.  但这种方式的弊端在于只要服务器宕机, 这些内存上的数据直接消失, 因此Redis为了宕机后可以快速恢复数据并且不影响正常使用时的效率, 祭出了RDB和AOF两种持久化策略. RDB(快照读)十分容易理解, 你可以理解为假定Redis上所有数据等于一个map, RDB
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2025-11-01 19:44" pubdate>
+              2025-11-01
+            </time>
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/Redis/">#Redis</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2025/10/26/Redis%E6%B7%B1%E5%85%A5%E5%AD%A6%E4%B9%A0(2)%20%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81/" target="_self">
+          Redis深入学习(2) 分布式锁
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/10/26/Redis%E6%B7%B1%E5%85%A5%E5%AD%A6%E4%B9%A0(2)%20%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81/" target="_self">
+        <div>
+          Redis分布式锁  分布式锁看起来很高端, 但是非常易懂, 类似于线程中的互斥锁, 用来保证不同线程间的资源共享, 把这里的线程提升到服务器, 对应的就是分布式锁了.  其实本质就是在做不同服务器上的进程&#x2F;线程对于共享资源的管理. 解决的思路也比较统一, 以我目前的学习程度看来就是单独在一个服务器上开一个分布式锁服务, 统一到这个服务上申请使用权. 实现这种分布式锁功能的中间件有很多
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2025-10-26 22:00" pubdate>
+              2025-10-26
+            </time>
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/Redis/">#Redis</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2025/10/25/Redis%E6%B7%B1%E5%85%A5%E5%AD%A6%E4%B9%A0(1)%20%E5%AE%89%E8%A3%85%E4%B8%8E%E5%B0%81%E8%A3%85/" target="_self">
+          Redis深入学习(1) 安装与封装
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/10/25/Redis%E6%B7%B1%E5%85%A5%E5%AD%A6%E4%B9%A0(1)%20%E5%AE%89%E8%A3%85%E4%B8%8E%E5%B0%81%E8%A3%85/" target="_self">
+        <div>
+          vcpkg一个安装管理器, 你可以认为类似于ubuntu的apt, 这个安装器跨平台, windows和linux都可以用, 可以一键部署下载很多C&#x2F;C++的核心第三方库. 其对CMake配置的项目有天然助益, 有清单配置之类的功能, 之后可以了解一下在vs上使用CMake + vcpkg的方式写几个demo. 安装&#x2F;配置一般选用hiredis库作为Redis第三方库使用.
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2025-10-25 20:00" pubdate>
+              2025-10-25
+            </time>
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/Redis/">#Redis</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+
+
+  <nav aria-label="navigation">
+    <span class="pagination" id="pagination">
+      <span class="page-number current">1</span><a class="page-number" href="/page/2/#board">2</a><a class="page-number" href="/page/3/#board">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/11/#board">11</a><a class="extend next" rel="next" href="/page/2/#board"><i class="iconfont icon-arrowright"></i></a>
+    </span>
+  </nav>
+
+
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

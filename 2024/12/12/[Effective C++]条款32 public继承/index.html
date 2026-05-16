@@ -1,0 +1,750 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/head.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="天目中云">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="条款32 : 确定你的public继承塑膜出 is-a 关系 从本条款开始我们将步入面向对象编程这一重要领域进行讨论, 首先我们将会围绕public继承, 分析public继承的意义与目的, 再举出两个错误的public继承典例.  public继承意味”is-a”(是一种)的关系这便是C++面向对象编程的最重要的一个规则, 请把这个规则牢牢记在心中吧, 相信很多人以及对这种认知有所耳闻, 我甚至">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Effective C++ 条款32 public继承">
+<meta property="og:url" content="http://example.com/2024/12/12/[Effective%20C++]%E6%9D%A1%E6%AC%BE32%20public%E7%BB%A7%E6%89%BF/index.html">
+<meta property="og:site_name" content="天目中云">
+<meta property="og:description" content="条款32 : 确定你的public继承塑膜出 is-a 关系 从本条款开始我们将步入面向对象编程这一重要领域进行讨论, 首先我们将会围绕public继承, 分析public继承的意义与目的, 再举出两个错误的public继承典例.  public继承意味”is-a”(是一种)的关系这便是C++面向对象编程的最重要的一个规则, 请把这个规则牢牢记在心中吧, 相信很多人以及对这种认知有所耳闻, 我甚至">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2024-12-12T09:26:00.000Z">
+<meta property="article:modified_time" content="2026-05-16T12:00:09.297Z">
+<meta property="article:author" content="天目中云">
+<meta property="article:tag" content="Effective C++">
+<meta property="article:tag" content="继承">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>Effective C++ 条款32 public继承 - 天目中云</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":"NhgfDy2CEByjwxuxPM1Le2t6-MdYXbMMI","app_key":"nvGMdqKfKbpkVnojLSbwmasv","server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>TianMu</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/03.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Effective C++ 条款32 public继承"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2024-12-12 17:26" pubdate>
+          2024年12月12日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.3k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          11 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Effective C++ 条款32 public继承</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h2 id="条款32-确定你的public继承塑膜出-is-a-关系"><a href="#条款32-确定你的public继承塑膜出-is-a-关系" class="headerlink" title="条款32 : 确定你的public继承塑膜出 is-a 关系"></a>条款32 : 确定你的public继承塑膜出 is-a 关系</h2><blockquote>
+<p>从本条款开始我们将步入面向对象编程这一重要领域进行讨论, 首先我们将会围绕public继承, 分析public继承的意义与目的, 再举出两个错误的public继承典例.</p>
+</blockquote>
+<h3 id="public继承意味”is-a”-是一种-的关系"><a href="#public继承意味”is-a”-是一种-的关系" class="headerlink" title="public继承意味”is-a”(是一种)的关系"></a>public继承意味”is-a”(是一种)的关系</h3><p>这便是C++面向对象编程的最重要的一个规则, 请把这个规则牢牢记在心中吧, 相信很多人以及对这种认知有所耳闻, 我甚至在学java的多态时都听到过这个概念, 可见此思想影响之深远.</p>
+<p>如果你令B公开继承自A, 那么代表着<strong>B是一种A</strong>,  进而代表着<strong>所有可以使用A的场景都可以使用B, 所有A可以产生的行为B都可以产生</strong>. 反之则不然, 需要B的场景并不能用A替代.</p>
+<p>这种规则表面上很容易理解, 但是我们应当多去站在语法和程序本身的角度去理解, 因为我们在生活中的直觉可能会误导我们, 它并不一定是富有逻辑性而且缜密, 这会让我们想当然地去认为xxx是一种xxx.</p>
+<p>让我们通过两个例子来揭露这种错误.</p>
+<hr>
+<h3 id="鸟会飞"><a href="#鸟会飞" class="headerlink" title="鸟会飞?"></a>鸟会飞?</h3><p>直觉来看, 鸟应该是会飞的, 但是当我们想到鸵鸟和企鹅, 事情就开始不对劲了, 我们先来看第一版 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Bird</span> &#123;<br><span class="hljs-keyword">public</span>:<br>  <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">fly</span><span class="hljs-params">()</span></span>;                  <span class="hljs-comment">// 鸟会飞</span><br>  ...<br>&#125;;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Penguin</span>:<span class="hljs-keyword">public</span> Bird &#123;            <span class="hljs-comment">// 企鹅是鸟</span><br>  ...<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>这里我们可以看出, 企鹅确实是鸟, 但企鹅确实不会飞, 它本就不应该继承fly()函数, 于是我们就会有下一版 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Bird</span> &#123;<br>  ...                                      <span class="hljs-comment">// 不在声明fly()函数</span><br>&#125;;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">FlyingBird</span>: <span class="hljs-keyword">public</span> Bird &#123;				<span class="hljs-comment">// 一个新的派生类, 用来做所有飞鸟的基类</span><br><span class="hljs-keyword">public</span>:<br>  <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">fly</span><span class="hljs-params">()</span></span>;<br>  ...<br>&#125;;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Penguin</span>: <span class="hljs-keyword">public</span> Bird &#123;<br>  ...                                       <span class="hljs-comment">// 这里就继承不到fly()了</span><br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>至此逻辑就合理了,  这也在告诫我们应当仔细分析设置在类中的每个成员函数是否合理.</p>
+<hr>
+<h3 id="进一步梳理"><a href="#进一步梳理" class="headerlink" title="进一步梳理"></a>进一步梳理</h3><p>上一个例子因为鸟是否会飞的需求而产生了不同的设计, 但是书中想告诉我们, <strong>世界上并不存在一个”适用于所有软件”的完美设计</strong>, 因为时间在流逝, 需求在变化, 我们的设计一定要符合需求, 假如我们整个体系就是针对飞鸟来建立的, 完全不会与企鹅鸵鸟相关, 那么最开始的设计完全是可行的. 简单来说, <strong>我们要明确需求, 根据需求分析各种不同的情况, 做出符合当前需求的继承设计</strong>, 当然也可以有一定的前瞻性, 但不要与当下的需求相悖.</p>
+<hr>
+<h3 id="正方形是一种矩形"><a href="#正方形是一种矩形" class="headerlink" title="正方形是一种矩形?"></a>正方形是一种矩形?</h3><p>这相比于上一例中由于常识产生的错误不同, 这就是数理方面的真理, 但从最终结果上并不适合<code>public</code>继承, 我们来看代码 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Rectangle</span> &#123;<br><span class="hljs-keyword">public</span>:<br>  	<span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">setHeight</span><span class="hljs-params">(<span class="hljs-type">int</span> newHeight)</span></span>;<br>  	<span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">setWidth</span><span class="hljs-params">(<span class="hljs-type">int</span> newWidth)</span></span>;<br><br>  	<span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">int</span> <span class="hljs-title">height</span><span class="hljs-params">()</span> <span class="hljs-type">const</span></span>;               <span class="hljs-comment">// return current values</span><br>  	<span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">int</span> <span class="hljs-title">width</span><span class="hljs-params">()</span> <span class="hljs-type">const</span></span>;<br>    <br>  	<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">addWidth</span><span class="hljs-params">()</span>               <span class="hljs-comment">// 调用这个函数会使这个width增加10, 并且height不加</span></span><br><span class="hljs-function">	</span>&#123;<br>  		<span class="hljs-type">int</span> oldHeight = <span class="hljs-built_in">height</span>();<br>  		<span class="hljs-built_in">setWidth</span>(<span class="hljs-built_in">width</span>() + <span class="hljs-number">10</span>);<br>  		<span class="hljs-built_in">assert</span>(<span class="hljs-built_in">height</span>() == oldHeight);          <span class="hljs-comment">// 检察height是否变化</span><br>	&#125; <br>  ...<br>&#125;;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Square</span>: <span class="hljs-keyword">public</span> Rectangle &#123;...&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>当我们用<code>Square</code>写出如下代码就会发生问题 : </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs cpp">Square s;<br><span class="hljs-built_in">assert</span>(s.<span class="hljs-built_in">width</span>() == s.<span class="hljs-built_in">height</span>());           <span class="hljs-comment">// 看正方形的性质是否保持</span><br>s.<span class="hljs-built_in">addWidth</span>();   <span class="hljs-comment">// 调用addWidth</span><br><span class="hljs-built_in">assert</span>(s.<span class="hljs-built_in">width</span>() == s.<span class="hljs-built_in">height</span>());		   <span class="hljs-comment">// 看正方形的性质是否保持</span><br></code></pre></td></tr></table></figure>
+
+<p>最后一条<code>assert</code>将会触发, 原因很容易理解, <code>addWidth</code>只增加了宽度, 这打破的正方形的性质.</p>
+<p>进一步分析, <code>addWidth()</code>这个函数本身是完全合理的, 因为一个矩形就是可以只增加宽度而不增加长度, 错的是自顾自<code>public</code>继承自它的<code>Square</code>, 因为它假定了正方形是一种矩形, 尽管这在公理上确实是成立的,  但是我们要求的是<strong>正方形可以做出所有矩形可以做出的行为</strong>, 这仿佛就不行了, 因为矩形可以只增加宽度而正方形不可以.</p>
+<hr>
+<h3 id="尾声"><a href="#尾声" class="headerlink" title="尾声"></a>尾声</h3><p><code>is-a(是一种)</code>并非是唯一存在于继承中关系, 我们还会再条款38和条款39讨论另外两个常见的关系, <code>has-a(有一个)</code>和<code>is-implemented-in-terms-of(根据某物实现出)</code>, 而我们上文正方形和矩形的关系便可以用<code>has-a</code>来解释. 在学完另外两种关系之后, 我们便应当好好了解这些关系之间的差异, 在继承中做到正确的选择.</p>
+<hr>
+<h3 id="请记住"><a href="#请记住" class="headerlink" title="请记住 :"></a>请记住 :</h3><ul>
+<li><code>public</code>继承意味”<code>is-a</code>“(是一种)的关系, 若B继承自A, 所有可以使用A的场景都可以使用B, 所有A可以产生的行为B都可以产生.</li>
+<li>不要太相信直觉, 当你认为某些事物有 “<code>is-a</code>“的关系, 不妨再看看是否符合上一条的后半句.</li>
+</ul>
+<p>by 天目中云</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Effective-C/" class="print-no-link">#Effective C++</a>
+      
+        <a href="/tags/%E7%BB%A7%E6%89%BF/" class="print-no-link">#继承</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Effective C++ 条款32 public继承</div>
+      <div>http://example.com/2024/12/12/[Effective C++]条款32 public继承/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>天目中云</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2024年12月12日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2024/12/16/%5BEffective%20C++%5D%E6%9D%A1%E6%AC%BE33%20%E7%BB%A7%E6%89%BF,%20%E9%87%8D%E8%BD%BD%E4%B8%8E%E4%BD%9C%E7%94%A8%E5%9F%9F/" title="Effective C++ 条款33 继承, 重载与作用域">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Effective C++ 条款33 继承, 重载与作用域</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2024/12/11/%E7%93%A6%E5%B0%94%E7%99%BB%E6%B9%96%E8%AF%BB%E4%B9%A6%E6%91%98%E5%BD%95(3)/" title="瓦尔登湖读书摘录(3)">
+                        <span class="hidden-mobile">瓦尔登湖读书摘录(3)</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"NhgfDy2CEByjwxuxPM1Le2t6-MdYXbMMI","appKey":"nvGMdqKfKbpkVnojLSbwmasv","path":"window.location.pathname","placeholder":null,"avatar":"retro","meta":["nick","mail","link"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":false,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":false},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

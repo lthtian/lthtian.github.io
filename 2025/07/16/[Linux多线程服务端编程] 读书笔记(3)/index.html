@@ -1,0 +1,793 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/head.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="天目中云">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="工程实践经验谈   分布式系统 分布式系统不是放大了的单机系统, 根本原因在于单机没有部分故障. 单机与分布式的根本区别在于进程地址空间是一个还是多个.  负载均衡一般的解决方案是 :  通过某个集中的负载均衡器来收集并分发负载情况, 可以把消息数目降到M + N(M台web服务器, N台服务提供服务器). 但是这种方式会引发单点故障(Single Point of Failure), 最简单的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux多线程服务端编程 读书笔记3">
+<meta property="og:url" content="http://example.com/2025/07/16/[Linux%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%9C%8D%E5%8A%A1%E7%AB%AF%E7%BC%96%E7%A8%8B]%20%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0(3)/index.html">
+<meta property="og:site_name" content="天目中云">
+<meta property="og:description" content="工程实践经验谈   分布式系统 分布式系统不是放大了的单机系统, 根本原因在于单机没有部分故障. 单机与分布式的根本区别在于进程地址空间是一个还是多个.  负载均衡一般的解决方案是 :  通过某个集中的负载均衡器来收集并分发负载情况, 可以把消息数目降到M + N(M台web服务器, N台服务提供服务器). 但是这种方式会引发单点故障(Single Point of Failure), 最简单的">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-07-16T09:00:00.000Z">
+<meta property="article:modified_time" content="2026-05-16T12:00:09.306Z">
+<meta property="article:author" content="天目中云">
+<meta property="article:tag" content="分布式系统">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>Linux多线程服务端编程 读书笔记3 - 天目中云</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":"NhgfDy2CEByjwxuxPM1Le2t6-MdYXbMMI","app_key":"nvGMdqKfKbpkVnojLSbwmasv","server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>TianMu</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/03.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Linux多线程服务端编程 读书笔记3"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-07-16 17:00" pubdate>
+          2025年7月16日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          17 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Linux多线程服务端编程 读书笔记3</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <blockquote>
+<p>工程实践经验谈 </p>
+</blockquote>
+<h2 id="分布式系统"><a href="#分布式系统" class="headerlink" title="分布式系统"></a>分布式系统</h2><ul>
+<li>分布式系统不是放大了的单机系统, 根本原因在于单机没有部分故障.</li>
+<li>单机与分布式的根本区别在于进程地址空间是一个还是多个.</li>
+</ul>
+<h4 id="负载均衡"><a href="#负载均衡" class="headerlink" title="负载均衡"></a>负载均衡</h4><p>一般的解决方案是 : </p>
+<p>通过某个集中的负载均衡器来收集并分发负载情况, 可以把消息数目降到M + N(M台web服务器, N台服务提供服务器).</p>
+<p>但是这种方式会引发单点故障(Single Point of Failure), 最简单的解决方法是进行冗余备份, Nginx就有通过在不同服务器上搭建主从实例的功能来实现保活.</p>
+<ul>
+<li><p>如何定义服务端的负载?</p>
+<p>负载可以认为是一种性能集合, 我们可以把很多因素考虑进去, 如 : CPU使用率, 内存占用率, 硬盘剩余空间, 网络带宽等等. 没有明确唯一的定义, 不同中间件对于负载的计算方法也有很大差异, 而且会给使用者留出很大的可操作空间.</p>
+</li>
+<li><p>如何规避分布式系统中保持全局数据一致性的问题?</p>
+<p>其实很多时候如果对全局数据没有强制要求, 可以先忽视, 只是从当前视角分析哪个服务器负载小, 就选哪个, 这样体现在全局上, 大体依旧是均匀分配的.</p>
+</li>
+</ul>
+<h4 id="时序混乱"><a href="#时序混乱" class="headerlink" title="时序混乱"></a>时序混乱</h4><p>虽然两个服务器间建立的TCP连接是可以保序的, 但是多个服务器之间的发送时序是无法包装, 就算是理应提前发出去的消息, 也有可能延迟于其他服务器后发的消息. 而且不同服务器的时钟一定会有误差, 通过发送方和接收方的时间戳插值计算延迟是完全不可靠的.</p>
+<ul>
+<li>可以使分布式系统内每台机器都运行NTP(网络时间协议)来使各台机器间的时间大体同步.</li>
+<li>如果还需更精确, 有逻辑时钟等方案.</li>
+</ul>
+<h4 id="可靠性和可用性"><a href="#可靠性和可用性" class="headerlink" title="可靠性和可用性"></a>可靠性和可用性</h4><ul>
+<li>“并联”可以极大地提高可靠性, 在硬件上可以体现为两套电源, 在软件上可以体现为多个相同服务的服务器.</li>
+<li>提高冗余, 增加数据备份 &#x2F; 降低重建硬盘的时间 可以进一步提高可靠性.</li>
+<li>可靠性指的是数据不丢失的概率, 可用性指的是数据或服务可以随时被访问到的概率.</li>
+<li>在没有 RAID 的服务器上启用 swap，等于将“全系统的内存可靠性”交给一个“可能随时坏掉的磁盘”，一旦 swap 区损坏，任意进程都可能崩溃或行为异常，因此建议关闭 swap.</li>
+<li>高可用的关键不在于做到不停机, 而是能做到<strong>随时重启任何一个进程或服务</strong>.</li>
+<li>软件的可靠性指标不应过高, 因为体量提高后的硬件故障率其实非常高, 软件非常可靠也没有用.</li>
+</ul>
+<h4 id="“随时重启进程”作为程序设计目标"><a href="#“随时重启进程”作为程序设计目标" class="headerlink" title="“随时重启进程”作为程序设计目标"></a>“随时重启进程”作为程序设计目标</h4><ul>
+<li>进程只要被kill或exit就可以直接重启.</li>
+<li>这要求我们的ICP(进程间通信方式)必须是<strong>操作系统可自动回收</strong>的, 其不可以对其他进程造成任何影响.</li>
+<li>只应当用TCP作为唯一的进程间通信手段, 进程一旦退出, 操作系统会自动将连接与断开关闭, 不要使用跨进程的信号量或共享内存.</li>
+<li>客户端应在连接断开后可以自动重连, 要求客户端可以检测服务端心跳, 在断开后可以自动failover到备用地址.</li>
+<li>客户端应兼容新旧版的服务端协议, 这样在升级服务端时就可以每次杀掉一部分的服务进行, 使服务升级交替进行(<strong>灰度升级</strong>).</li>
+<li>另一种升级方式是迁移, 可以先启动新服务进程, 再让旧服务进程停止接受新请求, 再将新请求导向新进程.</li>
+</ul>
+<h4 id="进程标识"><a href="#进程标识" class="headerlink" title="进程标识"></a>进程标识</h4><ul>
+<li><p>服务分为有状态服务和无状态服务,  其实就是指代服务需不需要记录上下文信息, 比如登录状态, 会话状态, 临时缓存的信息等等. 无状态服务是很有优势的, 在故障发生时重启也没有问题, 但是有状态服务需要考虑前世进程的影响, 因为进程一旦重启, <strong>之前记录或缓存的所有信息都会清空</strong>.</p>
+</li>
+<li><p>举个例子就是客户端已经在服务端登录了, 结果服务端崩溃, 重启之后服务端并不知道客户端登录, 但是客户端如果没有有效手段区分出服务端已经重启, 那么就会依旧认为自己是已经登录的状态, 就会造成双方的逻辑不一致, 很有可能崩溃.</p>
+</li>
+<li><p>因此在使用有状态服务时, 我们需要对每个进程设置一个<strong>唯一进程标识</strong>, 让客户端分清进程是否发生变化, 一旦发生变化, 客户就可以进行对应的救灾措施, 比如马上重新执行登录操作, 恢复之前的状态.</p>
+</li>
+<li><p>如果设定唯一进程标识?</p>
+<ul>
+<li><p><code>&quot;ip:prot&quot;</code>的方式只可被无状态服务使用, 有状态服务这样子使用是无法区分先后的.</p>
+</li>
+<li><p><code>&quot;ip:port:start_time:pid&quot;</code> 这种定义标准可以被使用, 其几乎没有重复概率, 将其发给客户端就可以表示当前的唯一进程, 并且其本身是有意义的, 从中可以随时提取出服务定位和时间, 便于服务重启.</p>
+</li>
+<li><p><code>UUID</code>是当前最主流标识唯一进程的方式, 其绝对不会重复且获取简单, 在终端界面可以用<code>uuidgen</code>获取 ,  在c&#x2F;c++代码可以通过以下方式获取:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;uuid/uuid.h&gt;</span></span><br><span class="hljs-comment">//....</span><br><span class="hljs-type">uuid_t</span> uuid;<br><span class="hljs-type">char</span> uuid_str[<span class="hljs-number">37</span>];  <span class="hljs-comment">// UUID 字符串长度为 36 + 1 个 &#x27;\0&#x27;</span><br><span class="hljs-built_in">uuid_generate</span>(uuid);<br><span class="hljs-built_in">uuid_unparse</span>(uuid, uuid_str);<br></code></pre></td></tr></table></figure></li>
+</ul>
+</li>
+</ul>
+<h4 id="应用层心跳"><a href="#应用层心跳" class="headerlink" title="应用层心跳"></a>应用层心跳</h4><ul>
+<li><p>为什么不能用Tcp keepalive替代应用层心跳?</p>
+<p>Tcp keepalive只能证明目标端口上的进程依旧在线, 不能确定此进程是否正常运行, 不可知对方是否死锁或阻塞.</p>
+</li>
+<li><p>因此我们需要设置应用层心跳, 一般是服务端向客户端发送心跳.</p>
+</li>
+<li><p>延迟不可避免, 分布式系统没有全局的瞬时状态, 不存在立刻判断对方故障的方法.</p>
+</li>
+<li><p>高置信度和低反应时间不可兼得.</p>
+</li>
+<li><p>心跳包中可以包含当前服务端的复杂, 可以便于客户端做负载均衡.</p>
+</li>
+<li><p>心跳协议实现还有两个关键点 : </p>
+<ul>
+<li><p><strong>要在工作线程发送, 不要单独起一个心跳线程</strong>.</p>
+<p>这是<strong>防止工作线程死锁或阻塞时还在继续发心跳</strong>, 工作线程必须实际可用才行.</p>
+</li>
+<li><p><strong>与业务消息用同一个连接, 不要单独用一个心跳连接.</strong></p>
+<p>应用层心跳还应该可以<strong>验证网络通畅</strong>, 只有用同一个连接发送才可以证明连接通畅. 另外还有一个用处是进行连接的<strong>保活</strong>, 因为很多服务器会设置防火墙, 在一个连接长时间没有数据交换后, 防火墙就会在双方不知情的清空下断开连接, 也就是说这之后的第一条消息必定是延迟的, TCP会根据延迟判断连接已经断开, 再重新建立连接发送.</p>
+</li>
+</ul>
+</li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/" class="print-no-link">#分布式系统</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Linux多线程服务端编程 读书笔记3</div>
+      <div>http://example.com/2025/07/16/[Linux多线程服务端编程] 读书笔记(3)/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>天目中云</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年7月16日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/07/20/HTTP1/" title="HTTP/1">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">HTTP/1</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/07/14/%5BLinux%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%9C%8D%E5%8A%A1%E7%AB%AF%E7%BC%96%E7%A8%8B%5D%20%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0(2)/" title="Linux多线程服务端编程 读书笔记2">
+                        <span class="hidden-mobile">Linux多线程服务端编程 读书笔记2</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"NhgfDy2CEByjwxuxPM1Le2t6-MdYXbMMI","appKey":"nvGMdqKfKbpkVnojLSbwmasv","path":"window.location.pathname","placeholder":null,"avatar":"retro","meta":["nick","mail","link"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":false,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":false},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
