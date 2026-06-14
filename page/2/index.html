@@ -246,6 +246,46 @@
     <article class="col-12 col-md-12 mx-auto index-info">
       <h2 class="index-header">
         
+        <a href="/2025/10/26/Redis%E6%B7%B1%E5%85%A5%E5%AD%A6%E4%B9%A0(2)%20%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81/" target="_self">
+          Redis深入学习(2) 分布式锁
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/10/26/Redis%E6%B7%B1%E5%85%A5%E5%AD%A6%E4%B9%A0(2)%20%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81/" target="_self">
+        <div>
+          Redis分布式锁  分布式锁看起来很高端, 但是非常易懂, 类似于线程中的互斥锁, 用来保证不同线程间的资源共享, 把这里的线程提升到服务器, 对应的就是分布式锁了.  其实本质就是在做不同服务器上的进程&#x2F;线程对于共享资源的管理. 解决的思路也比较统一, 以我目前的学习程度看来就是单独在一个服务器上开一个分布式锁服务, 统一到这个服务上申请使用权. 实现这种分布式锁功能的中间件有很多
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2025-10-26 22:00" pubdate>
+              2025-10-26
+            </time>
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/Redis/">#Redis</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
         <a href="/2025/10/25/Redis%E6%B7%B1%E5%85%A5%E5%AD%A6%E4%B9%A0(1)%20%E5%AE%89%E8%A3%85%E4%B8%8E%E5%B0%81%E8%A3%85/" target="_self">
           Redis深入学习(1) 安装与封装
         </a>
@@ -605,46 +645,6 @@
               <a href="/tags/%E7%BC%96%E8%AF%91%E9%93%BE%E6%8E%A5/">#编译链接</a>
             
               <a href="/tags/C-20%E6%A8%A1%E5%9D%97/">#C++20模块</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h2 class="index-header">
-        
-        <a href="/2025/08/05/HTTP3/" target="_self">
-          HTTP/3
-        </a>
-      </h2>
-
-      
-      <a class="index-excerpt index-excerpt__noimg" href="/2025/08/05/HTTP3/" target="_self">
-        <div>
-          生态分析TCP队头阻塞这是HTTP&#x2F;2所拥有的根本性通病, 注意这里的队头阻塞不是指排队造成的阻塞, 而是指丢包造成的阻塞. TCP为了实现可靠有序, 采用了超时重传机制, 该机制可以确保可靠有序, 但是对于现代网络却有严重缺陷. TCP中如果发送出现丢包, 必须要依靠超时重传等到当前包再次发来, 后面的包才能生效, 即使已经发来了, 后面的包也不能及时处理和使用, 这是在内核中就强制决
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2025-08-05 17:00" pubdate>
-              2025-08-05
-            </time>
-          </div>
-        
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/HTTP/">#HTTP</a>
             
           </div>
         
