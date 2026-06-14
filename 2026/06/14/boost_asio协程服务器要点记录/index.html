@@ -1,0 +1,895 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/head.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="天目中云">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="any_io_executor类型擦除的执行器包装器，决定异步操作在哪里执行。 1executor_ &#x3D; std::move(executor);  &#x2F;&#x2F; 转移所有权，避免拷贝  用途：  创建 tcp::socket &#x2F; mysql::tcp_connection 时传入，注册异步操作到 io_context 被 socket、timer、连接池等多处共享（内部是 shared_ptr">
+<meta property="og:type" content="article">
+<meta property="og:title" content="boost_asio协程服务器要点记录">
+<meta property="og:url" content="http://example.com/2026/06/14/boost_asio%E5%8D%8F%E7%A8%8B%E6%9C%8D%E5%8A%A1%E5%99%A8%E8%A6%81%E7%82%B9%E8%AE%B0%E5%BD%95/index.html">
+<meta property="og:site_name" content="天目中云">
+<meta property="og:description" content="any_io_executor类型擦除的执行器包装器，决定异步操作在哪里执行。 1executor_ &#x3D; std::move(executor);  &#x2F;&#x2F; 转移所有权，避免拷贝  用途：  创建 tcp::socket &#x2F; mysql::tcp_connection 时传入，注册异步操作到 io_context 被 socket、timer、连接池等多处共享（内部是 shared_ptr">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-06-14T12:25:52.000Z">
+<meta property="article:modified_time" content="2026-06-14T12:25:52.537Z">
+<meta property="article:author" content="天目中云">
+<meta property="article:tag" content="协程">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>boost_asio协程服务器要点记录 - 天目中云</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":"NhgfDy2CEByjwxuxPM1Le2t6-MdYXbMMI","app_key":"nvGMdqKfKbpkVnojLSbwmasv","server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>TianMu</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/03.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="boost_asio协程服务器要点记录"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-06-14 20:25" pubdate>
+          2026年6月14日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.4k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          13 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">boost_asio协程服务器要点记录</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h2 id="any-io-executor"><a href="#any-io-executor" class="headerlink" title="any_io_executor"></a>any_io_executor</h2><p>类型擦除的执行器包装器，决定异步操作在哪里执行。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cpp">executor_ = std::<span class="hljs-built_in">move</span>(executor);  <span class="hljs-comment">// 转移所有权，避免拷贝</span><br></code></pre></td></tr></table></figure>
+
+<p><strong>用途：</strong></p>
+<ul>
+<li>创建 <code>tcp::socket</code> &#x2F; <code>mysql::tcp_connection</code> 时传入，注册异步操作到 <code>io_context</code></li>
+<li>被 socket、timer、连接池等多处共享（内部是 shared_ptr 风格，复制只增加引用计数）</li>
+</ul>
+<h2 id="co-spawn"><a href="#co-spawn" class="headerlink" title="co_spawn"></a>co_spawn</h2><p>协程启动器，将协程”发射”到执行器上运行。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cpp">asio::<span class="hljs-built_in">co_spawn</span>(ioc, <span class="hljs-built_in">my_coro</span>(), asio::detached);<br></code></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>ioc</code></td>
+<td>执行器，决定协程运行位置</td>
+</tr>
+<tr>
+<td><code>my_coro()</code></td>
+<td>返回 <code>awaitable&lt;T&gt;</code> 的协程函数</td>
+</tr>
+<tr>
+<td><code>detached</code></td>
+<td>完成策略，忽略返回值</td>
+</tr>
+</tbody></table>
+<p><strong>为什么需要：</strong> 协程函数直接调用只返回 <code>awaitable</code> 对象，不执行。<code>co_spawn</code> 创建协程帧并调度第一次 resume。</p>
+<h2 id="co-return-vs-return"><a href="#co-return-vs-return" class="headerlink" title="co_return vs return"></a>co_return vs return</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">co_return</span> value;  <span class="hljs-comment">// 协程：设置返回值并结束协程帧</span><br><span class="hljs-keyword">return</span> value;     <span class="hljs-comment">// 普通函数：直接返回</span><br></code></pre></td></tr></table></figure>
+
+<p>含 <code>co_await</code> &#x2F; <code>co_return</code> 的函数被编译器变换为协程（堆上协程帧 + 状态机），必须用 <code>co_return</code>。</p>
+<h2 id="mysql-tcp-connection-构造"><a href="#mysql-tcp-connection-构造" class="headerlink" title="mysql::tcp_connection 构造"></a>mysql::tcp_connection 构造</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">auto</span> conn = std::<span class="hljs-built_in">make_shared</span>&lt;mysql::tcp_connection&gt;(executor_);<br></code></pre></td></tr></table></figure>
+
+<p>执行器传给内部 <code>tcp::socket</code>，socket 用它注册异步操作到 epoll。</p>
+<p><strong>每个连接：</strong></p>
+<ul>
+<li>独立的 TCP socket 和 MySQL 会话</li>
+<li>复制执行器（共享同一个 <code>io_context</code> 调度）</li>
+</ul>
+<h2 id="bootstrap-为什么是协程"><a href="#bootstrap-为什么是协程" class="headerlink" title="bootstrap 为什么是协程"></a>bootstrap 为什么是协程</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function">asio::awaitable&lt;<span class="hljs-type">void</span>&gt; <span class="hljs-title">bootstrap</span><span class="hljs-params">(...)</span> </span>&#123;<br>    <span class="hljs-function"><span class="hljs-keyword">co_await</span> <span class="hljs-title">init_db</span><span class="hljs-params">()</span></span>;      <span class="hljs-comment">// 必须等待</span><br>    <span class="hljs-function"><span class="hljs-keyword">co_await</span> <span class="hljs-title">init_redis</span><span class="hljs-params">()</span></span>;   <span class="hljs-comment">// 必须等待</span><br>    server.<span class="hljs-built_in">start</span>();<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>普通函数无法 <code>co_await</code>，异步初始化会变成”返回 awaitable 但不执行”。</p>
+<h2 id="回调-vs-协程的边界"><a href="#回调-vs-协程的边界" class="headerlink" title="回调 vs 协程的边界"></a>回调 vs 协程的边界</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-built_in">Session</span>(socket, [](<span class="hljs-keyword">auto</span> s, json js) &#123; <span class="hljs-comment">/* 业务逻辑 */</span> &#125;, ...);<br></code></pre></td></tr></table></figure>
+
+<p><strong>回调的本质：依赖注入。</strong> 允许外部注入行为，对象保持通用、可复用。</p>
+<p><strong>协程的本质：控制流线性化。</strong> 让异步操作看起来像同步代码。</p>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>用协程</th>
+<th>用回调</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>同一对象内的异步流程</td>
+<td>✅ <code>co_await</code> 线性化</td>
+<td>❌ 回调嵌套</td>
+</tr>
+<tr>
+<td>跨对象的行为注入</td>
+<td>❌ 无法传递”未来行为”</td>
+<td>✅ 函数指针&#x2F;闭包</td>
+</tr>
+</tbody></table>
+<p><strong>两者不冲突：</strong> 协程风格的回调（返回 <code>awaitable</code> 的回调函数）既有解耦，又有协程的线性化好处。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// MessageCallback 签名是协程，但仍然是回调模式</span><br><span class="hljs-keyword">using</span> MessageCallback = std::function&lt;asio::<span class="hljs-built_in">awaitable</span>&lt;<span class="hljs-type">void</span>&gt;(<span class="hljs-type">const</span> Ptr&amp;, json)&gt;;<br></code></pre></td></tr></table></figure>
+
+<h2 id="Session-≈-muduo-TcpConnection"><a href="#Session-≈-muduo-TcpConnection" class="headerlink" title="Session ≈ muduo::TcpConnection"></a>Session ≈ muduo::TcpConnection</h2><p>不是 Channel。Session 是完整的连接管理器：持有 socket、缓冲区、处理读写、管理发送队列。</p>
+<p>asio 没有显式的 Channel 类，事件分发隐式在 <code>completion_handler</code> 闭包中。</p>
+<h2 id="use-awaitable"><a href="#use-awaitable" class="headerlink" title="use_awaitable"></a>use_awaitable</h2><p>完成标记，告诉 asio 用协程方式等待结果。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">co_await</span> socket.<span class="hljs-built_in">async_read_some</span>(buffer, use_awaitable);  <span class="hljs-comment">// 返回 awaitable&lt;size_t&gt;</span><br></code></pre></td></tr></table></figure>
+
+<p>配合大括号匹配确定 TCP 流中的 JSON 边界（应用层协议实现）。</p>
+<h2 id="AsyncConnectionGuard：工厂方法-RAII"><a href="#AsyncConnectionGuard：工厂方法-RAII" class="headerlink" title="AsyncConnectionGuard：工厂方法 + RAII"></a>AsyncConnectionGuard：工厂方法 + RAII</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">auto</span> guard = <span class="hljs-keyword">co_await</span> AsyncConnectionGuard::<span class="hljs-built_in">create</span>();<br><span class="hljs-comment">// 使用 guard-&gt;connection()</span><br><span class="hljs-comment">// 离开作用域，析构自动归还连接</span><br></code></pre></td></tr></table></figure>
+
+<p><strong>工厂方法解决两个问题：</strong></p>
+<ol>
+<li>构造函数私有，外部无法直接创建</li>
+<li>获取连接需要 <code>co_await</code>，普通构造函数无法做到</li>
+</ol>
+<p><strong>RAII 保证：</strong> 构造获取资源，析构释放资源，异常安全。</p>
+<h2 id="函数签名决定-co-return-行为"><a href="#函数签名决定-co-return-行为" class="headerlink" title="函数签名决定 co_return 行为"></a>函数签名决定 co_return 行为</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function">asio::awaitable&lt;T&gt; <span class="hljs-title">foo</span><span class="hljs-params">()</span> </span>&#123; <span class="hljs-keyword">co_return</span> value; &#125;<br></code></pre></td></tr></table></figure>
+
+<p><code>co_return</code> 不自动包装返回值。<code>awaitable&lt;T&gt;::promise_type</code> 定义了 <code>return_value(T)</code>，<code>co_return</code> 调用它。</p>
+<h2 id="this-coro-executor"><a href="#this-coro-executor" class="headerlink" title="this_coro::executor"></a>this_coro::executor</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">auto</span> executor = <span class="hljs-keyword">co_await</span> asio::this_coro::executor;<br></code></pre></td></tr></table></figure>
+
+<p>特殊 awaiter，不挂起协程，只读取当前协程的执行器。设计成 <code>co_await</code> 保证只能在协程内使用。</p>
+<h2 id="ctx-含义"><a href="#ctx-含义" class="headerlink" title="ctx_ 含义"></a>ctx_ 含义</h2><p><code>ctx</code> &#x3D; context（上下文）。hiredis 中表示连接对象：</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>redisContext</code></td>
+<td>同步连接，阻塞调用</td>
+</tr>
+<tr>
+<td><code>redisAsyncContext</code></td>
+<td>异步连接，非阻塞 + 回调</td>
+</tr>
+</tbody></table>
+<h2 id="Redis-双连接设计"><a href="#Redis-双连接设计" class="headerlink" title="Redis 双连接设计"></a>Redis 双连接设计</h2><p>Redis 协议限制：SUBSCRIBE 模式的连接只能执行 SUBSCRIBE&#x2F;UNSUBSCRIBE。</p>
+<table>
+<thead>
+<tr>
+<th>连接</th>
+<th>模式</th>
+<th>原因</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>publish_ctx_</code></td>
+<td>同步</td>
+<td>一次性发送，阻塞短，简单直接</td>
+</tr>
+<tr>
+<td><code>sub_ctx_</code></td>
+<td>异步 + 钩子</td>
+<td>长期监听，融入事件循环</td>
+</tr>
+</tbody></table>
+<h2 id="hiredis-钩子：连接-hiredis-与-asio"><a href="#hiredis-钩子：连接-hiredis-与-asio" class="headerlink" title="hiredis 钩子：连接 hiredis 与 asio"></a>hiredis 钩子：连接 hiredis 与 asio</h2><p>hiredis 不知道 asio，通过钩子通知你”需要监控 fd”：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs cpp">sub_ctx_-&gt;ev.addRead = &amp;Redis::ev_add_read;   <span class="hljs-comment">// hiredis 调用 → 你注册 epoll 读事件</span><br>sub_ctx_-&gt;ev.delRead = &amp;Redis::ev_del_read;   <span class="hljs-comment">// hiredis 调用 → 你取消 epoll 读事件</span><br></code></pre></td></tr></table></figure>
+
+<p><strong>流程：</strong></p>
+<figure class="highlight isbl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs isbl"><span class="hljs-variable">hiredis</span>: <span class="hljs-string">&quot;需要监控可读&quot;</span> → <span class="hljs-variable">ev.addRead</span>()<br>    → <span class="hljs-variable">asio</span>::<span class="hljs-function"><span class="hljs-title">async_wait</span>(<span class="hljs-variable">read</span>)</span><br>    → <span class="hljs-variable">epoll</span> 触发<br>    → <span class="hljs-function"><span class="hljs-title">redisAsyncHandleRead</span>()</span><br>    → <span class="hljs-variable">hiredis</span> 处理数据<br></code></pre></td></tr></table></figure>
+
+<p><strong>stream_descriptor：</strong> 包装 hiredis 的 fd，让 asio 能用 <code>async_wait</code> 监控。</p>
+<hr>
+<h2 id="技术设计优势"><a href="#技术设计优势" class="headerlink" title="技术设计优势"></a>技术设计优势</h2><h3 id="1-状态内聚"><a href="#1-状态内聚" class="headerlink" title="1. 状态内聚"></a>1. 状态内聚</h3><figure class="highlight arcade"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs arcade">回调模型：连接状态分散在 ChatServer 的 <span class="hljs-built_in">map</span>，每次回调要查找<br>协程模型：每个 Session 自带 recvBuf_，状态与连接绑定<br></code></pre></td></tr></table></figure>
+
+<p><strong>优势：</strong> 扩展新状态只需加 Session 成员，无需改全局结构。</p>
+<h3 id="2-分层解耦"><a href="#2-分层解耦" class="headerlink" title="2. 分层解耦"></a>2. 分层解耦</h3><figure class="highlight pgsql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs pgsql">网络层（<span class="hljs-keyword">Session</span>）   ← 不知道 ChatService 存在<br>业务层（ChatService）← 不知道 <span class="hljs-keyword">Session</span> 实现<br>数据层（Model）      ← 不知道调用者<br></code></pre></td></tr></table></figure>
+
+<p><strong>优势：</strong> 可独立测试、可复用、可替换实现。</p>
+<h3 id="3-RAII-资源安全"><a href="#3-RAII-资源安全" class="headerlink" title="3. RAII 资源安全"></a>3. RAII 资源安全</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs cpp">&#123;<br>  <span class="hljs-keyword">auto</span> guard = <span class="hljs-keyword">co_await</span> AsyncConnectionGuard::<span class="hljs-built_in">create</span>();<br>  <span class="hljs-comment">// 异常？正常返回？析构函数都归还连接</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="4-单线程无锁"><a href="#4-单线程无锁" class="headerlink" title="4. 单线程无锁"></a>4. 单线程无锁</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cpp">unordered_map&lt;<span class="hljs-type">int</span>, Session::Ptr&gt; _userConnMap;  <span class="hljs-comment">// 单线程，无需 mutex</span><br></code></pre></td></tr></table></figure>
+
+<p><strong>优势：</strong> 无锁竞争，无上下文切换，CPU 缓存友好。</p>
+<h3 id="5-协程挂起-vs-线程阻塞"><a href="#5-协程挂起-vs-线程阻塞" class="headerlink" title="5. 协程挂起 vs 线程阻塞"></a>5. 协程挂起 vs 线程阻塞</h3><figure class="highlight fix"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs fix"><span class="hljs-attr">1000 个请求等待数据库连接：</span><br><span class="hljs-attr">  线程阻塞：1000 线程 × 8MB 栈 </span>=<span class="hljs-string"> 8GB</span><br><span class="hljs-string">  协程挂起：1000 协程帧 × ~1KB = 1MB</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="6-分布式支持"><a href="#6-分布式支持" class="headerlink" title="6. 分布式支持"></a>6. 分布式支持</h3><figure class="highlight vbscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs vbscript"><span class="hljs-built_in">Server</span> A ←──→ Redis pub/<span class="hljs-keyword">sub</span> ←──→ <span class="hljs-built_in">Server</span> B<br>         跨服务器消息同步已实现<br></code></pre></td></tr></table></figure>
+
+<p><strong>优势：</strong> 水平扩展，高可用，无单点故障。</p>
+<hr>
+<h2 id="架构对比：多线程-vs-多进程"><a href="#架构对比：多线程-vs-多进程" class="headerlink" title="架构对比：多线程 vs 多进程"></a>架构对比：多线程 vs 多进程</h2><table>
+<thead>
+<tr>
+<th>方案</th>
+<th>适用场景</th>
+<th>代表</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>单进程单线程</td>
+<td>&lt;1万用户，学习项目</td>
+<td>当前项目</td>
+</tr>
+<tr>
+<td>单进程多线程</td>
+<td>1-10万用户，单机够用</td>
+<td>游戏服务器</td>
+</tr>
+<tr>
+<td>多进程分布式</td>
+<td>10万+用户，需扩展</td>
+<td>微信、Discord</td>
+</tr>
+</tbody></table>
+<p><strong>当前架构：</strong> 单线程 + 多进程部署 + Redis 消息同步，适合学习和中小规模生产。</p>
+<hr>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>一句话：</strong> 基于 C++20 协程和 Boost.Asio 的高并发聊天服务器，从 muduo 回调迁移到全协程架构，实现网络层、数据库、Redis 完全异步化。</p>
+<p><strong>核心亮点：</strong></p>
+<ol>
+<li><strong>协程化数据库：</strong> boost::mysql + 连接池，co_await 挂起协程而非阻塞线程</li>
+<li><strong>hiredis 集成 asio：</strong> 事件钩子将 fd 注册到 epoll，实现订阅协程化</li>
+<li><strong>回调与协程边界：</strong> MessageCallback 是协程签名但仍是回调模式，实现解耦</li>
+</ol>
+<p><strong>关键数字：</strong> 16+ 业务 handler、单线程 io_context、C++20 + Boost 1.82+</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E5%8D%8F%E7%A8%8B/" class="print-no-link">#协程</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>boost_asio协程服务器要点记录</div>
+      <div>http://example.com/2026/06/14/boost_asio协程服务器要点记录/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>天目中云</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年6月14日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/06/14/Rust%20%E5%88%9D%E6%AD%A5%E5%AD%A6%E4%B9%A0/" title="Rust 初步学习">
+                        <span class="hidden-mobile">Rust 初步学习</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"NhgfDy2CEByjwxuxPM1Le2t6-MdYXbMMI","appKey":"nvGMdqKfKbpkVnojLSbwmasv","path":"window.location.pathname","placeholder":null,"avatar":"retro","meta":["nick","mail","link"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":false,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":false},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
