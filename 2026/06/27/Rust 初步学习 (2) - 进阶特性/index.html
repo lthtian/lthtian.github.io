@@ -1,0 +1,1259 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/head.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="天目中云">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="1. attribute - 属性系统#[derive(…)] 编译期代码生成让编译器自动生成 trait 实现，避免手写重复代码。 1234567#[derive(Debug, Clone, PartialEq)]struct Point &#123; x: i32, y: i32 &#125;let p1 &#x3D; Point &#123; x: 1, y: 2 &#125;;let p2 &#x3D; p">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Rust 初步学习 (2) - 进阶特性">
+<meta property="og:url" content="http://example.com/2026/06/27/Rust%20%E5%88%9D%E6%AD%A5%E5%AD%A6%E4%B9%A0%20(2)%20-%20%E8%BF%9B%E9%98%B6%E7%89%B9%E6%80%A7/index.html">
+<meta property="og:site_name" content="天目中云">
+<meta property="og:description" content="1. attribute - 属性系统#[derive(…)] 编译期代码生成让编译器自动生成 trait 实现，避免手写重复代码。 1234567#[derive(Debug, Clone, PartialEq)]struct Point &#123; x: i32, y: i32 &#125;let p1 &#x3D; Point &#123; x: 1, y: 2 &#125;;let p2 &#x3D; p">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-06-27T07:53:56.000Z">
+<meta property="article:modified_time" content="2026-06-27T07:53:57.208Z">
+<meta property="article:author" content="天目中云">
+<meta property="article:tag" content="Rust">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>Rust 初步学习 (2) - 进阶特性 - 天目中云</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":"NhgfDy2CEByjwxuxPM1Le2t6-MdYXbMMI","app_key":"nvGMdqKfKbpkVnojLSbwmasv","server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>TianMu</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/03.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Rust 初步学习 (2) - 进阶特性"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-06-27 15:53" pubdate>
+          2026年6月27日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.2k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          19 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Rust 初步学习 (2) - 进阶特性</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <hr>
+<h2 id="1-attribute-属性系统"><a href="#1-attribute-属性系统" class="headerlink" title="1. attribute - 属性系统"></a>1. attribute - 属性系统</h2><h3 id="derive-…-编译期代码生成"><a href="#derive-…-编译期代码生成" class="headerlink" title="#[derive(…)] 编译期代码生成"></a>#[derive(…)] 编译期代码生成</h3><p>让编译器自动生成 trait 实现，避免手写重复代码。</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs rust"><span class="hljs-meta">#[derive(Debug, Clone, PartialEq)]</span><br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">Point</span> &#123; x: <span class="hljs-type">i32</span>, y: <span class="hljs-type">i32</span> &#125;<br><br><span class="hljs-keyword">let</span> <span class="hljs-variable">p1</span> = Point &#123; x: <span class="hljs-number">1</span>, y: <span class="hljs-number">2</span> &#125;;<br><span class="hljs-keyword">let</span> <span class="hljs-variable">p2</span> = p1.<span class="hljs-title function_ invoke__">clone</span>();      <span class="hljs-comment">// Clone</span><br><span class="hljs-built_in">println!</span>(<span class="hljs-string">&quot;&#123;:?&#125;&quot;</span>, p1);     <span class="hljs-comment">// Debug</span><br><span class="hljs-built_in">assert_eq!</span>(p1, p2);       <span class="hljs-comment">// PartialEq</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="标准库-derive-选项"><a href="#标准库-derive-选项" class="headerlink" title="标准库 derive 选项"></a>标准库 derive 选项</h3><table>
+<thead>
+<tr>
+<th>derive</th>
+<th>功能</th>
+<th>示例用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>Clone</code></td>
+<td><code>.clone()</code> 深拷贝</td>
+<td>复制对象</td>
+</tr>
+<tr>
+<td><code>Copy</code></td>
+<td>赋值自动拷贝</td>
+<td>小型值类型</td>
+</tr>
+<tr>
+<td><code>Debug</code></td>
+<td><code>&#123;:?&#125;</code> 调试输出</td>
+<td>打印调试信息</td>
+</tr>
+<tr>
+<td><code>Default</code></td>
+<td><code>.default()</code> 默认值</td>
+<td>创建默认实例</td>
+</tr>
+<tr>
+<td><code>PartialEq</code></td>
+<td><code>==</code> <code>!=</code> 比较</td>
+<td>值相等判断</td>
+</tr>
+<tr>
+<td><code>Eq</code></td>
+<td>完全相等（需 PartialEq）</td>
+<td>HashMap key</td>
+</tr>
+<tr>
+<td><code>PartialOrd</code></td>
+<td><code>&lt;</code> <code>&gt;</code> <code>&lt;=</code> <code>&gt;=</code></td>
+<td>排序比较</td>
+</tr>
+<tr>
+<td><code>Ord</code></td>
+<td>完全排序（需 Eq）</td>
+<td>排序、BTreeMap key</td>
+</tr>
+<tr>
+<td><code>Hash</code></td>
+<td><code>.hash()</code> 哈希值</td>
+<td>HashMap&#x2F;HashSet key</td>
+</tr>
+</tbody></table>
+<p><strong>依赖关系</strong>：<code>Copy → Clone</code>，<code>Eq → PartialEq</code>，<code>Ord → Eq</code></p>
+<h3 id="无法自动生成的情况"><a href="#无法自动生成的情况" class="headerlink" title="无法自动生成的情况"></a>无法自动生成的情况</h3><ul>
+<li>有非 Clone 字段 → 无法 derive Clone</li>
+<li>实现了 Drop → 无法 derive Copy</li>
+<li>需要自定义逻辑（如隐藏敏感信息）→ 必须手写</li>
+</ul>
+<h3 id="其他常用属性"><a href="#其他常用属性" class="headerlink" title="其他常用属性"></a>其他常用属性</h3><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs rust"><span class="hljs-meta">#[must_use]</span>           <span class="hljs-comment">// 强制使用返回值</span><br><span class="hljs-meta">#[allow(dead_code)]</span>   <span class="hljs-comment">// 允许警告</span><br><span class="hljs-meta">#[inline]</span>             <span class="hljs-comment">// 内联建议</span><br><span class="hljs-meta">#[inline(always)]</span>     <span class="hljs-comment">// 强制内联</span><br><span class="hljs-meta">#[inline(never)]</span>      <span class="hljs-comment">// 禁止内联</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="cfg-条件编译"><a href="#cfg-条件编译" class="headerlink" title="#[cfg] 条件编译"></a>#[cfg] 条件编译</h3><p>编译期配置选项，由 Cargo 自动设置。</p>
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th>选项</th>
+<th>示例值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>目标系统</td>
+<td><code>target_os</code></td>
+<td><code>&quot;windows&quot;</code>, <code>&quot;linux&quot;</code>, <code>&quot;macos&quot;</code></td>
+</tr>
+<tr>
+<td>目标架构</td>
+<td><code>target_arch</code></td>
+<td><code>&quot;x86_64&quot;</code>, <code>&quot;arm&quot;</code>, <code>&quot;aarch64&quot;</code></td>
+</tr>
+<tr>
+<td>编译模式</td>
+<td><code>debug_assertions</code></td>
+<td><code>true</code> &#x2F; <code>false</code></td>
+</tr>
+<tr>
+<td>特性开关</td>
+<td><code>feature</code></td>
+<td>自定义 feature</td>
+</tr>
+<tr>
+<td>测试模式</td>
+<td><code>test</code></td>
+<td><code>true</code></td>
+</tr>
+</tbody></table>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs rust"><span class="hljs-meta">#[cfg(target_os = <span class="hljs-string">&quot;windows&quot;</span>)]</span><br><span class="hljs-keyword">fn</span> <span class="hljs-title function_">platform_func</span>() &#123; <span class="hljs-built_in">println!</span>(<span class="hljs-string">&quot;Windows&quot;</span>); &#125;<br><br><span class="hljs-meta">#[cfg(debug_assertions)]</span><br><span class="hljs-keyword">fn</span> <span class="hljs-title function_">debug_only</span>() &#123; <span class="hljs-built_in">println!</span>(<span class="hljs-string">&quot;仅debug模式&quot;</span>); &#125;<br><br><span class="hljs-comment">// 组合条件</span><br><span class="hljs-meta">#[cfg(all(target_os = <span class="hljs-string">&quot;linux&quot;</span>, target_arch = <span class="hljs-string">&quot;x86_64&quot;</span>))]</span><br><span class="hljs-keyword">fn</span> <span class="hljs-title function_">linux_x64</span>() &#123;&#125;<br><br><span class="hljs-meta">#[cfg(any(target_os = <span class="hljs-string">&quot;windows&quot;</span>, target_os = <span class="hljs-string">&quot;macos&quot;</span>))]</span><br><span class="hljs-keyword">fn</span> <span class="hljs-title function_">desktop</span>() &#123;&#125;<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="2-module-demo-模块系统"><a href="#2-module-demo-模块系统" class="headerlink" title="2. module_demo - 模块系统"></a>2. module_demo - 模块系统</h2><p>模块 &#x3D; 命名空间 + 访问控制。</p>
+<h3 id="可见性规则"><a href="#可见性规则" class="headerlink" title="可见性规则"></a>可见性规则</h3><table>
+<thead>
+<tr>
+<th>可见性</th>
+<th>范围</th>
+<th>类比 C++</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>pub</code></td>
+<td>公开，任意模块可访问</td>
+<td><code>public</code></td>
+</tr>
+<tr>
+<td><code>pub(crate)</code></td>
+<td>当前 crate 内可见</td>
+<td><code>internal</code> linkage</td>
+</tr>
+<tr>
+<td><code>pub(super)</code></td>
+<td>父模块及其子模块可见</td>
+<td>无对应</td>
+</tr>
+<tr>
+<td>无修饰</td>
+<td>私有，仅当前模块</td>
+<td><code>private</code></td>
+</tr>
+</tbody></table>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs rust"><span class="hljs-keyword">mod</span> outer &#123;<br>    <span class="hljs-keyword">pub</span> <span class="hljs-keyword">fn</span> <span class="hljs-title function_">outer_fn</span>() &#123;&#125;           <span class="hljs-comment">// 公开</span><br>    <span class="hljs-title function_ invoke__">pub</span>(<span class="hljs-keyword">crate</span>) <span class="hljs-keyword">fn</span> <span class="hljs-title function_">crate_fn</span>() &#123;&#125;    <span class="hljs-comment">// crate 内可见</span><br><br>    <span class="hljs-keyword">mod</span> inner &#123;<br>        <span class="hljs-title function_ invoke__">pub</span>(<span class="hljs-keyword">super</span>) <span class="hljs-keyword">fn</span> <span class="hljs-title function_">inner_fn</span>() &#123;&#125;  <span class="hljs-comment">// 仅 outer 模块可访问</span><br><br>        <span class="hljs-keyword">pub</span> <span class="hljs-keyword">struct</span> <span class="hljs-title class_">Data</span> &#123;<br>            <span class="hljs-keyword">pub</span> field: <span class="hljs-type">i32</span>,       <span class="hljs-comment">// 公开</span><br>            <span class="hljs-title function_ invoke__">pub</span>(<span class="hljs-keyword">crate</span>) id: <span class="hljs-type">i32</span>,   <span class="hljs-comment">// crate 内可见</span><br>            private: <span class="hljs-type">i32</span>,         <span class="hljs-comment">// 私有</span><br>        &#125;<br>    &#125;<br><br>    <span class="hljs-keyword">fn</span> <span class="hljs-title function_">test</span>() &#123;<br>        inner::<span class="hljs-title function_ invoke__">inner_fn</span>();  <span class="hljs-comment">// ✅ super 可见</span><br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="use-导入"><a href="#use-导入" class="headerlink" title="use 导入"></a>use 导入</h3><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs rust"><span class="hljs-keyword">use</span> math::advanced::*;     <span class="hljs-comment">// 导入所有公开项</span><br><span class="hljs-keyword">use</span> math::advanced;        <span class="hljs-comment">// 只导入模块名，需用 advanced::xxx 访问</span><br></code></pre></td></tr></table></figure>
+
+<p>**对比 C++**：<code>use</code> ≈ <code>using namespace</code>，但 Rust 模块有可见性控制。</p>
+<hr>
+<h2 id="3-test-demo-测试框架"><a href="#3-test-demo-测试框架" class="headerlink" title="3. test_demo - 测试框架"></a>3. test_demo - 测试框架</h2><p>Rust 内置测试框架，无需第三方库。</p>
+<h3 id="基本用法"><a href="#基本用法" class="headerlink" title="基本用法"></a>基本用法</h3><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs rust"><span class="hljs-meta">#[cfg(test)]</span>        <span class="hljs-comment">// 仅测试时编译</span><br><span class="hljs-keyword">mod</span> tests &#123;<br>    <span class="hljs-keyword">use</span> super::*;<br><br>    <span class="hljs-meta">#[test]</span>         <span class="hljs-comment">// 标记测试函数</span><br>    <span class="hljs-keyword">fn</span> <span class="hljs-title function_">test_add</span>() &#123;<br>        <span class="hljs-built_in">assert_eq!</span>(<span class="hljs-number">1</span> + <span class="hljs-number">1</span>, <span class="hljs-number">2</span>);<br>    &#125;<br><br>    <span class="hljs-meta">#[test]</span><br>    <span class="hljs-meta">#[should_panic]</span> <span class="hljs-comment">// 期望 panic</span><br>    <span class="hljs-keyword">fn</span> <span class="hljs-title function_">test_panic</span>() &#123; <span class="hljs-built_in">panic!</span>(); &#125;<br><br>    <span class="hljs-meta">#[test]</span><br>    <span class="hljs-meta">#[ignore]</span>       <span class="hljs-comment">// 跳过测试</span><br>    <span class="hljs-keyword">fn</span> <span class="hljs-title function_">test_slow</span>() &#123;&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="断言宏"><a href="#断言宏" class="headerlink" title="断言宏"></a>断言宏</h3><table>
+<thead>
+<tr>
+<th>宏</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>assert!(expr)</code></td>
+<td>表达式为真</td>
+</tr>
+<tr>
+<td><code>assert_eq!(a, b)</code></td>
+<td>相等</td>
+</tr>
+<tr>
+<td><code>assert_ne!(a, b)</code></td>
+<td>不相等</td>
+</tr>
+</tbody></table>
+<h3 id="测试组织"><a href="#测试组织" class="headerlink" title="测试组织"></a>测试组织</h3><table>
+<thead>
+<tr>
+<th>位置</th>
+<th>用途</th>
+<th>可见性</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>同文件 <code>#[cfg(test)] mod tests</code></td>
+<td>单元测试</td>
+<td>可测私有</td>
+</tr>
+<tr>
+<td><code>tests/</code> 目录</td>
+<td>集成测试</td>
+<td>仅公开 API</td>
+</tr>
+</tbody></table>
+<p><strong>习惯</strong>：单元测试放同文件底部，就近维护；集成测试放 <code>tests/</code> 测试跨模块交互。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash">cargo <span class="hljs-built_in">test</span>              <span class="hljs-comment"># 运行所有测试</span><br>cargo <span class="hljs-built_in">test</span> test_add     <span class="hljs-comment"># 过滤测试名</span><br>cargo <span class="hljs-built_in">test</span> -- --ignored <span class="hljs-comment"># 运行被忽略的测试</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="第三方测试库"><a href="#第三方测试库" class="headerlink" title="第三方测试库"></a>第三方测试库</h3><table>
+<thead>
+<tr>
+<th>库</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>proptest</code></td>
+<td>属性测试（随机生成用例）</td>
+</tr>
+<tr>
+<td><code>criterion</code></td>
+<td>性能基准测试</td>
+</tr>
+<tr>
+<td><code>mockall</code></td>
+<td>Mock 框架</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="4-lifetime-生命周期"><a href="#4-lifetime-生命周期" class="headerlink" title="4. lifetime - 生命周期"></a>4. lifetime - 生命周期</h2><p>编译期标记，确保引用有效。</p>
+<h3 id="为什么需要标注？"><a href="#为什么需要标注？" class="headerlink" title="为什么需要标注？"></a>为什么需要标注？</h3><p>编译器不分析函数体，只看签名。多个引用参数时，不知道返回值绑谁。</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs rust"><span class="hljs-comment">// ❌ 编译器不知道返回值属于 x 还是 y</span><br><span class="hljs-keyword">fn</span> <span class="hljs-title function_">longest</span>(x: &amp;<span class="hljs-type">str</span>, y: &amp;<span class="hljs-type">str</span>) <span class="hljs-punctuation">-&gt;</span> &amp;<span class="hljs-type">str</span> &#123; ... &#125;<br><br><span class="hljs-comment">// ✅ 显式标注：返回值生命周期 = 参数交集</span><br><span class="hljs-keyword">fn</span> <span class="hljs-title function_">longest</span>&lt;<span class="hljs-symbol">&#x27;a</span>&gt;(x: &amp;<span class="hljs-symbol">&#x27;a</span> <span class="hljs-type">str</span>, y: &amp;<span class="hljs-symbol">&#x27;a</span> <span class="hljs-type">str</span>) <span class="hljs-punctuation">-&gt;</span> &amp;<span class="hljs-symbol">&#x27;a</span> <span class="hljs-type">str</span> &#123; ... &#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="省略规则"><a href="#省略规则" class="headerlink" title="省略规则"></a>省略规则</h3><table>
+<thead>
+<tr>
+<th>情况</th>
+<th>能否省略</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1 个参数 + 返回引用</td>
+<td>✅ 自动绑定</td>
+</tr>
+<tr>
+<td>有 <code>&amp;self</code> + 返回引用</td>
+<td>✅ 自动绑定 self</td>
+</tr>
+<tr>
+<td>多个参数 + 返回引用</td>
+<td>❌ 必须标注</td>
+</tr>
+</tbody></table>
+<h3 id="struct-存引用"><a href="#struct-存引用" class="headerlink" title="struct 存引用"></a>struct 存引用</h3><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs rust"><span class="hljs-keyword">struct</span> <span class="hljs-title class_">Text</span>&lt;<span class="hljs-symbol">&#x27;a</span>&gt; &#123;<br>    content: &amp;<span class="hljs-symbol">&#x27;a</span> <span class="hljs-type">str</span>,  <span class="hljs-comment">// 必须标注</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="实际使用"><a href="#实际使用" class="headerlink" title="实际使用"></a>实际使用</h3><p>大多数代码不需要手动标注，编译器会报错提醒。</p>
+<hr>
+<h2 id="5-async-demo-异步编程"><a href="#5-async-demo-异步编程" class="headerlink" title="5. async_demo - 异步编程"></a>5. async_demo - 异步编程</h2><p>Rust 异步底层是<strong>编译器生成的状态机</strong>（协程）。</p>
+<h3 id="基本语法"><a href="#基本语法" class="headerlink" title="基本语法"></a>基本语法</h3><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs rust"><span class="hljs-keyword">async</span> <span class="hljs-keyword">fn</span> <span class="hljs-title function_">fetch</span>() <span class="hljs-punctuation">-&gt;</span> <span class="hljs-type">i32</span> &#123;<br>    <span class="hljs-keyword">let</span> <span class="hljs-variable">data</span> = <span class="hljs-title function_ invoke__">read_file</span>().<span class="hljs-keyword">await</span>;  <span class="hljs-comment">// 暂停等待</span><br>    <span class="hljs-title function_ invoke__">process</span>(data)<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="核心概念"><a href="#核心概念" class="headerlink" title="核心概念"></a>核心概念</h3><table>
+<thead>
+<tr>
+<th>概念</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>async</code></td>
+<td>定义异步函数&#x2F;块，返回 Future</td>
+</tr>
+<tr>
+<td><code>.await</code></td>
+<td>暂停等待结果</td>
+</tr>
+<tr>
+<td><code>Future</code></td>
+<td>状态机，<code>poll()</code> 检查是否完成</td>
+</tr>
+<tr>
+<td>运行时</td>
+<td>tokio&#x2F;async-std，负责调度</td>
+</tr>
+</tbody></table>
+<h3 id="实际项目使用"><a href="#实际项目使用" class="headerlink" title="实际项目使用"></a>实际项目使用</h3><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs rust"><span class="hljs-comment">// Cargo.toml</span><br><span class="hljs-comment">// tokio = &#123; version = &quot;1&quot;, features = [&quot;full&quot;] &#125;</span><br><br><span class="hljs-meta">#[tokio::main]</span><br><span class="hljs-keyword">async</span> <span class="hljs-keyword">fn</span> <span class="hljs-title function_">main</span>() &#123;<br>    <span class="hljs-keyword">let</span> <span class="hljs-variable">result</span> = <span class="hljs-title function_ invoke__">async_op</span>().<span class="hljs-keyword">await</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="tokio-运行时"><a href="#tokio-运行时" class="headerlink" title="tokio 运行时"></a>tokio 运行时</h3><p>Rust 的 async 语法只定义 Future，需要运行时执行。tokio 是最流行的异步运行时库。</p>
+<table>
+<thead>
+<tr>
+<th>tokio 提供</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>执行器</td>
+<td>多线程执行 Future</td>
+</tr>
+<tr>
+<td>网络</td>
+<td>异步 TCP&#x2F;UDP</td>
+</tr>
+<tr>
+<td>文件 I&#x2F;O</td>
+<td>异步文件操作</td>
+</tr>
+<tr>
+<td>定时器</td>
+<td>sleep、interval</td>
+</tr>
+</tbody></table>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs rust"><span class="hljs-keyword">use</span> tokio::time::&#123;sleep, Duration&#125;;<br><br><span class="hljs-meta">#[tokio::main]</span><br><span class="hljs-keyword">async</span> <span class="hljs-keyword">fn</span> <span class="hljs-title function_">main</span>() &#123;<br>    <span class="hljs-title function_ invoke__">sleep</span>(Duration::<span class="hljs-title function_ invoke__">from_secs</span>(<span class="hljs-number">1</span>)).<span class="hljs-keyword">await</span>;  <span class="hljs-comment">// 异步等待</span><br><br>    tokio::<span class="hljs-title function_ invoke__">spawn</span>(<span class="hljs-keyword">async</span> &#123; <span class="hljs-comment">/* 并发任务 */</span> &#125;);  <span class="hljs-comment">// 创建任务</span><br><br>    <span class="hljs-keyword">let</span> (a, b) = tokio::join!(<span class="hljs-title function_ invoke__">task1</span>(), <span class="hljs-title function_ invoke__">task2</span>());  <span class="hljs-comment">// 并发执行</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><strong>关系</strong>：Rust async &#x3D; 语法层面；tokio &#x3D; 运行时库。</p>
+<h3 id="对比其他语言"><a href="#对比其他语言" class="headerlink" title="对比其他语言"></a>对比其他语言</h3><table>
+<thead>
+<tr>
+<th>语言</th>
+<th>实现方式</th>
+<th>运行时</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Rust</td>
+<td>编译期状态机</td>
+<td>需 tokio</td>
+</tr>
+<tr>
+<td>Go</td>
+<td>goroutine</td>
+<td>内置</td>
+</tr>
+<tr>
+<td>C++20</td>
+<td>协程</td>
+<td>需自行实现</td>
+</tr>
+<tr>
+<td>Python</td>
+<td>async&#x2F;await</td>
+<td>事件循环</td>
+</tr>
+</tbody></table>
+<p><strong>特点</strong>：零成本抽象，无内置运行时，显式 .await。</p>
+<hr>
+<h2 id="6-concurrency-并发原语"><a href="#6-concurrency-并发原语" class="headerlink" title="6. concurrency - 并发原语"></a>6. concurrency - 并发原语</h2><h3 id="智能指针"><a href="#智能指针" class="headerlink" title="智能指针"></a>智能指针</h3><p>数据分配 + 资源管理功能，包装一个值，提供额外能力。</p>
+<table>
+<thead>
+<tr>
+<th>智能指针</th>
+<th>提供的能力</th>
+<th>类比 C++</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>Box&lt;T&gt;</code></td>
+<td>堆分配</td>
+<td><code>unique_ptr&lt;T&gt;</code></td>
+</tr>
+<tr>
+<td><code>Arc&lt;T&gt;</code></td>
+<td>共享所有权（线程安全）</td>
+<td><code>shared_ptr&lt;T&gt;</code></td>
+</tr>
+<tr>
+<td><code>Rc&lt;T&gt;</code></td>
+<td>共享所有权（单线程）</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>Mutex&lt;T&gt;</code></td>
+<td>互斥访问</td>
+<td><code>mutex</code> + 数据</td>
+</tr>
+</tbody></table>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs rust"><span class="hljs-keyword">let</span> <span class="hljs-variable">a</span> = <span class="hljs-type">Box</span>::<span class="hljs-title function_ invoke__">new</span>(<span class="hljs-number">42</span>);           <span class="hljs-comment">// 堆分配</span><br><span class="hljs-keyword">let</span> <span class="hljs-variable">b</span> = Arc::<span class="hljs-title function_ invoke__">new</span>(vec<br>![<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>]);   <span class="hljs-comment">// 可跨线程共享</span><br><span class="hljs-keyword">let</span> <span class="hljs-variable">c</span> = Mutex::<span class="hljs-title function_ invoke__">new</span>(<span class="hljs-number">0</span>);          <span class="hljs-comment">// 互斥保护</span><br><br><span class="hljs-comment">// 用法一致</span><br><span class="hljs-built_in">println!</span>(<span class="hljs-string">&quot;&#123;&#125;&quot;</span>, *a);<br><span class="hljs-built_in">println!</span>(<span class="hljs-string">&quot;&#123;&#125;&quot;</span>, *Arc::<span class="hljs-title function_ invoke__">clone</span>(&amp;b));<br><span class="hljs-built_in">println!</span>(<span class="hljs-string">&quot;&#123;&#125;&quot;</span>, *c.<span class="hljs-title function_ invoke__">lock</span>().<span class="hljs-title function_ invoke__">unwrap</span>());<br></code></pre></td></tr></table></figure>
+
+<h3 id="Arc-Mutex-组合"><a href="#Arc-Mutex-组合" class="headerlink" title="Arc + Mutex 组合"></a>Arc + Mutex 组合</h3><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs rust"><span class="hljs-keyword">use</span> std::sync::&#123;Arc, Mutex&#125;;<br><br><span class="hljs-keyword">let</span> <span class="hljs-variable">counter</span> = Arc::<span class="hljs-title function_ invoke__">new</span>(Mutex::<span class="hljs-title function_ invoke__">new</span>(<span class="hljs-number">0</span>));  <span class="hljs-comment">// 共享 + 互斥</span><br><br><span class="hljs-keyword">let</span> <span class="hljs-variable">handles</span>: <span class="hljs-type">Vec</span>&lt;_&gt; = (<span class="hljs-number">0</span>..<span class="hljs-number">10</span>).<span class="hljs-title function_ invoke__">map</span>(|_| &#123;<br>    <span class="hljs-keyword">let</span> <span class="hljs-variable">counter</span> = Arc::<span class="hljs-title function_ invoke__">clone</span>(&amp;counter);<br>    thread::<span class="hljs-title function_ invoke__">spawn</span>(<span class="hljs-keyword">move</span> || &#123;<br>        <span class="hljs-keyword">let</span> <span class="hljs-keyword">mut </span><span class="hljs-variable">num</span> = counter.<span class="hljs-title function_ invoke__">lock</span>().<span class="hljs-title function_ invoke__">unwrap</span>();<br>        *num += <span class="hljs-number">1</span>;<br>    &#125;)<br>&#125;).<span class="hljs-title function_ invoke__">collect</span>();<br></code></pre></td></tr></table></figure>
+
+<h3 id="Channel-通道"><a href="#Channel-通道" class="headerlink" title="Channel 通道"></a>Channel 通道</h3><p>线程安全的消息管道，用于线程间通信。</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs css">发送端 ──► <span class="hljs-selector-attr">[ channel ]</span> ──► 接收端<br><br></code></pre></td></tr></table></figure>
+
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs rust"><span class="hljs-keyword">use</span> std::sync::mpsc;<br><br><span class="hljs-keyword">let</span> (tx, rx) = mpsc::<span class="hljs-title function_ invoke__">channel</span>();  <span class="hljs-comment">// (发送端, 接收端)</span><br><br><span class="hljs-comment">// 发送</span><br>tx.<span class="hljs-title function_ invoke__">send</span>(<span class="hljs-number">42</span>).<span class="hljs-title function_ invoke__">unwrap</span>();<br><br><span class="hljs-comment">// 接收（阻塞等待）</span><br><span class="hljs-keyword">let</span> <span class="hljs-variable">val</span> = rx.<span class="hljs-title function_ invoke__">recv</span>().<span class="hljs-title function_ invoke__">unwrap</span>();<br><br><span class="hljs-comment">// 或迭代接收</span><br><span class="hljs-keyword">for</span> <span class="hljs-variable">val</span> <span class="hljs-keyword">in</span> rx &#123;<br>    <span class="hljs-built_in">println!</span>(<span class="hljs-string">&quot;&#123;&#125;&quot;</span>, val);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>mpsc</code></td>
+<td>多生产者，单消费者（标准库）</td>
+</tr>
+<tr>
+<td><code>mpmc</code></td>
+<td>多生产者，多消费者（需 <code>crossbeam</code> 库）</td>
+</tr>
+</tbody></table>
+<p><strong>对比 Go</strong>：<code>tx.send(val)</code> ≈ <code>ch &lt;- val</code>，<code>rx.recv()</code> ≈ <code>val := &lt;- ch</code></p>
+<h3 id="闭包"><a href="#闭包" class="headerlink" title="闭包"></a>闭包</h3><p>Rust 闭包 ≈ C++ lambda。</p>
+<table>
+<thead>
+<tr>
+<th>Rust</th>
+<th>C++ lambda</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>&#96;</td>
+<td></td>
+<td>expr&#96;</td>
+</tr>
+<tr>
+<td>&#96;</td>
+<td>x</td>
+<td>x + 1&#96;</td>
+</tr>
+<tr>
+<td>&#96;</td>
+<td>x, y</td>
+<td>x + y&#96;</td>
+</tr>
+<tr>
+<td>&#96;move</td>
+<td></td>
+<td>&#96;</td>
+</tr>
+<tr>
+<td>默认 &#96;</td>
+<td></td>
+<td>&#96;</td>
+</tr>
+</tbody></table>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs rust"><span class="hljs-keyword">let</span> <span class="hljs-variable">add</span> = |x| x + <span class="hljs-number">1</span>;              <span class="hljs-comment">// 单参数</span><br><span class="hljs-keyword">let</span> <span class="hljs-variable">sum</span> = |a, b| a + b;           <span class="hljs-comment">// 多参数</span><br><span class="hljs-keyword">let</span> <span class="hljs-variable">calc</span> = |x| &#123; <span class="hljs-keyword">let</span> <span class="hljs-variable">y</span> = x * <span class="hljs-number">2</span>; y + <span class="hljs-number">1</span> &#125;;  <span class="hljs-comment">// 多语句</span><br><br><span class="hljs-comment">// move 闭包：用于线程</span><br>thread::<span class="hljs-title function_ invoke__">spawn</span>(<span class="hljs-keyword">move</span> || &#123; <span class="hljs-comment">/* 变量移入 */</span> &#125;);<br><br><span class="hljs-comment">// 作为参数</span><br>vec.<span class="hljs-title function_ invoke__">iter</span>().<span class="hljs-title function_ invoke__">map</span>(|x| x * <span class="hljs-number">2</span>).<span class="hljs-title function_ invoke__">collect</span>();<br></code></pre></td></tr></table></figure>
+
+<p><strong>类比</strong>：Arc ≈ 共享钥匙，Mutex ≈ 保险箱，Channel ≈ 管道。</p>
+<hr>
+<h2 id="7-macro-demo-宏系统"><a href="#7-macro-demo-宏系统" class="headerlink" title="7. macro_demo - 宏系统"></a>7. macro_demo - 宏系统</h2><p>编译期代码生成，类似 C 预处理器但更安全。</p>
+<h3 id="声明宏-macro-rules"><a href="#声明宏-macro-rules" class="headerlink" title="声明宏 macro_rules!"></a>声明宏 macro_rules!</h3><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs rust"><span class="hljs-built_in">macro_rules!</span> create_function &#123;<br>    ($name:ident) =&gt; &#123;<br>        <span class="hljs-keyword">fn</span> $<span class="hljs-title function_ invoke__">name</span>() &#123;<br>            <span class="hljs-built_in">println!</span>(<span class="hljs-string">&quot;Function &#123;:?&#125;&quot;</span>, <span class="hljs-built_in">stringify!</span>($name));<br>        &#125;<br>    &#125;;<br>&#125;<br><br>create_function!(foo);  <span class="hljs-comment">// 生成 fn foo() &#123; ... &#125;</span><br>create_function!(bar);<br></code></pre></td></tr></table></figure>
+
+<h3 id="片段分类符"><a href="#片段分类符" class="headerlink" title="片段分类符"></a>片段分类符</h3><table>
+<thead>
+<tr>
+<th>分类符</th>
+<th>匹配内容</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>ident</code></td>
+<td>标识符</td>
+<td><code>foo</code>, <code>my_func</code></td>
+</tr>
+<tr>
+<td><code>expr</code></td>
+<td>表达式</td>
+<td><code>1 + 2</code>, <code>x * 3</code></td>
+</tr>
+<tr>
+<td><code>ty</code></td>
+<td>类型</td>
+<td><code>i32</code>, <code>String</code></td>
+</tr>
+<tr>
+<td><code>stmt</code></td>
+<td>语句</td>
+<td><code>let x = 1;</code></td>
+</tr>
+<tr>
+<td><code>literal</code></td>
+<td>字面量</td>
+<td><code>42</code>, <code>&quot;hello&quot;</code></td>
+</tr>
+<tr>
+<td><code>tt</code></td>
+<td>任意 token</td>
+<td>任何</td>
+</tr>
+</tbody></table>
+<h3 id="重复匹配"><a href="#重复匹配" class="headerlink" title="重复匹配"></a>重复匹配</h3><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs rust"><span class="hljs-comment">// * : 0次或多次</span><br>($($x:expr),*) =&gt; &#123; ... &#125;<br><br><span class="hljs-comment">// + : 1次或多次</span><br>($($x:expr),+) =&gt; &#123; ... &#125;<br><br><span class="hljs-comment">// 示例：求和宏</span><br><span class="hljs-built_in">macro_rules!</span> add_all &#123;<br>    ($first:expr, $($rest:expr),+) =&gt; &#123;<br>        $first $(+ $rest)+<br>    &#125;;<br>&#125;<br>add_all!(<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>);  <span class="hljs-comment">// 展开为 1 + 2 + 3</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="条件编译宏"><a href="#条件编译宏" class="headerlink" title="条件编译宏"></a>条件编译宏</h3><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs rust"><span class="hljs-built_in">macro_rules!</span> if_debug &#123;<br>    ($($code:tt)*) =&gt; &#123;<br>        <span class="hljs-meta">#[cfg(debug_assertions)]</span><br>        &#123; $($code)* &#125;<br>    &#125;;<br>&#125;<br><br>if_debug! &#123;<br>    <span class="hljs-built_in">println!</span>(<span class="hljs-string">&quot;仅debug模式&quot;</span>);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="常用内置宏"><a href="#常用内置宏" class="headerlink" title="常用内置宏"></a>常用内置宏</h3><table>
+<thead>
+<tr>
+<th>宏</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>vec![]</code></td>
+<td>创建 Vec</td>
+</tr>
+<tr>
+<td><code>println!()</code></td>
+<td>格式化输出</td>
+</tr>
+<tr>
+<td><code>format!()</code></td>
+<td>格式化字符串</td>
+</tr>
+<tr>
+<td><code>panic!()</code></td>
+<td>抛出 panic</td>
+</tr>
+<tr>
+<td><code>assert!()</code></td>
+<td>断言</td>
+</tr>
+</tbody></table>
+<p><strong>对比 C</strong>：Rust 宏是编译期代码生成，有类型检查；C 宏是预处理期文本替换，无检查。</p>
+<hr>
+<h2 id="8-unsafe-demo-Unsafe-与-FFI"><a href="#8-unsafe-demo-Unsafe-与-FFI" class="headerlink" title="8. unsafe_demo - Unsafe 与 FFI"></a>8. unsafe_demo - Unsafe 与 FFI</h2><p>绕过编译器安全检查，用于底层操作和 FFI。</p>
+<h3 id="unsafe-块"><a href="#unsafe-块" class="headerlink" title="unsafe 块"></a>unsafe 块</h3><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs rust"><span class="hljs-keyword">let</span> <span class="hljs-keyword">mut </span><span class="hljs-variable">num</span> = <span class="hljs-number">5</span>;<br><span class="hljs-keyword">let</span> <span class="hljs-variable">ptr</span> = &amp;<span class="hljs-keyword">mut</span> num <span class="hljs-keyword">as</span> *<span class="hljs-keyword">mut</span> <span class="hljs-type">i32</span>;  <span class="hljs-comment">// 创建裸指针（安全）</span><br><br><span class="hljs-keyword">unsafe</span> &#123;<br>    *ptr = <span class="hljs-number">10</span>;  <span class="hljs-comment">// 解引用裸指针（需要 unsafe）</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="可做的事情"><a href="#可做的事情" class="headerlink" title="可做的事情"></a>可做的事情</h3><table>
+<thead>
+<tr>
+<th>操作</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>解引用裸指针</td>
+<td><code>*ptr</code></td>
+</tr>
+<tr>
+<td>调用 unsafe 函数</td>
+<td><code>dangerous()</code></td>
+</tr>
+<tr>
+<td>访问可变静态变量</td>
+<td><code>static mut X: i32</code></td>
+</tr>
+<tr>
+<td>实现 unsafe trait</td>
+<td><code>unsafe impl Send for T</code></td>
+</tr>
+</tbody></table>
+<h3 id="FFI-调用-C"><a href="#FFI-调用-C" class="headerlink" title="FFI - 调用 C"></a>FFI - 调用 C</h3><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs rust"><span class="hljs-comment">// 声明外部 C 函数</span><br><span class="hljs-keyword">extern</span> <span class="hljs-string">&quot;C&quot;</span> &#123;<br>    <span class="hljs-keyword">fn</span> <span class="hljs-title function_">abs</span>(input: <span class="hljs-type">i32</span>) <span class="hljs-punctuation">-&gt;</span> <span class="hljs-type">i32</span>;<br>&#125;<br><br><span class="hljs-keyword">unsafe</span> &#123;<br>    <span class="hljs-keyword">let</span> <span class="hljs-variable">result</span> = <span class="hljs-title function_ invoke__">abs</span>(-<span class="hljs-number">10</span>);  <span class="hljs-comment">// Rust 调用 C</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="FFI-导出-C-接口"><a href="#FFI-导出-C-接口" class="headerlink" title="FFI - 导出 C 接口"></a>FFI - 导出 C 接口</h3><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs rust"><span class="hljs-comment">// 导出给 C 调用</span><br><span class="hljs-meta">#[no_mangle]</span>  <span class="hljs-comment">// 保持函数名不变</span><br><span class="hljs-keyword">extern</span> <span class="hljs-string">&quot;C&quot;</span> <span class="hljs-keyword">fn</span> <span class="hljs-title function_">add</span>(a: <span class="hljs-type">i32</span>, b: <span class="hljs-type">i32</span>) <span class="hljs-punctuation">-&gt;</span> <span class="hljs-type">i32</span> &#123;<br>    a + b<br>&#125;<br><br><span class="hljs-comment">// 导出结构体</span><br><span class="hljs-meta">#[repr(C)]</span>  <span class="hljs-comment">// C 内存布局</span><br><span class="hljs-keyword">pub</span> <span class="hljs-keyword">struct</span> <span class="hljs-title class_">Point</span> &#123;<br>    x: <span class="hljs-type">f64</span>,<br>    y: <span class="hljs-type">f64</span>,<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="导出规则"><a href="#导出规则" class="headerlink" title="导出规则"></a>导出规则</h3><table>
+<thead>
+<tr>
+<th>类型</th>
+<th>能否导出</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>基本类型 (<code>i32</code>, <code>f64</code>)</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>#[repr(C)]</code> 结构体</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>裸指针</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Rust 特有类型 (<code>String</code>, <code>Vec</code>)</td>
+<td>❌</td>
+</tr>
+</tbody></table>
+<p>**对比 C++**：<code>extern &quot;C&quot; fn</code> ≈ <code>extern &quot;C&quot;</code> 函数声明。</p>
+<h3 id="安全抽象"><a href="#安全抽象" class="headerlink" title="安全抽象"></a>安全抽象</h3><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs rust"><span class="hljs-comment">// 将 unsafe 封装成安全 API</span><br><span class="hljs-keyword">fn</span> <span class="hljs-title function_">safe_split_at</span>(slice: &amp;[<span class="hljs-type">i32</span>], mid: <span class="hljs-type">usize</span>) <span class="hljs-punctuation">-&gt;</span> (&amp;[<span class="hljs-type">i32</span>], &amp;[<span class="hljs-type">i32</span>]) &#123;<br>    <span class="hljs-built_in">assert!</span>(mid &lt;= slice.<span class="hljs-title function_ invoke__">len</span>());<br>    <span class="hljs-keyword">unsafe</span> &#123;<br>        (<br>            std::slice::<span class="hljs-title function_ invoke__">from_raw_parts</span>(slice.<span class="hljs-title function_ invoke__">as_ptr</span>(), mid),<br>            std::slice::<span class="hljs-title function_ invoke__">from_raw_parts</span>(slice.<span class="hljs-title function_ invoke__">as_ptr</span>().<span class="hljs-title function_ invoke__">add</span>(mid), slice.<span class="hljs-title function_ invoke__">len</span>() - mid),<br>        )<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><strong>原则</strong>：unsafe 代码要尽量少，封装成安全 API。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Rust/" class="print-no-link">#Rust</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Rust 初步学习 (2) - 进阶特性</div>
+      <div>http://example.com/2026/06/27/Rust 初步学习 (2) - 进阶特性/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>天目中云</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年6月27日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/06/14/boost_asio%E5%8D%8F%E7%A8%8B%E6%9C%8D%E5%8A%A1%E5%99%A8%E8%A6%81%E7%82%B9%E8%AE%B0%E5%BD%95/" title="boost_asio协程服务器要点记录">
+                        <span class="hidden-mobile">boost_asio协程服务器要点记录</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"NhgfDy2CEByjwxuxPM1Le2t6-MdYXbMMI","appKey":"nvGMdqKfKbpkVnojLSbwmasv","path":"window.location.pathname","placeholder":null,"avatar":"retro","meta":["nick","mail","link"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":false,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":false},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

@@ -246,6 +246,46 @@
     <article class="col-12 col-md-12 mx-auto index-info">
       <h2 class="index-header">
         
+        <a href="/2025/09/03/C++%E7%BA%BF%E7%A8%8B%E7%BA%A7%E5%BC%82%E6%AD%A5/" target="_self">
+          C++线程级异步
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/09/03/C++%E7%BA%BF%E7%A8%8B%E7%BA%A7%E5%BC%82%E6%AD%A5/" target="_self">
+        <div>
+          asyncasync做到的只是简单的线程级异步, 并非像boost:asio那样的内核级异步, 其优势大概也就是简单了. 因此只适合做一些简单的异步任务, 但是其功能和线程池重合, 如果使用了线程池就没有必要使用async了. 1234// 启动异步任务std::future&lt;int&gt; fut = std::async(compute, 10, 20);// 获取结果（会阻塞直到结果可
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2025-09-03 21:00" pubdate>
+              2025-09-03
+            </time>
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/%E5%BC%82%E6%AD%A5/">#异步</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
         <a href="/2025/08/10/C++%E7%BC%96%E8%AF%91%E9%93%BE%E6%8E%A5%E6%A8%A1%E5%9E%8B%E7%B2%BE%E8%A6%81/" target="_self">
           C++编译链接模型精要
         </a>
@@ -599,46 +639,6 @@
             <i class="iconfont icon-tags"></i>
             
               <a href="/tags/boost-asio/">#boost::asio</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h2 class="index-header">
-        
-        <a href="/2025/07/07/C++%E5%8D%8F%E7%A8%8B%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" target="_self">
-          C++ 协程学习笔记
-        </a>
-      </h2>
-
-      
-      <a class="index-excerpt index-excerpt__noimg" href="/2025/07/07/C++%E5%8D%8F%E7%A8%8B%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" target="_self">
-        <div>
-          协程是可以理解为一个可以被暂停(挂起)和唤醒的函数, 系统会帮助你保存协程函数中的局部变量. 协程 vs 线程协程和线程几乎没有任何联系, 它们是相互独立的.   对于执行时间比较短的任务, 不建议用线程来处理, 线程的创建, 调度, 销毁都是会占用资源的. 线程适合那些长时间的任务, 比如轮循或监控. 线程是一个实际的需要操作系统进行调度的对象, 而协程只是函数外加一些在底层跳来跳去的指令.
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2025-07-07 19:00" pubdate>
-              2025-07-07
-            </time>
-          </div>
-        
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/%E5%8D%8F%E7%A8%8B/">#协程</a>
             
           </div>
         
