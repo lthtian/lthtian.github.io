@@ -1,0 +1,1021 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/head.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="天目中云">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="程序故障的排查入口   入口 典型情况    执行过程中发生异常 非法访问、整数除零、非法指令、栈溢出。   程序或运行库决定终止 未捕获 C++ 异常、terminate、abort、Fail-fast。   资源耗尽 提交额度、虚拟地址空间等不足，分配失败后程序无法继续；不一定是物理 RAM 用完。   依赖与集成问题 DLL 缺失、位数或版本不匹配、接口不一致；可能表现为启动失败或运行中崩溃">
+<meta property="og:type" content="article">
+<meta property="og:title" content="WinDbg 学习记录">
+<meta property="og:url" content="http://example.com/2026/11/15/WinDbg%20%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/index.html">
+<meta property="og:site_name" content="天目中云">
+<meta property="og:description" content="程序故障的排查入口   入口 典型情况    执行过程中发生异常 非法访问、整数除零、非法指令、栈溢出。   程序或运行库决定终止 未捕获 C++ 异常、terminate、abort、Fail-fast。   资源耗尽 提交额度、虚拟地址空间等不足，分配失败后程序无法继续；不一定是物理 RAM 用完。   依赖与集成问题 DLL 缺失、位数或版本不匹配、接口不一致；可能表现为启动失败或运行中崩溃">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-11-15T11:11:20.000Z">
+<meta property="article:modified_time" content="2026-11-15T11:11:20.801Z">
+<meta property="article:author" content="天目中云">
+<meta property="article:tag" content="WinDbg">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>WinDbg 学习记录 - 天目中云</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":"NhgfDy2CEByjwxuxPM1Le2t6-MdYXbMMI","app_key":"nvGMdqKfKbpkVnojLSbwmasv","server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>TianMu</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/03.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="WinDbg 学习记录"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-11-15 19:11" pubdate>
+          2026年11月15日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          5.8k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          49 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">WinDbg 学习记录</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h2 id="程序故障的排查入口"><a href="#程序故障的排查入口" class="headerlink" title="程序故障的排查入口"></a>程序故障的排查入口</h2><table>
+<thead>
+<tr>
+<th>入口</th>
+<th>典型情况</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>执行过程中发生异常</td>
+<td>非法访问、整数除零、非法指令、栈溢出。</td>
+</tr>
+<tr>
+<td>程序或运行库决定终止</td>
+<td>未捕获 C++ 异常、<code>terminate</code>、<code>abort</code>、Fail-fast。</td>
+</tr>
+<tr>
+<td>资源耗尽</td>
+<td>提交额度、虚拟地址空间等不足，分配失败后程序无法继续；<strong>不一定是物理 RAM 用完</strong>。</td>
+</tr>
+<tr>
+<td>依赖与集成问题</td>
+<td>DLL 缺失、位数或版本不匹配、接口不一致；可能表现为启动失败或运行中崩溃。</td>
+</tr>
+<tr>
+<td>第三方模块注入</td>
+<td>输入法、安全软件等模块进入进程，引发<strong>同名 DLL 冲突</strong>、依赖加载失败或运行中崩溃。</td>
+</tr>
+<tr>
+<td>系统、驱动与硬件问题</td>
+<td>系统软件缺陷，或 CPU、内存、存储等异常；可能影响应用，也可能导致系统蓝屏。</td>
+</tr>
+<tr>
+<td>需要另行区分的事件</td>
+<td>卡死、外部结束进程、掉电重启；这些不能全部算作应用崩溃。</td>
+</tr>
+</tbody></table>
+<h2 id="转储"><a href="#转储" class="headerlink" title="转储"></a>转储</h2><h3 id="系统崩溃转储"><a href="#系统崩溃转储" class="headerlink" title="系统崩溃转储"></a>系统崩溃转储</h3><p>Windows 蓝屏时，按“启动和故障恢复”中的有效配置自动保存系统现场。小内存转储默认位于 <code>C:\Windows\Minidump\</code>，核心、完全、自动和活动内存转储默认位于 <code>C:\Windows\MEMORY.DMP</code>；路径可配置。</p>
+<h3 id="普通进程转储与-ProcDump"><a href="#普通进程转储与-ProcDump" class="headerlink" title="普通进程转储与 ProcDump"></a>普通进程转储与 ProcDump</h3><p>保存指定进程的线程、寄存器、模块和选定的内存等状态，可通过 WER、ProcDump 或程序自身的采集机制生成。崩溃、卡死或正常运行时均可采集；DMP 是<strong>采集时刻的快照</strong>，不包含完整执行历史。</p>
+<p>使用 ProcDump 前先解压工具、创建输出目录，在工具所在目录的 CMD 中执行。以下进程名和 PID 按实际情况替换。</p>
+<p><strong>条件触发采集</strong>：保持 ProcDump 运行，遇到未处理异常时保存；目标尚未启动时等待它启动。</p>
+<figure class="highlight bat"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bat">procdump.exe -ma -e -w MyApp.exe &quot;D:\interview_save\WinDbg\dumps&quot;<br></code></pre></td></tr></table></figure>
+
+<p><strong>即时采集</strong>：立即保存 PID 为 <code>1234</code> 的进程当前状态，无需等待异常。</p>
+<figure class="highlight bat"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bat">procdump.exe -ma <span class="hljs-number">1234</span> &quot;D:\interview_save\WinDbg\dumps&quot;<br></code></pre></td></tr></table></figure>
+
+<p><code>-ma</code>：进程完整转储；<code>-e</code>：监视未处理异常；<code>-w</code>：目标未启动时等待。崩溃转储应在进程完全退出前采集，可提前配置自动触发。</p>
+<h2 id="内存分类与转储范围"><a href="#内存分类与转储范围" class="headerlink" title="内存分类与转储范围"></a>内存分类与转储范围</h2><p>内存可从不同维度理解：</p>
+<ul>
+<li><strong>物理与虚拟</strong>：物理内存是整机 RAM；进程虚拟内存是该进程的地址与映射，不等于实际占用的 RAM。多个进程可映射同一物理页。</li>
+<li><strong>用户态与内核</strong>：用户态内存包括应用代码、堆、用户栈；内核内存包括系统内核、驱动及进程／线程管理数据等，并非某个系统进程的用户态内存。</li>
+<li><strong>驻留状态</strong>：驻留页当前位于 RAM；合法的未驻留页可在访问时调入或按需获得物理页。</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>转储类型</th>
+<th>保存范围</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>系统小内存转储</td>
+<td>蓝屏代码、关键上下文、故障线程的内核栈、驱动列表等基本信息。</td>
+</tr>
+<tr>
+<td>系统核心／自动内存转储</td>
+<td><strong>系统范围的内核和内核驱动内存</strong>，通常不包含应用的用户态内存。</td>
+</tr>
+<tr>
+<td>系统完全内存转储</td>
+<td><strong>Windows 使用的物理内存</strong>，包括当时驻留的各进程用户态内存；不等于所有进程的全部虚拟内存。</td>
+</tr>
+<tr>
+<td>系统活动内存转储</td>
+<td>类似完全转储，但过滤部分不太可能与分析有关的页面。</td>
+</tr>
+<tr>
+<td>ProcDump 默认 Mini（<code>-mm</code>）</td>
+<td>线程栈及其直接、间接引用的内存，以及线程、模块、句柄等元数据；不保证保存完整堆。</td>
+</tr>
+<tr>
+<td>ProcDump <code>-ma</code></td>
+<td><strong>目标进程可读取的用户态虚拟内存及元数据</strong>，包括堆、栈、映像和映射内存；不包含系统内核内存。</td>
+</tr>
+</tbody></table>
+<p>DMP 中读不到某地址，可能是该内存未被采集，<strong>不能直接认定原进程中的地址无效</strong>。</p>
+<h2 id="PDB-核心概念"><a href="#PDB-核心概念" class="headerlink" title="PDB 核心概念"></a>PDB 核心概念</h2><p><strong>PDB（Program Database）</strong>是与 EXE／DLL 配套的调试信息数据库，通常保存函数名与代码位置、源码行映射、类型和成员布局，以及可用的参数、局部变量位置描述。VS、WinDbg 用这些信息将机器代码和内存关联到 C++ 代码。</p>
+<p><strong>DMP 保存某次运行的现场，PDB 提供定位和解释信息</strong>，不记录该次运行的变量值，通常也不包含完整源码。例如，没有 PDB 时，调用栈中的位置可能显示为 <code>MyApp+0x1234</code>；加载匹配的 PDB 后，可以进一步识别为 <code>MyApp!Worker::Run+0x4</code>，并在具备行号信息时对应到源码行。</p>
+<p><strong>没有 PDB，仍可查看</strong> DMP 中保存的异常、寄存器和原始内存；具备相应机器码时可查看汇编，栈与展开信息充分时也可恢复调用栈。主要缺少内部函数名、源码行和类型等解释信息，难以直接按名称查看变量；部分函数名仍可来自模块导出表。即使有 PDB，优化、符号裁剪或 DMP 缺少内存，也可能限制变量查看。</p>
+<p><strong>Debug、Release 均可生成 PDB</strong>；是否生成调试信息与是否进行优化是不同设置，程序正常运行通常不依赖 PDB。分析时，<strong>PDB 必须匹配实际运行的 EXE／DLL 构建</strong>；文件同名或使用相同源码重新构建，不保证匹配。源码不能直接替代二进制文件或配套 PDB。</p>
+<h2 id="符号、符号源与加载"><a href="#符号、符号源与加载" class="headerlink" title="符号、符号源与加载"></a>符号、符号源与加载</h2><p>符号信息<strong>保留程序中的名称、代码位置、类型布局和源码行等对应关系</strong>，PDB 是其主要载体。<strong>公有符号</strong>主要提供函数、全局符号的名称与位置；<strong>私有调试信息</strong>还可包含局部变量、类型和行号。完整 PDB 通常包含二者，模块导出表也能提供部分名称。</p>
+<p>WinDbg <strong>按模块分别寻找匹配的 PDB</strong>，现代 MSVC PDB 通常通过 <strong>GUID＋Age</strong> 校验具体构建。结合模块加载基址和符号信息，可以将现场地址解释为“模块!函数＋偏移”，并在信息充分时关联到源码行。符号帮助解释现场，根因仍需结合 DMP 分析。</p>
+<p><strong>符号源是获取符号文件的位置</strong>，可以是本地目录、共享目录或网络服务器。符号仓库按文件名和构建标识组织多版本文件；微软源主要提供微软组件，自建源可维护业务模块。<strong>配置了来源，不代表其中一定存在所需文件</strong>。</p>
+<p>符号路径示例：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">D:\MyPdb;srv*E:\LDSSymbols*https://msdl.microsoft.com/download/symbols<br></code></pre></td></tr></table></figure>
+
+<p><code>;</code> 分隔独立搜索项。普通目录用于查找 PDB；**<code>srv*缓存目录*上游来源</code>** 按符号仓库规则先查缓存，未命中时向上游获取并缓存。多个来源可共用缓存，但已有同名文件不代表所需构建已经缓存。<code>.sympath</code> 管理符号路径，<code>.srcpath</code> 管理源码路径。</p>
+<p><strong>加载符号</strong>是读取 PDB，供当前 WinDbg 会话查询；<strong>下载</strong>是从远端取得文件。WinDbg 默认<strong>按需加载</strong>，匹配的本地缓存可复用，无需每次重新下载。分析小型 DMP 时，还可能获取匹配的 EXE／DLL／SYS 等二进制映像。</p>
+<p>服务器正常回复“文件不存在”（如 HTTP 404）通常较快；连接或响应迟缓、重试、代理查询上游，以及多个来源和文件的查找，都可能增加等待时间。**<code>Downloading</code> 不保证正在传输数据或最终获取成功**；未取得文件时，后续会话仍可能重复查找。</p>
+<p>路径检查中的 <strong><code>Deferred</code></strong> 表示检查被推迟，**<code>OK</code>** 表示路径通过检查，都不能证明已加载匹配 PDB。<code>lmvm 模块名</code> 可查看模块符号状态，**<code>(no symbols)</code>** 表示未加载调试符号；<code>Loaded symbol image file</code> 描述模块映像，不能证明 PDB 加载成功。<code>!sym noisy</code> 开启详细符号查找日志，<code>!sym quiet</code> 关闭，可用于区分本地命中、远程查找和请求失败。</p>
+<h3 id="符号服务器的基本约定"><a href="#符号服务器的基本约定" class="headerlink" title="符号服务器的基本约定"></a>符号服务器的基本约定</h3><p><code>srv*</code> 使用微软 <strong>SymSrv 的符号仓库约定</strong>。常见的单层 PDB 仓库按以下规则组织文件，索引键由真实 PDB 的 <strong>GUID＋Age</strong> 组成：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">仓库根目录\PDB文件名\构建索引键\PDB文件名<br></code></pre></td></tr></table></figure>
+
+<p><strong>SymStore</strong> 可将编译、链接生成的 PDB 按标识发布到仓库，自动建立索引目录。</p>
+<p>服务器通过 <strong>文件共享或 HTTP／HTTPS</strong> 提供仓库访问。HTTP 服务需允许按索引路径下载原始二进制文件，无需开启目录浏览。WinDbg 获取所需的具体文件，在本地完成匹配校验和解析。</p>
+<p><strong>客户端配置的上游地址应指向仓库根目录</strong>。服务器磁盘路径和网址可自行命名，内部索引规则需保持一致。</p>
+<h3 id="配置方式与会话命令"><a href="#配置方式与会话命令" class="headerlink" title="配置方式与会话命令"></a>配置方式与会话命令</h3><p><strong>预先配置</strong>：在 WinDbg 的 <code>File → Settings → Debugging settings</code> 中设置路径，保存后供后续会话使用。<code>Source path</code> 用于查找源码，<code>Symbol path</code> 用于查找符号，<code>Default cache</code> 是默认缓存位置；某个 <code>srv*</code> 项明确指定缓存目录时，该项使用指定目录。初始符号路径也可来自 <code>_NT_SYMBOL_PATH</code> 等环境变量。</p>
+<p><strong>会话配置</strong>：在 Command 窗口底部输入命令，按回车执行。<code>0:003&gt;</code> 等提示符不属于命令，<code>.</code>、<code>!</code> 使用英文半角字符。命令修改当前会话的配置，但路径等设置可能随 WinDbg 设置／工作区保存，<strong>不能认为命令修改一定是临时的</strong>。</p>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>.sympath</code></td>
+<td>查看当前符号路径。</td>
+</tr>
+<tr>
+<td><code>.sympath 路径</code></td>
+<td><strong>替换</strong>整个符号路径；多个搜索项用 <code>;</code> 分隔。</td>
+</tr>
+<tr>
+<td><code>.sympath+ D:\MyPdb</code></td>
+<td><strong>追加本地 PDB 目录</strong>；示例目录按实际位置替换。</td>
+</tr>
+<tr>
+<td><code>.sympath+ srv*E:\LDSSymbols*http://114.115.237.236/symbols</code></td>
+<td><strong>追加远程符号源与本地缓存</strong>。</td>
+</tr>
+<tr>
+<td><code>.srcpath</code></td>
+<td>查看当前源码路径。</td>
+</tr>
+<tr>
+<td><code>.srcpath D:\c_expand\client</code></td>
+<td>替换源码路径；使用 <code>.srcpath+</code> 可追加。</td>
+</tr>
+<tr>
+<td><code>.reload /f c_expand.exe</code></td>
+<td>立即尝试重新加载指定模块的符号。</td>
+</tr>
+<tr>
+<td><code>lmvm c_expand</code></td>
+<td>查看指定模块的信息及符号加载状态。</td>
+</tr>
+<tr>
+<td><code>!sym noisy</code>／<code>!sym quiet</code></td>
+<td>开启／关闭详细符号查找日志。</td>
+</tr>
+</tbody></table>
+<p>常用流程是 <strong>查看路径 → 设置或追加来源 → 加载指定模块的符号 → 核对结果</strong>。<code>.sympath</code> 本身只配置查找位置，不立即下载；加载时复用匹配的本地文件，缺少时才向配置的远程来源获取。</p>
+<h3 id="源码路径与代码跳转"><a href="#源码路径与代码跳转" class="headerlink" title="源码路径与代码跳转"></a>源码路径与代码跳转</h3><p><strong>PDB 提供“代码地址 → 源码文件／行号”的映射，Source path（源码搜索路径）用于找到对应文件</strong>。自动跳转需要匹配且包含行号信息的 PDB，以及与构建版本一致的源码。</p>
+<p>可在设置中的 <code>Source path</code> 配置源码目录，或通过命令追加，例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">.srcpath+ D:\Source\App;D:\Source\Common<br></code></pre></td></tr></table></figure>
+
+<p>配置后，在 <strong>View → Stack</strong> 中双击栈帧，可定位到对应源码。公库模板或内联代码也可能编入应用模块，其源码目录同样需要被覆盖；<strong>模块名称不代表源码所在目录</strong>。VS 的头文件包含目录与 WinDbg 的 Source path 是两套设置。</p>
+<h2 id="寄存器基础"><a href="#寄存器基础" class="headerlink" title="寄存器基础"></a>寄存器基础</h2><p>以下为 <strong>x86 的 32 位寄存器及相关状态字段</strong>，WinDbg 默认以十六进制显示。<strong>通用寄存器可存整数、地址或临时数据，具体含义需结合指令与调用约定判断</strong>。</p>
+<ul>
+<li><strong>执行位置与调用栈</strong>：<ul>
+<li><strong>EIP（Extended Instruction Pointer）</strong>：指令指针，保存执行位置对应的机器指令地址。<ul>
+<li><strong>用途</strong>：定位当前模块、函数及汇编指令；匹配 PDB 具备行号信息时可关联源码，也为调用栈展开提供起始代码位置。</li>
+</ul>
+</li>
+<li><strong>ESP（Extended Stack Pointer）</strong>：栈指针，指向当前线程栈顶；调用、压栈和出栈等操作会改变它。<ul>
+<li><strong>用途</strong>：作为读取栈内存、展开调用栈的起点；还需结合已采集的栈内存和展开规则，不能仅凭 ESP 数值还原完整调用链。</li>
+</ul>
+</li>
+<li><strong>EBP（Extended Base Pointer）</strong>：常作为栈帧基准，用于定位参数、局部变量；优化后可能改作通用寄存器，不能始终依赖 EBP 链还原调用栈。<ul>
+<li><strong>用途</strong>：保留帧指针时，可结合保存的 EBP 和返回地址追溯调用者；结合 PDB 的位置描述，如 <code>EBP-0x10</code>，定位参数、局部变量并读取其值。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><strong>通用寄存器</strong>：<ul>
+<li><strong>EAX（Accumulator）</strong>：常用于运算和整数／指针返回值，执行中也可保存临时数据。</li>
+<li><strong>ECX（Counter）</strong>：常用于计数或临时数据；x86 <code>__thiscall</code> 在函数入口用它传递 <code>this</code>，函数内部可改写。</li>
+<li><strong>EBX（Base）、EDX（Data）、ESI（Source Index）、EDI（Destination Index）</strong>：可保存数据、指针等；某些指令对其有约定用途，不能只按名称推断当前含义。</li>
+</ul>
+</li>
+<li><strong>x64 对应 RIP、RSP、RBP、RAX 等 64 位寄存器</strong>，调用约定也有区别。</li>
+<li><strong>线程切换与寄存器保存</strong>：同一逻辑处理器轮流运行不同线程时，Windows 会将被切出线程所需的寄存器状态保存到内存，再恢复下一线程的状态；原线程重新运行时恢复自己的值。因此，<strong>每个线程拥有独立的寄存器状态，但不永久独占一套硬件寄存器</strong>。</li>
+</ul>
+<p>WinDbg 结合 <strong>EIP、ESP 等寄存器、栈内存及展开信息</strong>还原调用链；遇到访问违规，还需检查故障指令实际使用了哪些寄存器。</p>
+<h2 id="Dump分析命令"><a href="#Dump分析命令" class="headerlink" title="Dump分析命令"></a>Dump分析命令</h2><h3 id="命令分类"><a href="#命令分类" class="headerlink" title="命令分类"></a>命令分类</h3><ul>
+<li><strong>无前缀：普通命令（Commands）</strong>。调试器内建，如 <code>r</code>、<code>k</code>、<code>u</code>、<code>dd</code>。</li>
+<li><strong><code>.</code>：元命令（Meta-Commands）</strong>。也由调试器内建处理，常用于上下文选择、配置和辅助检查，如 <code>.ecxr</code>、<code>.frame</code>、<code>.sympath</code>。</li>
+<li><strong><code>!</code>：扩展命令（Extension Commands）</strong>。由扩展 DLL 提供，调试器查找并调用其命令入口，如 <code>!analyze</code>、<code>!address</code>；扩展可由微软或第三方提供。<ul>
+<li>可用 <code>!库名.命令</code> 指定扩展库，如 <code>!ext.address 地址</code> 中的 <code>ext</code> 表示 <code>ext.dll</code>。</li>
+</ul>
+</li>
+</ul>
+<h3 id="异常记录与寄存器上下文"><a href="#异常记录与寄存器上下文" class="headerlink" title="异常记录与寄存器上下文"></a>异常记录与寄存器上下文</h3><p><strong>上下文是保存的一组寄存器值；异常发生时与采集 dump 时的记录可能不同。</strong></p>
+<ul>
+<li><p><strong><code>.exr</code>：查看异常记录，不切换寄存器上下文。</strong></p>
+<ul>
+<li><strong>用法</strong>：<code>.exr -1</code> 查看最近的异常；<code>.exr 地址</code> 查看指定位置的异常记录，地址不是故障指令地址。</li>
+<li><strong><code>ExceptionCode</code>：异常类别</strong>，决定 <code>Parameter[n]</code> 的解释方式。以下异常码均为十六进制：<ul>
+<li><strong>Access violation</strong>（<code>C0000005</code>）：访问违规。参数 <code>[0]</code>：<code>0</code> 读、<code>1</code> 写、<code>8</code> 执行；<code>[1]</code>：被访问的目标地址。</li>
+<li><strong>C++ EH exception</strong>（<code>E06D7363</code>）：MSVC C++ 异常，EH 即 Exception Handling。<code>[0]</code> 常见 <code>19930520</code>，为内部标记；<code>[1]</code>：异常对象地址；<code>[2]</code>：类型描述信息地址；x64 通常还有 <code>[3]</code> 映像基址。<code>Type</code> 为解析出的类型名，需结合抛出调用链判断原因。</li>
+<li><strong>Security check failure or stack buffer overrun</strong>（<code>C0000409</code>）：安全检查失败／Fail-fast。<code>[0]</code> 为子码，如 <code>2</code> 表示栈 Cookie 检查失败，不能仅凭英文说明认定栈缓冲区溢出。</li>
+<li><strong>In-page I&#x2F;O error</strong>（<code>C0000006</code>）：页面调入失败。前两个参数同访问违规，<code>[2]</code> 为底层失败状态码。</li>
+<li><strong>Stack overflow</strong>（<code>C00000FD</code>）：栈溢出／栈无法继续增长，检查递归、栈空间及提交资源。</li>
+<li><strong>Integer divide-by-zero</strong>（<code>C0000094</code>）：整数除零。</li>
+<li><strong>Illegal instruction</strong>（<code>C000001D</code>）：非法指令。</li>
+<li><strong>Heap corruption</strong>（<code>C0000374</code>）：检测到堆损坏，破坏可能发生在更早的位置。</li>
+<li><strong>Break instruction exception</strong>（<code>80000003</code>）：断点异常，不一定是程序故障。</li>
+</ul>
+</li>
+<li><strong><code>ExceptionAddress</code>：异常发生或报告的位置</strong>。访问违规通常指向故障指令；C++ 异常可能指向 <code>RaiseException</code>，需沿调用栈找抛出者。</li>
+<li><strong><code>ExceptionFlags</code><strong>：<code>0</code> 未设置不可继续标志；<code>1</code> 表示不能直接从原位置恢复执行，</strong>不等于不能被 C++ <code>catch</code> 捕获</strong>。</li>
+<li><strong><code>NumberParameters</code><strong>：有效异常参数数量；</strong><code>Parameter[n]</code></strong> 是这些附加数据，不是业务函数的参数。</li>
+</ul>
+<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs apache"><span class="hljs-attribute">0</span>:<span class="hljs-number">000</span>&gt; .exr -<span class="hljs-number">1</span><br><span class="hljs-attribute">ExceptionAddress</span>: <span class="hljs-number">7628</span>b532 (KERNELBASE!RaiseException+<span class="hljs-number">0</span>x00000062)<br>   <span class="hljs-attribute">ExceptionCode</span>: e06d7363 (C++ EH exception)<br>  <span class="hljs-attribute">ExceptionFlags</span>: <span class="hljs-number">00000001</span><br><span class="hljs-attribute">NumberParameters</span>: <span class="hljs-number">3</span><br>   <span class="hljs-attribute">Parameter</span>[<span class="hljs-number">0</span>]: <span class="hljs-number">19930520</span><br>   <span class="hljs-attribute">Parameter</span>[<span class="hljs-number">1</span>]: <span class="hljs-number">0133</span>e017<br>   <span class="hljs-attribute">Parameter</span>[<span class="hljs-number">2</span>]: <span class="hljs-number">79</span>df0ba8<br>  <span class="hljs-attribute">_s_ThrowInfo</span>    : <span class="hljs-number">79</span>df0ba8<br>  <span class="hljs-attribute">pExceptionObject</span>: <span class="hljs-number">0133</span>e017<br>  <span class="hljs-attribute">Type</span>            : class CNewException<br></code></pre></td></tr></table></figure></li>
+<li><p><strong><code>.ecxr</code>：采用并显示异常时的寄存器上下文</strong>，可记作 Exception Context Record。</p>
+<ul>
+<li>自动读取 dump 中配套保存的异常上下文，**不需要先执行 <code>.exr -1</code>**；不是根据异常地址跳转代码。</li>
+</ul>
+</li>
+<li><p><strong><code>.cxr</code>：采用指定或默认的寄存器上下文。</strong></p>
+<ul>
+<li><strong>不带参数</strong>：在用户态 dump 中恢复当前线程的默认记录，通常是采集时的状态。</li>
+<li>**<code>.cxr 地址</code>**：采用该地址保存的 <code>CONTEXT</code> 记录，地址不是代码位置。</li>
+</ul>
+</li>
+</ul>
+<p>切换后，**<code>r</code> 查看当前寄存器，<code>k</code> 查看对应调用栈**。只能切换已保存的记录，不会执行程序或恢复历史内存。</p>
+<h3 id="线程与调用栈"><a href="#线程与调用栈" class="headerlink" title="线程与调用栈"></a>线程与调用栈</h3><ul>
+<li>**<code>~</code>**：列出当前进程的线程；行首 <code>.</code> 表示当前线程，左侧数字是 WinDbg 的线程索引。</li>
+<li>**<code>~1s</code>**：切换到索引为 <code>1</code> 的线程，数字按实际替换，不是 Windows 线程 ID。</li>
+<li><strong><code>k</code><strong>：查看当前选中线程的调用栈，</strong>不固定查看线程 0，也不会自动切回线程 0</strong>。</li>
+</ul>
+<p>切换线程会恢复其默认寄存器上下文；要查看异常时的栈，先选中异常线程，再执行 <code>.ecxr</code>、<code>k</code>。</p>
+<h3 id="寄存器与反汇编"><a href="#寄存器与反汇编" class="headerlink" title="寄存器与反汇编"></a>寄存器与反汇编</h3><ul>
+<li><strong><code>r</code>（Registers）</strong>：查看当前上下文的常用寄存器值，<strong>不切换上下文</strong>；查看异常时的值应先执行 <code>.ecxr</code>。<ul>
+<li>**<code>r eax</code><strong>：查看一个寄存器；</strong><code>r eip,esp,ecx</code>**：同时查看指定的几个寄存器。</li>
+</ul>
+</li>
+<li><strong><code>u</code>（Unassemble）</strong>：将指定地址处的机器码解释为汇编指令。<ul>
+<li>**<code>u @eip L8</code>**：从 EIP 指向的位置显示 8 条指令；<code>@eip</code> 表示取寄存器值作为地址，x64 使用 <code>@rip</code>。</li>
+<li>也可直接指定地址，如 <code>u 0x12345678 L1</code>，地址按实际替换；<code>L1</code> 表示显示一条指令。</li>
+<li>指令行依次显示<strong>地址、机器码、汇编指令</strong>。<strong>反汇编只是查看，不会执行指令或改变寄存器值</strong>。</li>
+</ul>
+</li>
+</ul>
+<h3 id="内存查看"><a href="#内存查看" class="headerlink" title="内存查看"></a>内存查看</h3><p>**<code>dd 地址 L数量</code>**：按 <strong>DWORD（4 字节）</strong>以十六进制显示原始内存，用于核对字段、指针或数组数据，不限于栈。</p>
+<ul>
+<li>**<code>dd @esp L8</code>**：从当前 ESP 指向的地址读取 8 个 DWORD，共 <strong>32 字节，不是 8 条指令</strong>。</li>
+<li>**<code>dd @esp+0x54 L1</code>**：读取 ESP＋0x54 处的一个 DWORD；也可直接指定地址。</li>
+<li>输出左侧为每行起始地址，右侧为数据；<code>????????</code> 表示无法读取，也可能只是 dump 未收录该内存。</li>
+</ul>
+<p>**<code>!address 地址</code>**：查看该地址所在区域的属性。访问违规时，可查询 <code>.exr -1</code> 中 <code>Parameter[1]</code> 的目标地址。</p>
+<ul>
+<li>**<code>Usage</code>**：用途，如 <code>Stack</code> 栈、<code>Heap</code> 堆、<code>Image</code> 映像。</li>
+<li>**<code>State</code>**：<code>MEM_FREE</code> 空闲、<code>MEM_RESERVE</code> 已预留、<code>MEM_COMMIT</code> 已提交；提交不等于驻留或已被 dump 收录。</li>
+<li>**<code>Protect</code>**：权限，如 <code>PAGE_READWRITE</code> 可读写、<code>PAGE_READONLY</code> 只读、<code>PAGE_NOACCESS</code> 不可访问。</li>
+<li>**<code>Type</code>**：<code>MEM_PRIVATE</code> 私有内存、<code>MEM_IMAGE</code> 映像映射、<code>MEM_MAPPED</code> 其他映射。</li>
+</ul>
+<h3 id="地址空间与堆分析"><a href="#地址空间与堆分析" class="headerlink" title="地址空间与堆分析"></a>地址空间与堆分析</h3><ul>
+<li>**<code>!address -summary</code>**：查看进程虚拟地址空间统计及最大连续空闲区域；<code>Free</code> 不是整机剩余 RAM。</li>
+<li>**<code>!heap -s</code>**：查看各堆的预留、提交和空闲空间，常用列单位为 KB；可增长堆的 <code>Free</code> 不足不代表申请必然失败。</li>
+<li>**<code>!heap -x 地址</code>**：查找包含该地址的堆块，查看所属堆、块地址和大小；查不到不等于已经释放。</li>
+<li>**<code>!heap -p -a 地址</code>**：查看 Page Heap 块的分配／释放状态及可用调用栈；需在程序启动前启用 Page Heap，并采集相关数据，不能给旧 dump 补历史。</li>
+</ul>
+<h3 id="卡死与-CPU-占用分析"><a href="#卡死与-CPU-占用分析" class="headerlink" title="卡死与 CPU 占用分析"></a>卡死与 CPU 占用分析</h3><ul>
+<li><strong><code>!runaway</code><strong>：查看线程累计用户态 CPU 时间；</strong><code>!runaway 7</code></strong> 同时显示用户态、内核态 CPU 时间和线程存活时间。<strong>累计耗时不等于当前 CPU 占用率</strong>。<ul>
+<li>找到高耗时线程后，用 <strong><code>~索引s</code> → <code>k</code></strong> 查看采集时的调用栈，定位业务函数，结合源码检查循环、重试或大量计算。</li>
+</ul>
+</li>
+<li><strong><code>!cs</code><strong>：查看 Windows 临界区的快照状态；</strong><code>OwningThread</code></strong> 是持有者线程 ID，**<code>RecursionCount</code>** 是尚未配对退出的进入次数（含首次）。<ul>
+<li><strong><code>LOCKED</code> 不等于死锁</strong>；结合相关线程的 <code>k</code>，确认等待关系是否形成闭环。</li>
+</ul>
+</li>
+<li>**<code>!analyze -hang</code>**：自动提供卡死／线程阻塞线索，需结合线程栈验证。</li>
+</ul>
+<h3 id="自动分析报告：-analyze-v"><a href="#自动分析报告：-analyze-v" class="headerlink" title="自动分析报告：!analyze -v"></a>自动分析报告：!analyze -v</h3><p><strong><code>!analyze</code> 是 <code>ext.dll</code> 提供的自动分析扩展，<code>-v</code> 表示详细输出。</strong>底层通过调试引擎读取已保存的现场，并结合符号和分析规则生成报告，主要包括：</p>
+<ol>
+<li><strong>读取现场</strong>：用户态崩溃读取异常记录与配套上下文；蓝屏读取 Bug Check 代码和参数，并取得相关线程、模块及可用内存信息。</li>
+<li><strong>解释地址与数据</strong>：按配置的符号路径查找匹配 PDB，将地址对应到模块、函数、源码行或类型；需要时还会获取匹配的二进制映像。缓存未命中、远程查找或超时都可能增加等待时间。</li>
+<li><strong>展开调用栈、解析故障细节</strong>：结合寄存器、栈内存及展开信息恢复调用链，按异常类型解释参数，必要时解析 C++ 异常类型等信息。</li>
+<li><strong>自动归因与分类</strong>：依据故障类型、现场和分析规则选择可疑模块／函数，生成摘要、Bucket 等结果；并非固定执行一串常用命令。</li>
+</ol>
+<p><strong>它分析快照，不会重新执行程序或恢复完整历史。</strong>异常、寄存器等现场数据与自动推断的可疑模块应区分看待；结论受转储范围、符号及调用栈可靠性限制。</p>
+<p><strong>重要字段（按排查顺序）：</strong></p>
+<ul>
+<li><strong>故障类型：发生了什么</strong><ul>
+<li><strong><code>EXCEPTION_CODE</code>／<code>EXCEPTION_RECORD</code><strong>：异常类别与参数；</strong><code>C++.Exception.Type</code>／<code>Type</code></strong> 为 C++ 异常类型，需结合抛出条件判断原因。常见异常码见下节 <code>.exr</code>。</li>
+<li>**<code>BUGCHECK_CODE</code> ＋ <code>Arguments</code>／<code>BUGCHECK_P1～P4</code>**：蓝屏类别与具体条件，参数含义由停止码决定。例如 <code>1a — MEMORY_MANAGEMENT</code> ＋ <code>Arg1: 41790</code> 表示页表页损坏，不能直接认定内存条故障。</li>
+</ul>
+</li>
+<li><strong>执行现场与调用链：在哪个操作中出错</strong><ul>
+<li>**<code>CONTEXT</code><strong>：寄存器现场；</strong><code>FAULTING_IP</code>／<code>Failure.Exception.IP.*</code>**：异常发生或报告的指令位置，须与被访问的数据地址区分。</li>
+<li>**<code>FAULTING_THREAD</code>**：相关线程；内核报告中通常是线程对象地址。</li>
+<li><strong><code>STACK_TEXT</code><strong>：调用栈，沿栈查业务操作与调用者；</strong><code>STACK_COMMAND</code></strong> 可重现该栈。异常报告／检测位置可能晚于真正出错的位置。</li>
+</ul>
+</li>
+<li><strong>可疑模块与函数：优先查谁</strong><ul>
+<li>**<code>MODULE_NAME</code><strong>：自动分析选出的重点怀疑模块；</strong><code>IMAGE_NAME</code>**：对应的 EXE／DLL／SYS 文件。</li>
+<li>**<code>SYMBOL_NAME</code>**：选中的函数或模块内位置；<code>模块+偏移</code>／<code>unknown_function</code> 表示未解析出具体函数名。</li>
+<li>用 <strong><code>lmvm 模块名</code></strong> 核对版本等信息，再结合故障指令、调用栈及触发场景验证；仅指向 <code>nt</code> 等系统模块时，仍需检查是否由其他模块先破坏了内存。</li>
+</ul>
+</li>
+<li><strong>故障分类：用于相似案例比对</strong><ul>
+<li><strong><code>FAILURE_BUCKET_ID</code>／<code>Failure.Bucket</code><strong>：常组合故障码、子类型、模块和函数，用于搜索、归类多个 dump。</strong>相同 Bucket 不保证根因相同</strong>，其中模块名与 <code>MODULE_NAME</code> 可能来自同一次归因。</li>
+<li>**<code>FAILURE_ID_HASH</code>／<code>Failure.Hash</code>**：故障分类签名，不是模块文件哈希。</li>
+</ul>
+</li>
+<li><strong>辅助信息：按需查看</strong><ul>
+<li>**<code>PROCESS_NAME</code>**：相关进程；蓝屏时表示进程上下文，不代表该进程导致蓝屏。</li>
+<li>**<code>IMAGE_VERSION</code><strong>：所选模块版本；</strong><code>WER.Process.Version</code>**：进程映像版本。</li>
+<li>**<code>Analysis.*</code>**：分析工具的版本、耗时及资源统计，不能据此判断故障程序内存不足或 CPU 异常。</li>
+</ul>
+</li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/WinDbg/" class="print-no-link">#WinDbg</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>WinDbg 学习记录</div>
+      <div>http://example.com/2026/11/15/WinDbg 学习记录/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>天目中云</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年11月15日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/06/27/Rust%20%E5%88%9D%E6%AD%A5%E5%AD%A6%E4%B9%A0%20(2)/" title="Rust 初步学习 (2) - 进阶特性">
+                        <span class="hidden-mobile">Rust 初步学习 (2) - 进阶特性</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"NhgfDy2CEByjwxuxPM1Le2t6-MdYXbMMI","appKey":"nvGMdqKfKbpkVnojLSbwmasv","path":"window.location.pathname","placeholder":null,"avatar":"retro","meta":["nick","mail","link"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":false,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":false},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
